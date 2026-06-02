@@ -1970,8 +1970,9 @@ function nomeContaByCod(cod){const c=getPC().find(x=>x.cod===cod);return c?`${c.
 // INIT DATA
 // ══════════════════════════════════════
 function initData(){
-  // Só carrega dados demo se o usuário não tiver nenhum lançamento ainda
-  const temDados = (S.g('pagar')||[]).length > 0;
+  // Só carrega dados demo se o Firebase não retornou nenhum dado real
+  // _storageReady=true significa que já tentamos carregar do Firebase
+  const temDados = (S.g('pagar')||[]).length > 0 || (S.g('fornecedores')||[]).length > 0;
   if(!temDados){
     S.s('plano',PC_INIT);
     S.s('cad-contas',[]);
