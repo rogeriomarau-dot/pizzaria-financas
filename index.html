@@ -3116,12 +3116,14 @@ function saveParcelado(){
   const base=Date.now();
   const totalParcelas = linhasQtd;
   const descParcela = n===0 ? 'À Vista' : (n===1 ? '1×' : null);
+  let novasLinhas = 0;
   for(let i=1;i<=linhasQtd;i++){
     const venc =document.getElementById('mpp-venc-'+i)?.value||'';
     const val  =parseFloat(document.getElementById('mpp-val-'+i)?.value)||0;
     const forma=document.getElementById('mpp-forma-'+i)?.value||'PIX';
     const st   =document.getElementById('mpp-st-'+i)?.value||'Pendente';
     if(!val&&!venc)continue;
+    novasLinhas++;
     const descItem = descParcela
       ? `${desc}${desc?' — ':''}${descParcela}`
       : `${desc} — Parcela ${i}/${totalParcelas}`;
@@ -3135,8 +3137,7 @@ function saveParcelado(){
       totalNF:totalNF||undefined,
     });
   }
-  const atual=S.g('pagar')||[];
-  if(arr.length===atual.length){alert('Preencha ao menos uma linha com data e valor.');return;}
+  if(novasLinhas===0){alert('Preencha ao menos uma linha com data e valor.');return;}
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
 }
 function saveReceber(){
