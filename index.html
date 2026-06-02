@@ -486,7 +486,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="ct">Cadastro de Fornecedores
       <button class="btn btn-p btn-sm" onclick="resetModalForn();openMod('mod-forn')"><i class="fa-solid fa-plus"></i> Novo Fornecedor</button>
     </div>
-    <div class="tw"><table><thead><tr><th>Razão Social / Nome</th><th>CNPJ / CPF</th><th>Cidade / UF</th><th>Telefone</th><th>Contato Vendedor</th><th>E-mail</th><th>Status</th><th></th></tr></thead><tbody id="tb-fn"></tbody></table></div>
+    <div class="tw"><table><thead><tr><th style="width:36px;text-align:center;color:var(--tx3)">#</th><th>Razão Social / Nome</th><th>CNPJ / CPF</th><th>Cidade / UF</th><th>Telefone</th><th>Contato Vendedor</th><th>E-mail</th><th>Status</th><th></th></tr></thead><tbody id="tb-fn"></tbody></table></div>
   </div>
 </div>
 
@@ -3713,8 +3713,9 @@ function renderCadContas(){
 function renderForn(){
   const arr=S.g('fornecedores')||[];
   document.getElementById('tb-fn').innerHTML = arr.length === 0
-    ? `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--tx3)"><i class="fa-solid fa-truck" style="margin-right:8px"></i>Nenhum fornecedor cadastrado</td></tr>`
-    : arr.map(f=>`<tr>
+    ? `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--tx3)"><i class="fa-solid fa-truck" style="margin-right:8px"></i>Nenhum fornecedor cadastrado</td></tr>`
+    : arr.map((f,i)=>`<tr>
+    <td style="width:36px;text-align:center;font-size:11px;color:var(--tx3);font-weight:400">${i+1}</td>
     <td style="color:var(--tx);font-weight:500">${f.n}</td>
     <td style="font-size:12px">${f.doc||'—'}</td>
     <td style="font-size:12px">${f.cidade?f.cidade+(f.uf?' / '+f.uf:''):'—'}</td>
