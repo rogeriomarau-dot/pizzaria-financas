@@ -41,6 +41,13 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color
 .fg input,.fg select,.fg textarea{width:100%;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);
   border-radius:6px;padding:11px 14px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--or);}
+/* PADRONIZAÇÃO MAIÚSCULAS — campos de nome nos cadastros */
+#msc-nome,#mcc-nome,#mec-nome,
+#mfn-nome,#mef-nome,
+#mpr-nome,#mepr-nome,
+#mins-nome,#msrv-nome,
+#mfp-nome,
+#mfr-nome{text-transform:uppercase;}
 .fg select option{background:var(--dk3);}
 .fg textarea{resize:vertical;min-height:60px;}
 .btn-lg{width:100%;background:var(--or);color:#fff;border:none;border-radius:6px;padding:13px;
@@ -568,7 +575,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Nome da Forma</th>
+        <th>Nome da Forma de Pagamento</th>
         <th>Tipo</th>
         <th>Prazo de Compensação</th>
         <th>Status</th>
@@ -959,7 +966,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <input type="text" id="msrv-cod" placeholder="Gerado ao selecionar categoria" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default;">
       </div>
       <div class="fg"><label>Nome / Descrição *</label>
-        <input type="text" id="msrv-nome" placeholder="Ex: Contabilidade Mensal, ISS, Aluguel...">
+        <input type="text" id="msrv-nome" placeholder="EX: CONTABILIDADE MENSAL, ISS, ALUGUEL..." oninput="this.value=this.value.toUpperCase()">
       </div>
     </div>
     <div class="fr">
@@ -1024,7 +1031,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="mt"><span><i class="fa-solid fa-credit-card" style="color:var(--or);margin-right:8px"></i>Nova Forma de Pagamento</span><span class="mc" onclick="closeMod('mod-forma-pag')">✕</span></div>
     <input type="hidden" id="mfp-id">
     <div class="fr">
-      <div class="fg"><label>Nome da Forma de Pagamento</label><input type="text" id="mfp-nome" placeholder="Ex: PIX, Boleto, Cartão de Crédito…"></div>
+      <div class="fg"><label>Nome da Forma de Pagamento</label><input type="text" id="mfp-nome" placeholder="EX: PIX, BOLETO, CARTÃO DE CRÉDITO…" oninput="this.value=this.value.toUpperCase()"></div>
       <div class="fg"><label>Tipo</label>
         <select id="mfp-tipo">
           <option value="À Vista">À Vista</option>
@@ -1052,7 +1059,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="mt"><span><i class="fa-solid fa-hand-holding-dollar" style="color:var(--or);margin-right:8px"></i>Nova Forma de Recebimento</span><span class="mc" onclick="closeMod('mod-forma-rec');resetModalFormaRec()">✕</span></div>
     <input type="hidden" id="mfr-id">
     <div class="fr">
-      <div class="fg"><label>Nome da Forma de Recebimento</label><input type="text" id="mfr-nome" placeholder="Ex: PIX, Dinheiro, Cartão de Crédito…"></div>
+      <div class="fg"><label>Nome da Forma de Recebimento</label><input type="text" id="mfr-nome" placeholder="EX: PIX, DINHEIRO, CARTÃO DE CRÉDITO…" oninput="this.value=this.value.toUpperCase()"></div>
       <div class="fg"><label>Tipo</label>
         <select id="mfr-tipo">
           <option value="À Vista">À Vista</option>
@@ -1314,7 +1321,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </label>
         <input type="text" id="msc-cod" placeholder="Selecione o grupo…" style="font-weight:600;color:var(--or)">
       </div>
-      <div class="fg"><label>Nome da Conta</label><input type="text" id="msc-nome" placeholder="Ex: Horas Extras"></div>
+      <div class="fg"><label>Nome da Conta</label><input type="text" id="msc-nome" placeholder="EX: HORAS EXTRAS" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fg">
       <label>Natureza</label>
@@ -1356,7 +1363,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </label>
         <input type="text" id="mcc-cod" placeholder="Selecione o grupo…" style="font-weight:600">
       </div>
-      <div class="fg"><label>Nome da Conta</label><input type="text" id="mcc-nome" placeholder="Ex: Horas Extras"></div>
+      <div class="fg"><label>Nome da Conta</label><input type="text" id="mcc-nome" placeholder="Ex: Horas Extras" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <!-- Natureza (automática, apenas leitura) -->
     <div class="fr" id="mcc-nat-wrap" style="display:none">
@@ -1376,7 +1383,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="mb wide">
     <div class="mt"><span><i class="fa-solid fa-truck" style="color:var(--or);margin-right:8px"></i>Novo Fornecedor</span><span class="mc" onclick="closeMod('mod-forn');resetModalForn()">✕</span></div>
     <div class="fr">
-      <div class="fg" style="grid-column:span 2"><label>Razão Social / Nome *</label><input type="text" id="mfn-nome" placeholder="Nome completo ou razão social"></div>
+      <div class="fg" style="grid-column:span 2"><label>Razão Social / Nome *</label><input type="text" id="mfn-nome" placeholder="NOME COMPLETO OU RAZÃO SOCIAL" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>CNPJ / CPF</label><input type="text" id="mfn-doc" placeholder="00.000.000/0000-00"></div>
@@ -1407,7 +1414,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <div class="mo" id="mod-prod">
   <div class="mb wide">
     <div class="mt"><span><i class="fa-solid fa-boxes-stacked" style="color:var(--or);margin-right:8px"></i>Novo Produto</span><span class="mc" onclick="closeMod('mod-prod');resetModalProd()">✕</span></div>
-    <div class="fr"><div class="fg"><label>Código <span style="font-size:10px;color:var(--tx3)">(gerado automaticamente)</span></label><input type="text" id="mpr-cod" placeholder="Gerado ao abrir" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default"></div><div class="fg"><label>Nome do Produto</label><input type="text" id="mpr-nome"></div></div>
+    <div class="fr"><div class="fg"><label>Código <span style="font-size:10px;color:var(--tx3)">(gerado automaticamente)</span></label><input type="text" id="mpr-cod" placeholder="Gerado ao abrir" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default"></div><div class="fg"><label>Nome do Produto</label><input type="text" id="mpr-nome" oninput="this.value=this.value.toUpperCase()"></div></div>
     <div class="fr">
       <div class="fg"><label>Categoria de Produto</label>
         <select id="mpr-cat" onchange="onProdCatChange('mpr-cat','mpr-conta')">
@@ -1466,7 +1473,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
       <div class="fg">
         <label>Nome do Insumo</label>
-        <input type="text" id="mins-nome" placeholder="Ex: Mussarela, Cerveja Long Neck...">
+        <input type="text" id="mins-nome" placeholder="EX: MUSSARELA, CERVEJA LONG NECK..." oninput="this.value=this.value.toUpperCase()">
       </div>
     </div>
     <div class="fg">
@@ -1496,7 +1503,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="fr">
       <div class="fg"><label>Código da Conta</label><input type="text" id="mec-cod"></div>
-      <div class="fg"><label>Nome da Conta</label><input type="text" id="mec-nome"></div>
+      <div class="fg"><label>Nome da Conta</label><input type="text" id="mec-nome" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg">
@@ -1642,7 +1649,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="mt"><span><i class="fa-solid fa-pen-to-square" style="color:var(--bl);margin-right:8px"></i>Editar Fornecedor</span><span class="mc" onclick="closeMod('mod-editforn')">✕</span></div>
     <input type="hidden" id="mef-id">
     <div class="fr">
-      <div class="fg" style="grid-column:span 2"><label>Razão Social / Nome *</label><input type="text" id="mef-nome" placeholder="Nome completo ou razão social"></div>
+      <div class="fg" style="grid-column:span 2"><label>Razão Social / Nome *</label><input type="text" id="mef-nome" placeholder="NOME COMPLETO OU RAZÃO SOCIAL" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>CNPJ / CPF</label><input type="text" id="mef-doc" placeholder="00.000.000/0000-00"></div>
@@ -1676,7 +1683,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <input type="hidden" id="mepr-id">
     <div class="fr">
       <div class="fg"><label>Código</label><input type="text" id="mepr-cod"></div>
-      <div class="fg"><label>Nome do Produto</label><input type="text" id="mepr-nome"></div>
+      <div class="fg"><label>Nome do Produto</label><input type="text" id="mepr-nome" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Categoria de Produto</label>
