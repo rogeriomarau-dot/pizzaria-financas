@@ -5524,19 +5524,8 @@ function rcMsBuildForn(){
 }
 
 function rcMsBuildProd(){
-  // Categorias permitidas no relatório de Compras/Estoque
-  const CATS_COMPRAS = ['insumos','bebidas','material descartável','material de limpeza',
-    'material de expediente','material expediente','material utensílios','material utensilios','imobilizado'];
-
-  // Busca as categorias cadastradas para mapear nome → categoria
-  const catsProd = S.g('cat-produtos')||[];
-  const insumosCad = S.g('insumos')||[];
-  const produtosCad = S.g('produtos')||[];
-
-  // Monta mapa de nome do item → categoria
-  const nomeCat = {};
-  insumosCad.forEach(i=>{ if(i.nome) nomeCat[i.nome.toLowerCase()] = (i.cat||'').toLowerCase(); });
-  produtosCad.forEach(p=>{ if(p.n) nomeCat[p.n.toLowerCase()] = (p.cat||'').toLowerCase(); });
+  // Categorias EXCLUÍDAS do relatório de Compras/Estoque
+  const CATS_EXCLUIR = ['serviço','servico','imposto','tributo','taxa','despesa financeira','despesas financeiras','financeiro'];
 
   const pagar = S.g('pagar')||[];
   const prods = new Map();
@@ -5544,10 +5533,11 @@ function rcMsBuildProd(){
     if(!lanc.itens) return;
     lanc.itens.forEach(it=>{
       if(!it.nome) return;
-      const cat = (it.cat||nomeCat[it.nome.toLowerCase()]||'').toLowerCase();
-      // Só inclui se a categoria for permitida OU se não tiver categoria definida (inclui por padrão)
-      const permitido = cat === '' || CATS_COMPRAS.some(c => cat.includes(c));
-      if(permitido && !prods.has(it.nome)) prods.set(it.nome, it.nome);
+      const tipo = (it.tipo||'').toLowerCase();
+      const cat  = (it.cat||'').toLowerCase();
+      // Exclui apenas serviços e impostos
+      const excluir = CATS_EXCLUIR.some(c => tipo.includes(c) || cat.includes(c));
+      if(!excluir && !prods.has(it.nome)) prods.set(it.nome, it.nome);
     });
   });
   const drop = document.getElementById('rc-prod-drop');
