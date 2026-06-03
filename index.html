@@ -1098,7 +1098,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <div class="fg"><label>Nº da NF / Descrição</label><input type="text" id="mpp-desc" placeholder="Ex: NF 001234"></div>
         </div>
         <div class="fr">
-          <div class="fg"><label>Data de Competência <span style="font-size:10px;color:var(--tx3)">(Regime de Competência)</span></label><input type="date" id="mpp-comp"></div>
+          <div class="fg"><label>Data de Competência <span style="font-size:10px;color:var(--tx3)">(Regime de Competência)</span></label><input type="date" id="mpp-comp" onchange="validarCompVenc()"></div>
           <div class="fg"><label>Nº de Parcelas</label>
             <select id="mpp-nparcelas" onchange="gerarParcelasManual()">
               <option value="">— Selecione —</option>
@@ -2531,6 +2531,12 @@ function gerarCodigoPagar(){
 function savePagar(){
   const venc  = document.getElementById('mp-venc').value;
   const comp  = document.getElementById('mp-comp').value;
+
+  // ── VALIDAÇÃO: Competência não pode ser posterior ao vencimento ──
+  if(comp && venc && comp > venc){
+    alert('⚠️ Data de Competência não pode ser posterior à Data de Vencimento.\n\nCompetência: '+comp.split('-').reverse().join('/')+'\nVencimento: '+venc.split('-').reverse().join('/'));
+    return;
+  }
   const reg   = comp ? 'competencia' : 'caixa';
   // Valor total = soma dos itens (se houver)
   const totalNF = mpItens.reduce((a,b)=>a+b.total,0);
@@ -3001,7 +3007,9 @@ function setTabPagar(tab){ /* painel único — sem alternância */ }
 
 function resetModalPagar(){
   mpItens=[]; mppItens=[];
-  ['mpp-desc','mpp-comp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['mpp-desc','mpp-comp'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}});
+  // Limpa aviso de competência vs vencimento
+  const aviso=document.getElementById('aviso-comp-venc'); if(aviso)aviso.remove();;
   ['mpp-forn'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
   document.getElementById('mpp-nparcelas').selectedIndex=0;
   document.getElementById('mpp-grade').style.display='none';
@@ -3107,6 +3115,37 @@ function calcTotalParcelas(){
   }
 }
 
+// ── VALIDAÇÃO: Competência não pode ser posterior ao vencimento ──
+function validarCompVenc(){
+  const comp = document.getElementById('mpp-comp')?.value || '';
+  if(!comp) return;
+  // Verifica contra todas as parcelas já preenchidas
+  let erro = false;
+  for(let i=1;i<=10;i++){
+    const vencEl = document.getElementById('mpp-venc-'+i);
+    if(!vencEl) break;
+    const venc = vencEl.value;
+    if(venc && comp > venc){ erro = true; break; }
+  }
+  const el = document.getElementById('mpp-comp');
+  if(erro){
+    el.style.borderColor='var(--rd)';
+    // Mostra aviso abaixo do campo (cria ou atualiza)
+    let aviso = document.getElementById('aviso-comp-venc');
+    if(!aviso){
+      aviso = document.createElement('div');
+      aviso.id = 'aviso-comp-venc';
+      aviso.style.cssText = 'font-size:11px;color:var(--rd);margin-top:4px;display:flex;align-items:center;gap:4px;';
+      el.parentNode.appendChild(aviso);
+    }
+    aviso.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Competência posterior ao vencimento';
+  } else {
+    el.style.borderColor='';
+    const aviso = document.getElementById('aviso-comp-venc');
+    if(aviso) aviso.remove();
+  }
+}
+
 function saveParcelado(){
   const nRaw=document.getElementById('mpp-nparcelas').value;
   if(nRaw===''||nRaw===null){alert('Selecione o número de parcelas.');return;}
@@ -3115,6 +3154,17 @@ function saveParcelado(){
   const forn  =document.getElementById('mpp-forn').value;
   const desc  =document.getElementById('mpp-desc').value;
   const comp  =document.getElementById('mpp-comp').value;
+
+  // ── VALIDAÇÃO: Competência não pode ser posterior ao vencimento ──
+  if(comp){
+    for(let i=1;i<=linhasQtd;i++){
+      const vencI=document.getElementById('mpp-venc-'+i)?.value||'';
+      if(vencI && comp > vencI){
+        alert('⚠️ Data de Competência não pode ser posterior à Data de Vencimento.\n\nCompetência: '+comp.split('-').reverse().join('/')+'\nVencimento (parcela '+i+'): '+vencI.split('-').reverse().join('/'));
+        return;
+      }
+    }
+  }
   const reg   =comp?'competencia':'caixa';
   const totalNF=mppItens.reduce((a,b)=>a+b.total,0);
   let contaAuto='';
