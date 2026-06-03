@@ -351,7 +351,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="tb">
       <div><div class="tb-t" id="pgt">Dashboard</div><div class="tb-s" id="pgs">Visão consolidada</div></div>
       <div class="tb-r">
-        <span class="bdg" id="bdg-mes"></span>
+        <span class="bdg" id="bdg-mes" title="Mês de referência atual do sistema"></span>
         <button class="btn btn-p" id="btn-novo" onclick="novoLancamento()"><i class="fa-solid fa-plus"></i> <span id="btn-novo-txt">Novo Lançamento</span></button>
       </div>
     </div>
@@ -2249,6 +2249,9 @@ function go(pg,btn){
   if(pg==='plano'){btnTxt.textContent='Novo Cadastro';}
   else if(pgsCadastro.includes(pg)){btnTxt.textContent='Novo Cadastro';}
   else{btnTxt.textContent='Novo Lançamento';}
+  // Oculta botão Novo Lançamento no relatório
+  const btnNovo = document.getElementById('btn-novo');
+  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar') ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
@@ -5142,6 +5145,41 @@ function gerarRelPagar(){
   const selForma  = msState['forma']?.sel || new Set();
   const selCat    = msState['cat']?.sel || new Set();
   const selComp   = mpState['comp']?.sel || new Set();
+
+  // ── VALIDAÇÃO: não permitir filtrar pelos dois ao mesmo tempo ──
+  const temVenc = dtIni || dtFim;
+  const temComp = selComp.size > 0;
+  if(temVenc && temComp){
+    // Exibe modal de aviso
+    let av = document.getElementById('mod-aviso-filtro');
+    if(!av){
+      av = document.createElement('div');
+      av.id = 'mod-aviso-filtro';
+      av.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      av.innerHTML = `
+        <div style="background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:12px;padding:28px 32px;width:440px;max-width:96vw;text-align:center">
+          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+          <div style="font-size:15px;font-weight:600;color:var(--tx);margin-bottom:10px">Filtro inválido</div>
+          <div style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:20px">
+            Utilize apenas <strong style="color:var(--or)">um</strong> tipo de filtro por data:<br>
+            <strong>Data de Vencimento</strong> <em>ou</em> <strong>Mês de Competência</strong><br>
+            — não os dois ao mesmo tempo.
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button onclick="document.getElementById('rp-dt-ini').value='';document.getElementById('rp-dt-fim').value='';document.getElementById('mod-aviso-filtro').remove();gerarRelPagar();"
+              style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);padding:9px 18px;border-radius:6px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;">
+              Usar só Competência
+            </button>
+            <button onclick="mpClear('comp');document.getElementById('mod-aviso-filtro').remove();gerarRelPagar();"
+              style="background:var(--or);border:none;color:#fff;padding:9px 18px;border-radius:6px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;font-weight:500;">
+              Usar só Vencimento
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(av);
+    }
+    return;
+  }
 
   let arr = S.g('pagar') || [];
 
