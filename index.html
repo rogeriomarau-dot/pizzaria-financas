@@ -332,6 +332,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-catprod',this)"><i class="fa-solid fa-layer-group"></i>Cadastro de Categoria de Produtos</button>
     <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Pagamento</button>
     <button class="ni" onclick="go('cad-recebimentos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Cadastro de Formas de Recebimento</button>
+    <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Conta Corrente / Banco</button>
     <div class="sb-sec">Relatórios</div>
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
@@ -421,7 +422,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="ct">Contas a Pagar
       <button class="btn btn-p btn-sm" onclick="openMod('mod-pagar')"><i class="fa-solid fa-plus"></i> Novo Lançamento</button>
     </div>
-    <div class="tw"><table><thead><tr><th>Código</th><th>Vencimento</th><th>Competência</th><th>Fornecedor / Descrição</th><th>Plano de Contas</th><th>Regime</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="tb-pg"></tbody></table></div>
+    <div class="tw"><table><thead><tr><th>Código</th><th>Vencimento</th><th>Competência</th><th>Fornecedor / Descrição</th><th>Plano de Contas</th><th>Regime</th><th>Valor</th><th>Conta/Banco</th><th>Status</th><th></th></tr></thead><tbody id="tb-pg"></tbody></table></div>
   </div>
 </div>
 
@@ -605,6 +606,67 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════════════
+     CADASTRO — CONTA CORRENTE / BANCO
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-cad-bancos">
+  <div class="cd">
+    <div class="ct">Conta Corrente / Banco
+      <button class="btn btn-p btn-sm" onclick="openMod('mod-banco')"><i class="fa-solid fa-plus"></i> Nova Conta</button>
+    </div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th style="width:40px;text-align:center">#</th>
+        <th>Nome da Conta / Banco</th>
+        <th>Tipo</th>
+        <th>Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tb-bancos"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- MODAL — Nova Conta Corrente/Banco -->
+<div class="mo" id="mod-banco">
+  <div class="mb" style="width:480px">
+    <div class="mt">
+      <span><i class="fa-solid fa-building-columns" style="color:var(--or);margin-right:8px"></i><span id="mod-banco-titulo">Nova Conta / Banco</span></span>
+      <span class="mc" onclick="closeMod('mod-banco');resetModalBanco()">✕</span>
+    </div>
+    <input type="hidden" id="mbanco-id">
+    <div class="fr">
+      <div class="fg" style="grid-column:span 2">
+        <label>Nome da Conta / Banco *</label>
+        <input type="text" id="mbanco-nome" placeholder="EX: BANCO DO BRASIL, BRADESCO, PIX, DINHEIRO..." oninput="this.value=this.value.toUpperCase()" autocomplete="off">
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Tipo</label>
+        <select id="mbanco-tipo">
+          <option value="Banco">Banco</option>
+          <option value="PIX">PIX</option>
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="Carteira Digital">Carteira Digital</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Status</label>
+        <select id="mbanco-st">
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-banco');resetModalBanco()">Cancelar</button>
+      <button class="bs" onclick="saveBanco()"><i class="fa-solid fa-check"></i> Salvar</button>
+    </div>
+  </div>
+</div>
 <!-- ═══════════════════════════════════════════════════════════
      RELATÓRIO — CONTAS A PAGAR
 ═══════════════════════════════════════════════════════════ -->
@@ -1111,6 +1173,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           </div>
         </div>
         <!-- input hidden mantido para retrocompatibilidade -->
+        <div class="fg" style="margin-top:8px"><label>Conta Corrente / Banco <span style="font-size:10px;color:var(--tx3)">(origem do pagamento)</span></label><select id="mpp-banco"><option value="">— Selecione —</option></select></div>
         <input type="hidden" id="mpp-conta" value="">
       </div>
 
@@ -1556,6 +1619,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <option value="Vencida">Vencida</option>
         </select>
       </div>
+    <div class="fg" style="margin-top:2px"><label>Conta Corrente / Banco <span style="font-size:10px;color:var(--tx3)">(origem do pagamento)</span></label><select id="mep-banco"><option value="">— Selecione —</option></select></div>
     </div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-editpagar')">Cancelar</button><button class="bs" onclick="saveEditPagar()"><i class="fa-solid fa-check"></i> Salvar</button></div>
   </div>
@@ -2172,6 +2236,7 @@ const titles={
   'cad-catprod':['Categorias de Produtos','Classificação de produtos por categoria'],
   'cad-pagamentos':['Formas de Pagamento','Cadastro de formas de pagamento'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
+  'cad-bancos':['Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
   'rel-pagar':['Relatório — Contas a Pagar','Filtros completos · Exportação CSV · Impressão'],
   'rel-compras':['Relatório — Compras por Categoria','Insumos · Bebidas · Descartáveis · Limpeza · Utensílios · Imobilizado'],
 };
@@ -2184,7 +2249,7 @@ function go(pg,btn){
   document.getElementById('pgt').textContent=t[0];
   document.getElementById('pgs').textContent=t[1];
   // Altera label do botão principal conforme a página
-  const pgsCadastro=['plano','cad-contas','cad-fornecedores','cad-produtos','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos'];
+  const pgsCadastro=['plano','cad-contas','cad-fornecedores','cad-produtos','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
   const btnTxt=document.getElementById('btn-novo-txt');
   if(pg==='plano'){btnTxt.textContent='Novo Cadastro';}
   else if(pgsCadastro.includes(pg)){btnTxt.textContent='Novo Cadastro';}
@@ -3197,6 +3262,7 @@ function saveParcelado(){
       parcela:n<=1?null:i, totalParcelas:n<=1?null:totalParcelas,
       itens:mppItens.length?[...mppItens]:undefined,
       totalNF:totalNF||undefined,
+      banco: document.getElementById('mpp-banco')?.value||'',
     });
   }
   if(novasLinhas===0){alert('Preencha ao menos uma linha com data e valor.');return;}
@@ -3621,7 +3687,7 @@ function renderPagar(){
     <td style="color:var(--tx)">${parcelaTag}${c.forn||c.desc}</td>
     <td style="font-size:11px;color:var(--or)">${nomeContaByCod(c.conta)}</td>
     <td>${regTag(c.reg)}</td>
-    <td>${R(c.val)}</td><td>${stTag(c.status)}</td>
+    <td>${R(c.val)}</td><td><span class="tg tg-bl" style="font-size:10px">${c.banco||'—'}</span></td><td>${stTag(c.status)}</td>
     <td><div class="ac-btns" style="opacity:1">
       ${c.status!=='Pago'?`<button class="ac-btn" title="Dar Baixa" onclick="abrirBaixa(${c.id})"
         style="background:rgba(76,175,80,0.15);color:#81C784;width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px"
@@ -4039,6 +4105,69 @@ function getFormasPagamento(){
   if(cadastradas.length) return cadastradas.filter(f=>f.st==='Ativo').map(f=>f.nome);
   return FORMAS_PADRAO.map(f=>f.nome);
 }
+
+// ══════════════════════════════════════
+// CONTA CORRENTE / BANCO
+// ══════════════════════════════════════
+function renderBancos(){
+  const arr = S.g('bancos')||[];
+  document.getElementById('tb-bancos').innerHTML = arr.length
+    ? arr.map((b,i)=>`<tr>
+        <td style="text-align:center;color:var(--tx3);font-size:11px">${i+1}</td>
+        <td style="color:var(--tx);font-weight:500">${b.nome}</td>
+        <td><span class="tg tg-bl" style="font-size:10px">${b.tipo||'Banco'}</span></td>
+        <td>${b.st==='Ativo'?'<span class="tg tg-gr">Ativo</span>':'<span class="tg tg-gy">Inativo</span>'}</td>
+        <td><div class="ac-btns" style="opacity:1">
+          <button class="ac-btn ac-edit" title="Editar" onclick="editBanco(${b.id})"><i class="fa-solid fa-pen"></i></button>
+          <button class="ac-btn ac-del" title="Excluir" onclick="del('bancos',${b.id},renderBancos)"><i class="fa-solid fa-trash-can"></i></button>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--tx3);padding:20px">Nenhuma conta cadastrada. Clique em + Nova Conta.</td></tr>';
+}
+
+function saveBanco(){
+  const nome = document.getElementById('mbanco-nome').value.trim();
+  if(!nome){ alert('Informe o nome da conta/banco.'); return; }
+  const arr  = S.g('bancos')||[];
+  const editId = Number(document.getElementById('mbanco-id').value||0);
+  if(editId){
+    const idx = arr.findIndex(x=>x.id===editId);
+    if(idx>-1) arr[idx] = {...arr[idx], nome, tipo: document.getElementById('mbanco-tipo').value, st: document.getElementById('mbanco-st').value};
+  } else {
+    arr.push({ id:Date.now(), nome, tipo: document.getElementById('mbanco-tipo').value, st: document.getElementById('mbanco-st').value });
+  }
+  S.s('bancos', arr);
+  closeMod('mod-banco'); resetModalBanco(); renderBancos();
+  fillSelectBancos('mpp-banco'); fillSelectBancos('mep-banco');
+}
+
+function editBanco(id){
+  const b = (S.g('bancos')||[]).find(x=>x.id===id); if(!b) return;
+  document.getElementById('mbanco-id').value = id;
+  document.getElementById('mbanco-nome').value = b.nome||'';
+  document.getElementById('mbanco-tipo').value = b.tipo||'Banco';
+  document.getElementById('mbanco-st').value   = b.st||'Ativo';
+  document.getElementById('mod-banco-titulo').textContent = 'Editar Conta / Banco';
+  openMod('mod-banco');
+}
+
+function resetModalBanco(){
+  document.getElementById('mbanco-id').value   = '';
+  document.getElementById('mbanco-nome').value = '';
+  document.getElementById('mbanco-tipo').value = 'Banco';
+  document.getElementById('mbanco-st').value   = 'Ativo';
+  document.getElementById('mod-banco-titulo').textContent = 'Nova Conta / Banco';
+}
+
+function fillSelectBancos(selId){
+  const sel = document.getElementById(selId); if(!sel) return;
+  const arr = (S.g('bancos')||[]).filter(b=>b.st==='Ativo');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Selecione —</option>' +
+    arr.map(b=>`<option value="${b.nome}">${b.nome}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+
 
 function initFormasPadrao(){
   if(!(S.g('formas-pagamento')||[]).length){
@@ -4466,6 +4595,8 @@ function editPagar(id){
   document.getElementById('mep-conta').value=c.conta||'';
   document.getElementById('mep-val').value=c.val||'';
   document.getElementById('mep-forma').value=c.forma||'PIX';
+  fillSelectBancos('mep-banco');
+  document.getElementById('mep-banco').value=c.banco||'';
   document.getElementById('mep-status').value=c.status||'Pendente';
   onMepStatusChange();
   openMod('mod-editpagar');
@@ -4490,6 +4621,7 @@ function saveEditPagar(){
     conta:document.getElementById('mep-conta').value,
     val:parseFloat(document.getElementById('mep-val').value)||0,
     forma:document.getElementById('mep-forma').value,
+    banco:document.getElementById('mep-banco')?.value||'',
     status,
   };
   S.s('pagar',arr); closeMod('mod-editpagar'); renderPagar();
@@ -5785,6 +5917,7 @@ function initAll(){
   resetModalProd(); // inicializa modal Novo Produto limpo com selects preenchidos
   fillSelectContasPlano('mepr-cat');
   fillSelectGruposPlano('mepr-conta');
+  renderBancos(); fillSelectBancos('mpp-banco'); fillSelectBancos('mep-banco');
   fillSelectContasPagar('mep-conta');fillSelectContas('mer-conta',c=>c.natureza==='receita');
   fillSelectContasPagar('mpp-conta');
   fillSelectForn('mp-forn');fillSelectForn('mpp-forn');
