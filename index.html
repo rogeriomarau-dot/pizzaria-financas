@@ -663,6 +663,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <th>Nome da Forma de Recebimento</th>
         <th>Tipo</th>
         <th>Prazo de Recebimento</th>
+        <th>Taxa Operadora</th>
+        <th>Parcelas</th>
         <th>Status</th>
         <th>Observação</th>
         <th></th>
@@ -1187,23 +1189,43 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="fr">
       <div class="fg"><label>Nome da Forma de Recebimento</label><input type="text" id="mfr-nome" placeholder="EX: PIX, DINHEIRO, CARTÃO DE CRÉDITO…" oninput="this.value=this.value.toUpperCase()"></div>
       <div class="fg"><label>Tipo</label>
-        <select id="mfr-tipo">
-          <option value="À Vista">À Vista</option>
-          <option value="Antecipado">Antecipado</option>
-          <option value="Parcelado">Parcelado</option>
-          <option value="Crédito">Crédito</option>
+        <select id="mfr-tipo" onchange="mfrAjustarDefaults()">
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="PIX">PIX</option>
           <option value="Débito">Débito</option>
+          <option value="Crédito à Vista">Crédito à Vista</option>
+          <option value="Crédito Parcelado">Crédito Parcelado</option>
+          <option value="Vale Refeição">Vale Refeição</option>
+          <option value="Vale Alimentação">Vale Alimentação</option>
           <option value="Transferência">Transferência</option>
-          <option value="Recorrente">Recorrente</option>
           <option value="Outros">Outros</option>
         </select>
       </div>
     </div>
     <div class="fr">
-      <div class="fg"><label>Prazo de Recebimento (dias)</label><input type="number" id="mfr-prazo" placeholder="0 = imediato" min="0" value="0"></div>
-      <div class="fg"><label>Status</label><select id="mfr-st"><option>Ativo</option><option>Inativo</option></select></div>
+      <div class="fg"><label>Prazo de Recebimento (dias) <span style="color:var(--tx3);font-size:10px">0 = imediato</span></label><input type="number" id="mfr-prazo" placeholder="0" min="0" value="0" oninput="mfrAtualizarResumo()"></div>
+      <div class="fg"><label>Taxa da Operadora (%) <span style="color:var(--tx3);font-size:10px">cobrada sobre a venda</span></label>
+        <input type="number" id="mfr-taxa" placeholder="0,00" min="0" max="100" step="0.01" value="0" oninput="mfrAtualizarResumo()">
+      </div>
     </div>
-    <div class="fg"><label>Observação</label><input type="text" id="mfr-obs" placeholder="Informações adicionais..."></div>
+    <div class="fr" id="mfr-row-parcelas" style="display:none">
+      <div class="fg"><label>Nº máximo de Parcelas</label>
+        <select id="mfr-parcelas" onchange="mfrAtualizarResumo()">
+          <option value="1">1× (à vista)</option>
+          <option value="2">2×</option>
+          <option value="3">3×</option>
+          <option value="4">4×</option>
+          <option value="5">5×</option>
+          <option value="6">6×</option>
+        </select>
+      </div>
+      <div class="fg"><label>Intervalo entre Parcelas (dias)</label><input type="number" id="mfr-intervalo" placeholder="30" min="1" value="30" oninput="mfrAtualizarResumo()"></div>
+    </div>
+    <div id="mfr-resumo" style="display:none;background:rgba(242,100,25,0.08);border:1px solid rgba(242,100,25,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--tx2);line-height:1.7;margin-top:2px;"></div>
+    <div class="fr">
+      <div class="fg"><label>Status</label><select id="mfr-st"><option>Ativo</option><option>Inativo</option></select></div>
+      <div class="fg"><label>Observação</label><input type="text" id="mfr-obs" placeholder="Bandeira, operadora, observações..."></div>
+    </div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-forma-rec');resetModalFormaRec()">Cancelar</button><button class="bs" onclick="saveFormaRec()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button></div>
   </div>
 </div>
@@ -4659,13 +4681,13 @@ function renderFormasPag(){
 // FORMAS DE RECEBIMENTO
 // ══════════════════════════════════════
 const FORMAS_REC_PADRAO = [
-  {id:1, nome:'Dinheiro',          tipo:'À Vista',      prazo:0,  st:'Ativo', obs:''},
-  {id:2, nome:'PIX',               tipo:'À Vista',      prazo:0,  st:'Ativo', obs:'Recebimento imediato'},
-  {id:3, nome:'Cartão de Débito',  tipo:'Débito',       prazo:1,  st:'Ativo', obs:'D+1'},
-  {id:4, nome:'Cartão de Crédito', tipo:'Crédito',      prazo:30, st:'Ativo', obs:'D+30'},
-  {id:5, nome:'Transferência',     tipo:'Transferência',prazo:1,  st:'Ativo', obs:''},
-  {id:6, nome:'Boleto',            tipo:'Parcelado',    prazo:3,  st:'Ativo', obs:'Após compensação'},
-  {id:7, nome:'iFood / Delivery',  tipo:'Recorrente',   prazo:14, st:'Ativo', obs:'Repasse quinzenal'},
+  {id:1, nome:'DINHEIRO',              tipo:'Dinheiro',          prazo:0,  taxa:0,   parcelas:1, intervalo:0,  st:'Ativo', obs:'Recebimento imediato'},
+  {id:2, nome:'PIX',                   tipo:'PIX',               prazo:0,  taxa:0,   parcelas:1, intervalo:0,  st:'Ativo', obs:'Recebimento imediato'},
+  {id:3, nome:'CARTÃO DE DÉBITO',      tipo:'Débito',            prazo:1,  taxa:1.8, parcelas:1, intervalo:0,  st:'Ativo', obs:'D+1 dia útil'},
+  {id:4, nome:'CARTÃO DE CRÉDITO 1X',  tipo:'Crédito à Vista',   prazo:30, taxa:3.0, parcelas:1, intervalo:0,  st:'Ativo', obs:'D+30 dias'},
+  {id:5, nome:'CARTÃO DE CRÉDITO 2X',  tipo:'Crédito Parcelado', prazo:30, taxa:4.0, parcelas:2, intervalo:30, st:'Ativo', obs:'2 parcelas de 30 dias'},
+  {id:6, nome:'CARTÃO DE CRÉDITO 3X',  tipo:'Crédito Parcelado', prazo:30, taxa:5.0, parcelas:3, intervalo:30, st:'Ativo', obs:'3 parcelas de 30 dias'},
+  {id:7, nome:'VALE REFEIÇÃO',         tipo:'Vale Refeição',     prazo:2,  taxa:3.5, parcelas:1, intervalo:0,  st:'Ativo', obs:'VR / Alelo / Sodexo / Ticket'},
 ];
 
 function initFormasRecPadrao(){
@@ -4680,41 +4702,88 @@ function getFormasRecebimento(){
   return FORMAS_REC_PADRAO.map(f=>f.nome);
 }
 
+function mfrAjustarDefaults(){
+  const tipo = document.getElementById('mfr-tipo').value;
+  const isEdit = !!document.getElementById('mfr-id').value;
+  const rowParc = document.getElementById('mfr-row-parcelas');
+  const def = {
+    'Dinheiro':          {prazo:0,  taxa:0},
+    'PIX':               {prazo:0,  taxa:0},
+    'Débito':            {prazo:1,  taxa:1.8},
+    'Crédito à Vista':   {prazo:30, taxa:3.0},
+    'Crédito Parcelado': {prazo:30, taxa:4.5},
+    'Vale Refeição':     {prazo:2,  taxa:3.5},
+    'Vale Alimentação':  {prazo:2,  taxa:3.5},
+    'Transferência':     {prazo:1,  taxa:0},
+  };
+  if(!isEdit && def[tipo]){
+    document.getElementById('mfr-prazo').value = def[tipo].prazo;
+    document.getElementById('mfr-taxa').value  = def[tipo].taxa;
+  }
+  rowParc.style.display = tipo==='Crédito Parcelado' ? 'grid' : 'none';
+  mfrAtualizarResumo();
+}
+
+function mfrAtualizarResumo(){
+  const tipo  = document.getElementById('mfr-tipo').value;
+  const taxa  = parseFloat(document.getElementById('mfr-taxa').value)||0;
+  const prazo = parseInt(document.getElementById('mfr-prazo').value)||0;
+  const parc  = parseInt(document.getElementById('mfr-parcelas')?.value)||1;
+  const intv  = parseInt(document.getElementById('mfr-intervalo')?.value)||30;
+  const box   = document.getElementById('mfr-resumo');
+  if(!tipo){ box.style.display='none'; return; }
+  const liq   = (100 - taxa).toFixed(2);
+  const prazoTxt = prazo===0 ? 'imediatamente (mesmo dia)' : `em ${prazo} dia${prazo>1?'s':''} útil${prazo>1?'eis':''}`;
+  let parcTxt = '';
+  if(tipo==='Crédito Parcelado' && parc>1){
+    parcTxt = ` • Parcelado em até <strong style="color:var(--or)">${parc}×</strong> com intervalo de ${intv} dias entre parcelas`;
+  }
+  box.style.display='block';
+  box.innerHTML=`<i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:6px"></i>Em uma venda de <strong style="color:var(--tx)">R$ 100,00</strong>, o valor líquido creditado será <strong style="color:var(--gr)">R$ ${liq}</strong> — o crédito cai na conta <strong style="color:var(--tx)">${prazoTxt}</strong>${parcTxt}.`;
+}
+
 function saveFormaRec(){
   const idVal = document.getElementById('mfr-id').value;
   const nome  = document.getElementById('mfr-nome').value.trim();
   if(!nome){ alert('Informe o nome da forma de recebimento.'); return; }
+  const tipo = document.getElementById('mfr-tipo').value;
   const arr = S.g('formas-recebimento')||[];
+  const obj = {
+    nome,
+    tipo,
+    prazo:    parseInt(document.getElementById('mfr-prazo').value)||0,
+    taxa:     parseFloat(document.getElementById('mfr-taxa').value)||0,
+    parcelas: tipo==='Crédito Parcelado' ? (parseInt(document.getElementById('mfr-parcelas').value)||1) : 1,
+    intervalo:tipo==='Crédito Parcelado' ? (parseInt(document.getElementById('mfr-intervalo').value)||30) : 0,
+    st:       document.getElementById('mfr-st').value,
+    obs:      document.getElementById('mfr-obs').value,
+  };
   if(idVal){
     const idx = arr.findIndex(x=>x.id===Number(idVal));
-    if(idx>-1) arr[idx]={...arr[idx],
-      nome, tipo:document.getElementById('mfr-tipo').value,
-      prazo:parseInt(document.getElementById('mfr-prazo').value)||0,
-      st:document.getElementById('mfr-st').value,
-      obs:document.getElementById('mfr-obs').value,
-    };
+    if(idx>-1) arr[idx]={...arr[idx],...obj};
   } else {
     const ids = arr.map(x=>x.id||0);
-    arr.push({id: ids.length?Math.max(...ids)+1:1,
-      nome, tipo:document.getElementById('mfr-tipo').value,
-      prazo:parseInt(document.getElementById('mfr-prazo').value)||0,
-      st:document.getElementById('mfr-st').value,
-      obs:document.getElementById('mfr-obs').value,
-    });
+    arr.push({id: ids.length?Math.max(...ids)+1:1, ...obj});
   }
   S.s('formas-recebimento', arr);
   closeMod('mod-forma-rec');
   resetModalFormaRec();
   renderFormasRec();
+  showToast('✓ Forma de recebimento salva!','var(--gr)');
 }
 
 function resetModalFormaRec(){
   document.getElementById('mfr-id').value='';
   document.getElementById('mfr-nome').value='';
+  document.getElementById('mfr-tipo').value='Dinheiro';
   document.getElementById('mfr-prazo').value='0';
+  document.getElementById('mfr-taxa').value='0';
+  document.getElementById('mfr-parcelas').value='1';
+  document.getElementById('mfr-intervalo').value='30';
   document.getElementById('mfr-obs').value='';
-  document.getElementById('mfr-tipo').value='À Vista';
   document.getElementById('mfr-st').value='Ativo';
+  document.getElementById('mfr-row-parcelas').style.display='none';
+  document.getElementById('mfr-resumo').style.display='none';
   document.querySelector('#mod-forma-rec .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-hand-holding-dollar" style="color:var(--or);margin-right:8px"></i>Nova Forma de Recebimento';
 }
@@ -4722,37 +4791,49 @@ function resetModalFormaRec(){
 function editFormaRec(id){
   const arr = S.g('formas-recebimento')||[];
   const f = arr.find(x=>x.id===id); if(!f) return;
-  document.getElementById('mfr-id').value   = f.id;
-  document.getElementById('mfr-nome').value = f.nome||'';
-  document.getElementById('mfr-tipo').value = f.tipo||'À Vista';
-  document.getElementById('mfr-prazo').value= f.prazo||0;
-  document.getElementById('mfr-st').value   = f.st||'Ativo';
-  document.getElementById('mfr-obs').value  = f.obs||'';
+  document.getElementById('mfr-id').value       = f.id;
+  document.getElementById('mfr-nome').value      = f.nome||'';
+  document.getElementById('mfr-tipo').value      = f.tipo||'Dinheiro';
+  document.getElementById('mfr-prazo').value     = f.prazo||0;
+  document.getElementById('mfr-taxa').value      = f.taxa||0;
+  document.getElementById('mfr-parcelas').value  = f.parcelas||1;
+  document.getElementById('mfr-intervalo').value = f.intervalo||30;
+  document.getElementById('mfr-st').value        = f.st||'Ativo';
+  document.getElementById('mfr-obs').value       = f.obs||'';
+  document.getElementById('mfr-row-parcelas').style.display = f.tipo==='Crédito Parcelado' ? 'grid' : 'none';
   document.querySelector('#mod-forma-rec .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Forma de Recebimento';
+  mfrAtualizarResumo();
   openMod('mod-forma-rec');
 }
 
 function renderFormasRec(){
   const arr = S.g('formas-recebimento')||[];
   const tipoCor = {
-    'À Vista':'tg-gr','Antecipado':'tg-pu','Parcelado':'tg-am',
-    'Crédito':'tg-bl','Débito':'tg-or','Transferência':'tg-gy',
-    'Recorrente':'tg-rd','Outros':'tg-gy'
+    'Dinheiro':'tg-gr','PIX':'tg-gr','Débito':'tg-bl',
+    'Crédito à Vista':'tg-am','Crédito Parcelado':'tg-or',
+    'Vale Refeição':'tg-gy','Vale Alimentação':'tg-gy',
+    'Transferência':'tg-gy','Outros':'tg-gy'
   };
   document.getElementById('tb-formas-rec').innerHTML = arr.length===0
-    ? `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhuma forma de recebimento cadastrada</td></tr>`
-    : arr.map(f=>`<tr>
+    ? `<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhuma forma de recebimento cadastrada</td></tr>`
+    : arr.map(f=>{
+      const liq = f.taxa>0 ? `<span style="color:var(--rd);font-size:11px">${parseFloat(f.taxa).toFixed(2)}%</span>` : `<span style="color:var(--gr);font-size:11px">Isento</span>`;
+      const parc = (f.tipo==='Crédito Parcelado'&&f.parcelas>1) ? `<span class="tg tg-am">até ${f.parcelas}×</span>` : `<span style="color:var(--tx3)">—</span>`;
+      return `<tr>
     <td style="color:var(--tx);font-weight:500">${f.nome}</td>
     <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
-    <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
+    <td style="color:var(--tx2)">${f.prazo===0?'<span class="tg tg-gr">Imediato</span>':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
+    <td>${liq}</td>
+    <td>${parc}</td>
     <td>${stTag(f.st)}</td>
     <td style="font-size:11px;color:var(--tx3)">${f.obs||'—'}</td>
     <td><div class="ac-btns" style="opacity:1">
       <button class="ac-btn ac-edit" title="Editar" onclick="editFormaRec(${f.id})"><i class="fa-solid fa-pen"></i></button>
       <button class="ac-btn ac-del" title="Excluir" onclick="del('formas-recebimento',${f.id},renderFormasRec)"><i class="fa-solid fa-trash-can"></i></button>
     </div></td>
-  </tr>`).join('');
+  </tr>`;
+    }).join('');
 }
 
 // ══════════════════════════════════════
