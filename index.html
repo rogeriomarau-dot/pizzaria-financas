@@ -330,9 +330,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-fornecedores',this)"><i class="fa-solid fa-truck"></i>Cadastro de Fornecedores</button>
     <button class="ni" onclick="go('cad-produtos',this)"><i class="fa-solid fa-boxes-stacked"></i>Cadastro de Produtos</button>
     <button class="ni" onclick="go('cad-catprod',this)"><i class="fa-solid fa-layer-group"></i>Cadastro de Categoria de Produtos</button>
-    <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Pagamento</button>
+    <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Cobrança</button>
     <button class="ni" onclick="go('cad-recebimentos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Cadastro de Formas de Recebimento</button>
-    <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Conta Corrente / Banco</button>
+    <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Cadastro de Conta Corrente / Banco</button>
     <div class="sb-sec">Relatórios</div>
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
@@ -571,7 +571,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <!-- FORMAS DE PAGAMENTO -->
 <div class="page" id="page-cad-pagamentos">
   <div class="cd">
-    <div class="ct">Formas de Pagamento
+    <div class="ct">Formas de Cobrança
       <button class="btn btn-p btn-sm" onclick="openMod('mod-forma-pag')"><i class="fa-solid fa-plus"></i> Nova Forma</button>
     </div>
     <div class="tw"><table>
@@ -612,7 +612,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 ═══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-cad-bancos">
   <div class="cd">
-    <div class="ct">Conta Corrente / Banco
+    <div class="ct">Cadastro de Conta Corrente / Banco
       <button class="btn btn-p btn-sm" onclick="openMod('mod-banco')"><i class="fa-solid fa-plus"></i> Nova Conta</button>
     </div>
     <div class="tw"><table>
@@ -1663,11 +1663,13 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
 
     <div class="fg">
-      <label>Conta Corrente / Banco utilizado <span style="font-size:10px;color:var(--tx3)">(opcional)</span></label>
-      <input type="text" id="mbx-cc" placeholder="Ex: Bradesco C/C, Caixa, Nubank..."
+      <label>Conta Corrente / Banco Utilizado <span style="font-size:10px;color:var(--tx3)">(opcional)</span></label>
+      <select id="mbx-cc"
         style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;
         padding:10px 14px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;outline:none;width:100%"
         onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <option value="">— Selecione a conta/banco —</option>
+      </select>
     </div>
 
     <div class="fg">
@@ -2234,9 +2236,9 @@ const titles={
   'cad-insumos':['Cadastro de Insumos','CMV Insumos · CMV Bebidas · CMV Serviços'],
   'cad-servicos':['Cadastro de Serviços e Impostos','Serviços · Impostos · Aluguel · Utilidades'],
   'cad-catprod':['Categorias de Produtos','Classificação de produtos por categoria'],
-  'cad-pagamentos':['Formas de Pagamento','Cadastro de formas de pagamento'],
+  'cad-pagamentos':['Formas de Cobrança','Cadastro de formas de cobrança'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
-  'cad-bancos':['Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
+  'cad-bancos':['Cadastro de Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
   'rel-pagar':['Relatório — Contas a Pagar','Filtros completos · Exportação CSV · Impressão'],
   'rel-compras':['Relatório — Compras por Categoria','Insumos · Bebidas · Descartáveis · Limpeza · Utensílios · Imobilizado'],
 };
@@ -4637,8 +4639,14 @@ function abrirBaixa(id){
   // Preenche forma com a já cadastrada
   const formaEl = document.getElementById('mbx-forma');
   if(formaEl && c.forma) formaEl.value = c.forma;
-  // Conta corrente já salva anteriormente
-  document.getElementById('mbx-cc').value = c.contaCorrente||'';
+  // Popular select de conta corrente/banco
+  const selBxCc = document.getElementById('mbx-cc');
+  if(selBxCc){
+    const bancos = (S.g('bancos')||[]).filter(b=>b.st==='Ativo');
+    selBxCc.innerHTML = '<option value="">— Selecione a conta/banco —</option>' +
+      bancos.map(b=>`<option value="${b.nome}">${b.nome}</option>`).join('');
+    selBxCc.value = c.contaCorrente||c.banco||'';
+  }
   document.getElementById('mbx-obs').value = '';
   // Monta resumo do título
   const fornNome = nomeFornById(c.forn);
