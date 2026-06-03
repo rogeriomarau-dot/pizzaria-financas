@@ -1648,16 +1648,11 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
       </div>
       <div class="fg">
-        <label>Forma de Pagamento</label>
+        <label>Forma de Cobrança</label>
         <select id="mbx-forma"
           style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;
           padding:10px 14px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;outline:none;width:100%">
-          <option>PIX</option>
-          <option>Boleto</option>
-          <option>Transferência</option>
-          <option>Débito Automático</option>
-          <option>Dinheiro</option>
-          <option>Cartão</option>
+          <option value="">— Selecione —</option>
         </select>
       </div>
     </div>
@@ -4636,9 +4631,14 @@ function abrirBaixa(id){
   document.getElementById('mbx-id').value = id;
   // Preenche data com hoje por padrão
   document.getElementById('mbx-dtpag').value = new Date().toISOString().slice(0,10);
-  // Preenche forma com a já cadastrada
+  // Popular select de Forma de Cobrança com dados do cadastro
   const formaEl = document.getElementById('mbx-forma');
-  if(formaEl && c.forma) formaEl.value = c.forma;
+  if(formaEl){
+    const formasCad = (S.g('formas-pagamento')||[]).filter(f=>f.st==='Ativo');
+    formaEl.innerHTML = '<option value="">— Selecione —</option>' +
+      formasCad.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join('');
+    if(c.forma) formaEl.value = c.forma;
+  }
   // Popular select de conta corrente/banco
   const selBxCc = document.getElementById('mbx-cc');
   if(selBxCc){
