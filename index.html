@@ -387,9 +387,11 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <!-- DRE -->
 <div class="page" id="page-dre">
 
-  <!-- Filtro de Período -->
+  <!-- Barra de controles -->
   <div class="cd" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+
+      <!-- Filtros de período -->
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:6px">
           <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">De</label>
@@ -399,7 +401,20 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Até</label>
           <input type="month" id="dre-ate" onchange="renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
         </div>
+        <!-- Toggle: consolidado vs mensal -->
+        <div style="display:flex;align-items:center;gap:0;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+          <button id="dre-modo-consol" onclick="dreSetModo('consolidado')"
+            style="padding:6px 14px;background:var(--or);border:none;color:#fff;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
+            <i class="fa-solid fa-layer-group" style="margin-right:4px"></i>Consolidado
+          </button>
+          <button id="dre-modo-mensal" onclick="dreSetModo('mensal')"
+            style="padding:6px 14px;background:transparent;border:none;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">
+            <i class="fa-solid fa-table-columns" style="margin-right:4px"></i>Mensal (lado a lado)
+          </button>
+        </div>
       </div>
+
+      <!-- Ações -->
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="dreMesAtual()"><i class="fa-solid fa-calendar-day"></i> Mês Atual</button>
         <button class="btn btn-sm" onclick="dreAnoAtual()"><i class="fa-solid fa-calendar"></i> Ano Atual</button>
@@ -425,24 +440,26 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
   </div>
 
-  <div class="g2">
-    <div class="cd" style="grid-column:1/2">
-      <div class="ct">
-        DRE — Demonstrativo de Resultado
-        <span class="cs" id="dre-per"></span>
-        <span id="dre-regime-label" style="font-size:10px;background:rgba(242,100,25,0.15);color:var(--or);padding:3px 8px;border-radius:3px;margin-left:8px;font-weight:500"></span>
-      </div>
-      <div id="dre-blk"></div>
+  <!-- Conteúdo principal do DRE -->
+  <div class="cd">
+    <div class="ct">
+      DRE — Demonstrativo de Resultado
+      <span class="cs" id="dre-per"></span>
+      <span id="dre-regime-label" style="font-size:10px;background:rgba(242,100,25,0.15);color:var(--or);padding:3px 8px;border-radius:3px;margin-left:8px;font-weight:500"></span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="cd">
-        <div class="ct">Indicadores <span class="cs" id="dre-ind-per"></span></div>
-        <div class="sf" id="sf-dre"></div>
-      </div>
-      <div class="cd">
-        <div class="ct">Evolução do Lucro <span class="cs">6 meses</span></div>
-        <div class="cw" style="height:170px"><canvas id="c-dre" role="img" aria-label="lucro"></canvas></div>
-      </div>
+    <!-- Tabela DRE (consolidado ou mensal) -->
+    <div id="dre-blk" style="overflow-x:auto"></div>
+  </div>
+
+  <!-- Indicadores + Gráfico -->
+  <div class="g2" style="margin-top:12px">
+    <div class="cd">
+      <div class="ct">Indicadores <span class="cs" id="dre-ind-per"></span></div>
+      <div class="sf" id="sf-dre"></div>
+    </div>
+    <div class="cd">
+      <div class="ct">Evolução do Lucro <span class="cs">meses selecionados</span></div>
+      <div class="cw" style="height:170px"><canvas id="c-dre" role="img" aria-label="lucro"></canvas></div>
     </div>
   </div>
 </div>
@@ -3671,46 +3688,45 @@ function renderPizzas(){
 // ══════════════════════════════════════
 // DRE — DEMONSTRATIVO DE RESULTADO
 // ══════════════════════════════════════
-let _dreRegime = 'comp'; // 'comp' = competência | 'caixa' = caixa
+let _dreRegime = 'comp';
+let _dreModo   = 'consolidado';
+
+const AV = (v, base) => base > 0 ? P(v / base * 100) : '—';
 
 function dreSetRegime(r){
   _dreRegime = r;
-  // Atualiza visual das abas
-  const tabComp  = document.getElementById('dre-tab-comp');
-  const tabCaixa = document.getElementById('dre-tab-caixa');
-  if(tabComp && tabCaixa){
-    if(r === 'comp'){
-      tabComp.style.cssText  = tabComp.style.cssText.replace('color:var(--tx2)','color:var(--or)').replace('border-bottom:2px solid transparent','border-bottom:2px solid var(--or)').replace('background:transparent','background:rgba(242,100,25,0.15)');
-      tabComp.style.color    = 'var(--or)';
-      tabComp.style.borderBottom = '2px solid var(--or)';
-      tabComp.style.background   = 'rgba(242,100,25,0.15)';
-      tabComp.style.fontWeight   = '600';
-      tabCaixa.style.color       = 'var(--tx2)';
-      tabCaixa.style.borderBottom= '2px solid transparent';
-      tabCaixa.style.background  = 'transparent';
-      tabCaixa.style.fontWeight  = '500';
+  const tC = document.getElementById('dre-tab-comp');
+  const tX = document.getElementById('dre-tab-caixa');
+  if(tC && tX){
+    [tC,tX].forEach(t => { t.style.color='var(--tx2)'; t.style.borderBottom='2px solid transparent'; t.style.background='transparent'; t.style.fontWeight='500'; });
+    const at = r==='comp'?tC:tX;
+    at.style.color='var(--or)'; at.style.borderBottom='2px solid var(--or)'; at.style.background='rgba(242,100,25,0.15)'; at.style.fontWeight='600';
+  }
+  renderDRE();
+}
+
+function dreSetModo(m){
+  _dreModo = m;
+  const bC = document.getElementById('dre-modo-consol');
+  const bM = document.getElementById('dre-modo-mensal');
+  if(bC && bM){
+    if(m==='consolidado'){
+      bC.style.background='var(--or)'; bC.style.color='#fff'; bC.style.fontWeight='600';
+      bM.style.background='transparent'; bM.style.color='var(--tx2)'; bM.style.fontWeight='500';
     } else {
-      tabCaixa.style.color       = 'var(--or)';
-      tabCaixa.style.borderBottom= '2px solid var(--or)';
-      tabCaixa.style.background  = 'rgba(242,100,25,0.15)';
-      tabCaixa.style.fontWeight  = '600';
-      tabComp.style.color        = 'var(--tx2)';
-      tabComp.style.borderBottom = '2px solid transparent';
-      tabComp.style.background   = 'transparent';
-      tabComp.style.fontWeight   = '500';
+      bM.style.background='var(--or)'; bM.style.color='#fff'; bM.style.fontWeight='600';
+      bC.style.background='transparent'; bC.style.color='var(--tx2)'; bC.style.fontWeight='500';
     }
   }
   renderDRE();
 }
 
 function dreMesAtual(){
-  const now = new Date();
-  const ym  = now.toISOString().slice(0,7);
+  const ym = new Date().toISOString().slice(0,7);
   document.getElementById('dre-de').value  = ym;
   document.getElementById('dre-ate').value = ym;
   renderDRE();
 }
-
 function dreAnoAtual(){
   const y = new Date().getFullYear();
   document.getElementById('dre-de').value  = y+'-01';
@@ -3718,238 +3734,338 @@ function dreAnoAtual(){
   renderDRE();
 }
 
+function dreListaMeses(de, ate){
+  if(!de || !ate) return [];
+  const meses = [];
+  let [ay, am] = de.split('-').map(Number);
+  const [ey, em] = ate.split('-').map(Number);
+  while(ay < ey || (ay === ey && am <= em)){
+    meses.push(ay+'-'+String(am).padStart(2,'0'));
+    am++; if(am > 12){ am = 1; ay++; }
+  }
+  return meses;
+}
+
+function dreAcumular(lancamentos){
+  const tot = {};
+  lancamentos.forEach(lanc => {
+    if(lanc.itens && lanc.itens.length){
+      lanc.itens.forEach(it => {
+        const cod = it.conta || lanc.conta || '';
+        if(cod) tot[cod] = (tot[cod]||0) + (it.total||0);
+      });
+    } else {
+      const cod = lanc.conta || '';
+      if(cod) tot[cod] = (tot[cod]||0) + (lanc.val||0);
+    }
+  });
+  return tot;
+}
+
+function dreFiltrar(pagar, regime, de, ate){
+  return pagar.filter(x => {
+    const dataRef = regime === 'comp' ? (x.comp || x.venc || '') : (x.venc || '');
+    const ym = dataRef.slice(0,7);
+    if(de  && ym < de)  return false;
+    if(ate && ym > ate) return false;
+    return true;
+  });
+}
+
+function dreCalc(totConta, totReceita, pc){
+  const sg  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totConta[c.cod]||0),0);
+  const ssg = (sub) => pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sub).reduce((s,c)=>s+(totConta[c.cod]||0),0);
+  const sr  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totReceita[c.cod]||0),0);
+  const totRec    = sr('1');
+  const totImp    = sg('2');
+  const totFin    = sg('3');
+  const totCMV    = sg('4');
+  const totOp     = sg('5');
+  const totNaoOp  = sg('9');
+  const recLiq    = totRec - totImp;
+  const lucroBruto= recLiq - totCMV;
+  const ebitda    = lucroBruto - totFin - totOp;
+  const lucroLiq  = ebitda - totNaoOp;
+  const sgs5 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').map(s=>({...s, total: ssg(s.cod)}));
+  return { totRec, totImp, totFin, totCMV, totOp, totNaoOp, recLiq, lucroBruto, ebitda, lucroLiq, sgs5 };
+}
+
+function fmtMes(ym){
+  if(!ym) return '';
+  const [y,m] = ym.split('-');
+  return ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(m)-1]+'/'+y;
+}
+
 function renderDRE(){
   const de  = document.getElementById('dre-de')?.value  || '';
   const ate = document.getElementById('dre-ate')?.value || '';
   const regime = _dreRegime;
-
-  // ── Rótulos das abas e badge ──
-  const labelRegime = regime === 'comp' ? 'Competência' : 'Caixa';
-  const badgeInfo   = regime === 'comp'
+  const modo   = _dreModo;
+  const labelRegime = regime==='comp' ? 'Competência' : 'Caixa';
+  const badgeInfo   = regime==='comp'
     ? 'Lançamentos pelo mês em que a despesa ocorreu (independente do pagamento)'
     : 'Lançamentos pelo mês em que o pagamento foi/será efetuado (vencimento)';
   const elLbl = document.getElementById('dre-regime-label');
   const elBdg = document.getElementById('dre-regime-badge');
   if(elLbl) elLbl.textContent = labelRegime;
   if(elBdg) elBdg.textContent = badgeInfo;
-
-  // ── Período de exibição ──
-  const fmtMes = ym => {
-    if(!ym) return '';
-    const [y,m] = ym.split('-');
-    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    return nomes[parseInt(m)-1]+'/'+y;
-  };
-  const perTxt = de && ate
-    ? (de === ate ? fmtMes(de) : fmtMes(de)+' a '+fmtMes(ate))
-    : de ? 'A partir de '+fmtMes(de)
-    : ate ? 'Até '+fmtMes(ate) : 'Todo o período';
+  const perTxt = de && ate ? (de===ate ? fmtMes(de) : fmtMes(de)+' a '+fmtMes(ate))
+    : de ? 'A partir de '+fmtMes(de) : ate ? 'Até '+fmtMes(ate) : 'Todo o período';
   const elPer = document.getElementById('dre-per');
   const elIndPer = document.getElementById('dre-ind-per');
   if(elPer) elPer.textContent = perTxt;
   if(elIndPer) elIndPer.textContent = perTxt;
+  const pagar   = S.g('pagar')   || [];
+  const receber = S.g('receber') || [];
+  const pc      = getPC();
+  if(modo === 'mensal'){
+    renderDRE_Mensal(pagar, receber, pc, regime, de, ate);
+  } else {
+    renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime);
+  }
+}
 
-  // ── Busca lançamentos do Contas a Pagar ──
-  let pagar = S.g('pagar') || [];
+// ── DRE CONSOLIDADO ──
+function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime){
+  const filtP = dreFiltrar(pagar, regime, de, ate);
+  const filtR = (de||ate) ? receber.filter(x=>{ const ym=(x.venc||'').slice(0,7); return (!de||ym>=de)&&(!ate||ym<=ate); }) : receber;
+  const totC  = dreAcumular(filtP);
+  const totR  = {};
+  filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
+  const D    = dreCalc(totC, totR, pc);
+  const base = D.totRec;
 
-  // Filtra por período conforme regime
-  if(de || ate){
-    pagar = pagar.filter(x => {
-      const dataRef = regime === 'comp'
-        ? (x.comp || x.venc || '')
-        : (x.venc || '');
-      const ym = dataRef.slice(0,7);
-      if(de  && ym < de)  return false;
-      if(ate && ym > ate) return false;
-      return true;
-    });
+  const lGrp = (sinal, nome, val, cor) =>
+    `<tr style="background:rgba(255,255,255,0.04)">
+      <td style="padding:8px 6px;font-size:12px;font-weight:600;color:var(--tx)">${sinal} ${nome}</td>
+      <td style="padding:8px 8px;text-align:right;font-weight:700;font-size:13px;color:${cor}">${val>0?'– ':''} ${R(val)}</td>
+      <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);font-weight:600">${AV(val,base)}</td>
+    </tr>`;
+
+  const lConta = (nome, cod, val, cor, indent) =>
+    `<tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+      <td style="padding:5px 6px 5px ${indent||20}px;font-size:11px;color:${cor||'var(--tx2)'}" title="${cod}">${nome}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${cor||'var(--tx2)'}">${R(val)}</td>
+      <td style="padding:5px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
+    </tr>`;
+
+  const lSg = (nome, val) =>
+    `<tr style="background:rgba(242,100,25,0.04)">
+      <td style="padding:6px 6px 6px 14px;font-size:11px;font-weight:500;color:var(--tx)">
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--or);margin-right:4px"></i>${nome}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:12px;font-weight:500;color:var(--rd)">– ${R(val)}</td>
+      <td style="padding:6px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
+    </tr>`;
+
+  const lRes = (nome, val, cls) =>
+    `<tr class="dr ${cls}" style="border-top:2px solid var(--bd)">
+      <td style="padding:10px 6px;font-size:13px;font-weight:700">${nome}</td>
+      <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700">${R(Math.abs(val))}</td>
+      <td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700">${AV(Math.abs(val),base)}</td>
+    </tr>`;
+
+  let html = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="border-bottom:2px solid var(--or)">
+      <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Descrição</th>
+      <th style="padding:8px 8px;text-align:right;font-size:11px;color:var(--tx2);min-width:120px">Valor</th>
+      <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);min-width:60px">AV %</th>
+    </tr></thead><tbody>`;
+
+  // Receitas
+  html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, 'var(--gr)');
+  pc.filter(x=>x.tipo==='conta'&&x.grupo==='1'&&(totR[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totR[c.cod],'var(--gr)'));
+  if(!D.totRec) html+=`<tr><td colspan="3" style="padding:5px 20px;font-size:11px;color:var(--tx3);font-style:italic">Nenhuma receita no período</td></tr>`;
+
+  // Impostos
+  if(D.totImp>0){
+    html += lGrp('(–)','IMPOSTOS E TAXAS', D.totImp, 'var(--rd)');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='2'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
   }
 
-  // ── Receitas do Contas a Receber filtradas pelo mesmo período ──
-  let receber = S.g('receber') || [];
-  if(de || ate){
-    receber = receber.filter(x => {
-      const ym = (x.venc||'').slice(0,7);
-      if(de  && ym < de)  return false;
-      if(ate && ym > ate) return false;
-      return true;
-    });
+  html += lRes('= RECEITA LÍQUIDA', D.recLiq, D.recLiq>=0?'dlp':'dlr');
+
+  // CMV
+  html += lGrp('(–)','CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, 'var(--rd)');
+  pc.filter(x=>x.tipo==='conta'&&x.grupo==='4'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
+
+  html += lRes('= LUCRO BRUTO', D.lucroBruto, D.lucroBruto>=0?'dlp':'dlr');
+
+  // Despesas Financeiras
+  if(D.totFin>0){
+    html += lGrp('(–)','DESPESAS FINANCEIRAS', D.totFin, 'var(--rd)');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
   }
 
-  // ── Acumulador por conta do plano ──
-  const totConta = {}; // cod -> valor
-  const somarItens = (lanc) => {
-    // Lançamento com múltiplos itens (NF parcelada)
-    if(lanc.itens && lanc.itens.length){
-      lanc.itens.forEach(it => {
-        const cod = it.conta || lanc.conta || '';
-        if(cod){ totConta[cod] = (totConta[cod]||0) + (it.total||0); }
-      });
-    } else {
-      const cod = lanc.conta || '';
-      if(cod){ totConta[cod] = (totConta[cod]||0) + (lanc.val||0); }
+  // Despesas Operacionais
+  html += lGrp('(–)','DESPESAS OPERACIONAIS', D.totOp, 'var(--rd)');
+  D.sgs5.forEach(sg=>{
+    if(sg.total>0){
+      html += lSg(sg.nome, sg.total);
+      pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'var(--tx2)',32));
     }
-  };
-  pagar.forEach(somarItens);
-
-  // ── Receitas por conta ──
-  const totReceita = {};
-  receber.forEach(x => {
-    const cod = x.conta || '1.1';
-    totReceita[cod] = (totReceita[cod]||0) + (x.val||0);
   });
 
-  // ── Helper: soma todas as contas de um grupo/subgrupo ──
-  const pc = getPC();
-  const somaGrupo = (grpCod) => {
-    return pc.filter(x => x.tipo==='conta' && x.grupo===grpCod)
-             .reduce((s,c) => s + (totConta[c.cod]||0), 0);
-  };
-  const somaSubgrupo = (sgCod) => {
-    return pc.filter(x => x.tipo==='conta' && x.subgrupo===sgCod)
-             .reduce((s,c) => s + (totConta[c.cod]||0), 0);
-  };
-  const somaRecGrupo = (grpCod) => {
-    return pc.filter(x => x.tipo==='conta' && x.grupo===grpCod)
-             .reduce((s,c) => s + (totReceita[c.cod]||0), 0);
-  };
+  html += lRes('= EBITDA', D.ebitda, D.ebitda>=0?'deb':'dlr');
 
-  // ── Monta linhas de contas com valor > 0 de um grupo/subgrupo ──
-  const linhasContas = (filtro) => {
-    return pc.filter(x => x.tipo==='conta' && filtro(x) && (totConta[x.cod]||0) > 0)
-      .map(c => `<div class="dr dsg">
-        <span title="${c.cod}">${c.nome}</span>
-        <span class="dv" style="color:var(--rd)">– ${R(totConta[c.cod]||0)}</span>
-      </div>`).join('');
-  };
-  const linhasContasRec = (filtro) => {
-    return pc.filter(x => x.tipo==='conta' && filtro(x) && (totReceita[x.cod]||0) > 0)
-      .map(c => `<div class="dr dsg">
-        <span title="${c.cod}">${c.nome}</span>
-        <span class="dv" style="color:var(--gr)">${R(totReceita[c.cod]||0)}</span>
-      </div>`).join('');
-  };
-
-  // ── Cálculos principais ──
-  const totRec   = somaRecGrupo('1');   // Receitas operacionais
-  const totImp   = somaGrupo('2');      // Impostos e taxas
-  const totFin   = somaGrupo('3');      // Despesas financeiras
-  const totCMV   = somaGrupo('4');      // CMV
-  const totOp    = somaGrupo('5');      // Despesas operacionais
-  const totNaoOp = somaGrupo('9');      // Despesas não operacionais
-
-  // Subgrupos de despesas operacionais
-  const subgrupos5 = pc.filter(x => x.tipo==='subgrupo' && x.grupo==='5');
-
-  const recLiq   = totRec - totImp;
-  const lucroBruto = recLiq - totCMV;
-  const ebitda     = lucroBruto - totOp - totFin;
-  const lucroLiq   = ebitda - totNaoOp;
-  const ok = lucroLiq >= 0;
-
-  // ── Monta HTML do DRE ──
-  let html = '';
-
-  // 1. RECEITAS OPERACIONAIS
-  const linRec = linhasContasRec(x => x.grupo==='1');
-  if(totRec > 0 || linRec){
-    html += `<div class="dr dh"><span>(+) RECEITAS OPERACIONAIS</span><span class="dv" style="color:var(--gr)">${R(totRec)}</span></div>`;
-    html += linRec || `<div class="dr dsg"><span style="color:var(--tx3);font-style:italic">Nenhuma receita no período</span><span class="dv">—</span></div>`;
+  // Não Operacionais
+  if(D.totNaoOp>0){
+    html += lGrp('(–)','DESPESAS NÃO OPERACIONAIS', D.totNaoOp, 'var(--rd)');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
   }
 
-  // 2. IMPOSTOS E TAXAS
-  const linImp = linhasContas(x => x.grupo==='2');
-  if(totImp > 0 || linImp){
-    html += `<div class="dr dh" style="margin-top:6px"><span>(–) IMPOSTOS E TAXAS</span><span class="dv" style="color:var(--rd)">– ${R(totImp)}</span></div>`;
-    html += linImp || `<div class="dr dsg"><span style="color:var(--tx3);font-style:italic">Sem lançamentos</span><span class="dv">—</span></div>`;
-  }
-
-  // = RECEITA LÍQUIDA
-  html += `<div class="dr dt"><span>= RECEITA LÍQUIDA</span><span class="dv">${R(recLiq)}</span></div>`;
-
-  // 3. CMV
-  const linCMV = linhasContas(x => x.grupo==='4');
-  html += `<div class="dr dh" style="margin-top:8px"><span>(–) CMV — CUSTO DA MERCADORIA VENDIDA</span><span class="dv" style="color:var(--rd)">– ${R(totCMV)}</span></div>`;
-  html += linCMV || `<div class="dr dsg"><span style="color:var(--tx3);font-style:italic">Sem lançamentos</span><span class="dv">—</span></div>`;
-
-  // = LUCRO BRUTO
-  const okBruto = lucroBruto >= 0;
-  html += `<div class="dr dt"><span>= LUCRO BRUTO</span><span class="dv" style="color:${okBruto?'var(--gr)':'var(--rd)'}">${R(lucroBruto)}</span></div>`;
-
-  // 4. DESPESAS FINANCEIRAS
-  const linFin = linhasContas(x => x.grupo==='3');
-  if(totFin > 0 || linFin){
-    html += `<div class="dr dh" style="margin-top:8px"><span>(–) DESPESAS FINANCEIRAS</span><span class="dv" style="color:var(--rd)">– ${R(totFin)}</span></div>`;
-    html += linFin || `<div class="dr dsg"><span style="color:var(--tx3);font-style:italic">Sem lançamentos</span><span class="dv">—</span></div>`;
-  }
-
-  // 5. DESPESAS OPERACIONAIS — com subgrupos
-  html += `<div class="dr dh" style="margin-top:8px"><span>(–) DESPESAS OPERACIONAIS</span><span class="dv" style="color:var(--rd)">– ${R(totOp)}</span></div>`;
-  if(subgrupos5.length){
-    subgrupos5.forEach(sg => {
-      const totSg = somaSubgrupo(sg.cod);
-      const linSg = linhasContas(x => x.subgrupo===sg.cod);
-      if(totSg > 0){
-        html += `<div class="dr dsg" style="font-weight:500;color:var(--tx);padding-left:14px;margin-top:4px">
-          <span><i class="fa-solid fa-chevron-right" style="font-size:9px;margin-right:4px;color:var(--or)"></i>${sg.nome}</span>
-          <span class="dv" style="color:var(--rd)">– ${R(totSg)}</span>
-        </div>`;
-        // Contas do subgrupo
-        pc.filter(x => x.tipo==='conta' && x.subgrupo===sg.cod && (totConta[x.cod]||0) > 0)
-          .forEach(c => {
-            html += `<div class="dr dsg" style="padding-left:32px">
-              <span title="${c.cod}">${c.nome}</span>
-              <span class="dv" style="color:var(--rd)">– ${R(totConta[c.cod]||0)}</span>
-            </div>`;
-          });
-      }
-    });
-  } else {
-    html += `<div class="dr dsg"><span style="color:var(--tx3);font-style:italic">Sem lançamentos</span><span class="dv">—</span></div>`;
-  }
-
-  // = EBITDA
-  const okEbitda = ebitda >= 0;
-  html += `<div class="dr deb" style="margin-top:8px"><span>= EBITDA</span><span class="dv" style="color:${okEbitda?'var(--or)':'var(--rd)'}">${R(ebitda)}</span></div>`;
-
-  // 9. DESPESAS NÃO OPERACIONAIS
-  const linNaoOp = linhasContas(x => x.grupo==='9');
-  if(totNaoOp > 0){
-    html += `<div class="dr dh" style="margin-top:8px"><span>(–) DESPESAS NÃO OPERACIONAIS</span><span class="dv" style="color:var(--rd)">– ${R(totNaoOp)}</span></div>`;
-    html += linNaoOp;
-  }
-
-  // = LUCRO / PREJUÍZO LÍQUIDO
-  html += `<div class="dr ${ok?'dlp':'dlr'}" style="margin-top:8px">
-    <span>${ok?'= LUCRO LÍQUIDO DO EXERCÍCIO':'= PREJUÍZO LÍQUIDO DO EXERCÍCIO'}</span>
-    <span class="dv">${R(Math.abs(lucroLiq))}${totRec>0?' ('+P(Math.abs(lucroLiq/totRec*100))+')':''}</span>
-  </div>`;
-
-  // Linha informativa do regime
-  html += `<div style="margin-top:12px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
-    <span style="font-size:10px;color:var(--tx3)">
-      <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
-      Regime de <strong style="color:var(--or)">${labelRegime}</strong> · 
-      ${pagar.length} lançamento(s) · 
-      ${regime==='comp'?'Data de referência: competência':'Data de referência: vencimento'}
-    </span>
-  </div>`;
+  html += lRes(D.lucroLiq>=0?'= LUCRO LÍQUIDO DO EXERCÍCIO':'= PREJUÍZO LÍQUIDO DO EXERCÍCIO', D.lucroLiq, D.lucroLiq>=0?'dlp':'dlr');
+  html += `</tbody></table>`;
+  html += `<div style="margin-top:10px;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
+    <span style="font-size:10px;color:var(--tx3)"><i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
+    Regime de <strong style="color:var(--or)">${labelRegime}</strong> · ${filtP.length} lançamento(s) · AV% = participação sobre Receita Operacional</span></div>`;
 
   document.getElementById('dre-blk').innerHTML = html;
 
-  // ── Indicadores ──
-  const mgBruta  = totRec > 0 ? lucroBruto/totRec*100 : 0;
-  const mgLiq    = totRec > 0 ? lucroLiq/totRec*100   : 0;
-  const pctCMV   = totRec > 0 ? totCMV/totRec*100     : 0;
-  const pctOp    = totRec > 0 ? totOp/totRec*100      : 0;
+  const mgB=base>0?D.lucroBruto/base*100:0, mgL=base>0?D.lucroLiq/base*100:0;
+  const pC=base>0?D.totCMV/base*100:0, pO=base>0?D.totOp/base*100:0;
+  const sf=(v,lV,lA)=>v>=lV?'sg':v>=lA?'sa':'sr';
+  document.getElementById('sf-dre').innerHTML=`
+    <div class="si ${sf(mgB,40,25)}"><div class="sv">${P(mgB)}</div><div class="sl">Mg. Bruta</div></div>
+    <div class="si ${sf(mgL,15,5)}"><div class="sv">${P(mgL)}</div><div class="sl">Mg. Líquida</div></div>
+    <div class="si ${sf(100-pC,70,60)}"><div class="sv">${P(pC)}</div><div class="sl">CMV %</div></div>
+    <div class="si ${sf(100-pO,55,40)}"><div class="sv">${P(pO)}</div><div class="sl">Desp. Op. %</div></div>`;
+}
 
-  const semaforo = (v, limVerde, limAm) => v >= limVerde ? 'sg' : v >= limAm ? 'sa' : 'sr';
+// ── DRE MENSAL (lado a lado) ──
+function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
+  const meses = dreListaMeses(de, ate);
+  if(!meses.length){
+    document.getElementById('dre-blk').innerHTML=
+      `<div style="text-align:center;padding:32px;color:var(--tx3)">
+        <i class="fa-solid fa-calendar-xmark" style="font-size:24px;margin-bottom:8px;display:block;color:var(--or)"></i>
+        Selecione um período nos filtros acima para ver o DRE mensal lado a lado.</div>`;
+    return;
+  }
 
-  document.getElementById('sf-dre').innerHTML = `
-    <div class="si ${semaforo(mgBruta,40,25)}"><div class="sv">${P(mgBruta)}</div><div class="sl">Mg. Bruta</div></div>
-    <div class="si ${semaforo(mgLiq,15,5)}"><div class="sv">${P(mgLiq)}</div><div class="sl">Mg. Líquida</div></div>
-    <div class="si ${semaforo(100-pctCMV,70,60)}"><div class="sv">${P(pctCMV)}</div><div class="sl">CMV %</div></div>
-    <div class="si ${semaforo(100-pctOp,55,40)}"><div class="sv">${P(pctOp)}</div><div class="sl">Desp. Op. %</div></div>`;
+  // Calcular dados por mês
+  const dadosMes = meses.map(ym=>{
+    const filtP = dreFiltrar(pagar, regime, ym, ym);
+    const filtR = receber.filter(x=>(x.venc||'').slice(0,7)===ym);
+    const totC  = dreAcumular(filtP);
+    const totR  = {};
+    filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
+    return { ym, D: dreCalc(totC, totR, pc), totC, totR };
+  });
+
+  // Cabeçalho
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr style="border-bottom:2px solid var(--or)">
+      <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;min-width:200px;position:sticky;left:0;background:var(--dk2);z-index:2">Descrição</th>`;
+  meses.forEach(ym=>{
+    html+=`<th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--tx);white-space:nowrap;min-width:90px">
+             ${fmtMes(ym)}</th>
+           <th style="padding:8px 4px;text-align:right;font-size:10px;color:var(--or);white-space:nowrap;min-width:48px">AV%</th>`;
+  });
+  html+=`</tr></thead><tbody>`;
+
+  // Linha genérica
+  const linha = (label, getVal, getBase, tipo, indent) => {
+    const isGrp = tipo==='grp', isRes = tipo==='res', isSg = tipo==='sg';
+    const tdStyle = isGrp
+      ? `background:rgba(255,255,255,0.04);font-weight:600;color:var(--tx);font-size:12px;`
+      : isRes ? `border-top:2px solid var(--bd);font-weight:700;font-size:12px;`
+      : isSg  ? `background:rgba(242,100,25,0.04);font-weight:500;color:var(--tx);`
+      : `color:var(--tx2);font-size:11px;`;
+    let tr = `<tr><td style="padding:${isRes?'9':'5'}px 6px 5px ${indent||6}px;${tdStyle}position:sticky;left:0;background:${isGrp?'var(--dk3)':isRes?'var(--dk2)':isSg?'rgba(30,30,30,0.95)':'var(--dk2)'};z-index:1">${label}</td>`;
+    dadosMes.forEach(({D,totC,totR})=>{
+      const val  = getVal(D, totC, totR);
+      const base = getBase(D);
+      const av   = base>0 ? (Math.abs(val)/base*100).toFixed(1)+'%' : '—';
+      const vCor = isRes && val<0 ? 'var(--rd)' : isRes && val>=0 ? 'var(--gr)' : 'inherit';
+      tr+=`<td style="padding:5px 8px;text-align:right;font-weight:${isRes?'700':'400'};color:${vCor};${tdStyle}">${R(val)}</td>
+           <td style="padding:5px 4px;text-align:right;font-size:10px;color:var(--tx3)">${av}</td>`;
+    });
+    tr+=`</tr>`;
+    return tr;
+  };
+
+  // Receitas
+  html+=linha('(+) RECEITAS OPERACIONAIS', (D,tC,tR)=>D.totRec, D=>D.totRec, 'grp');
+  pc.filter(x=>x.tipo==='conta'&&x.grupo==='1').forEach(c=>{
+    if(dadosMes.some(({totR})=>(totR[c.cod]||0)>0))
+      html+=linha(c.nome, (D,tC,tR)=>tR[c.cod]||0, D=>D.totRec, 'conta', 20);
+  });
+
+  // Impostos
+  if(dadosMes.some(({D})=>D.totImp>0)){
+    html+=linha('(–) IMPOSTOS E TAXAS', D=>D.totImp, D=>D.totRec, 'grp');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='2').forEach(c=>{
+      if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+    });
+  }
+
+  html+=linha('= RECEITA LÍQUIDA', D=>D.recLiq, D=>D.totRec, 'res');
+
+  // CMV
+  html+=linha('(–) CMV — CUSTO DA MERCADORIA VENDIDA', D=>D.totCMV, D=>D.totRec, 'grp');
+  pc.filter(x=>x.tipo==='conta'&&x.grupo==='4').forEach(c=>{
+    if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
+      html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+  });
+
+  html+=linha('= LUCRO BRUTO', D=>D.lucroBruto, D=>D.totRec, 'res');
+
+  // Fin
+  if(dadosMes.some(({D})=>D.totFin>0)){
+    html+=linha('(–) DESPESAS FINANCEIRAS', D=>D.totFin, D=>D.totRec, 'grp');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3').forEach(c=>{
+      if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+    });
+  }
+
+  // Despesas Operacionais
+  html+=linha('(–) DESPESAS OPERACIONAIS', D=>D.totOp, D=>D.totRec, 'grp');
+  pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').forEach(sg=>{
+    if(dadosMes.some(({D})=>D.sgs5.find(s=>s.cod===sg.cod)?.total>0)){
+      html+=linha('› '+sg.nome, D=>D.sgs5.find(s=>s.cod===sg.cod)?.total||0, D=>D.totRec, 'sg', 14);
+      pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod).forEach(c=>{
+        if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
+          html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 30);
+      });
+    }
+  });
+
+  html+=linha('= EBITDA', D=>D.ebitda, D=>D.totRec, 'res');
+
+  // Não Operacionais
+  if(dadosMes.some(({D})=>D.totNaoOp>0)){
+    html+=linha('(–) DESPESAS NÃO OPERACIONAIS', D=>D.totNaoOp, D=>D.totRec, 'grp');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='9').forEach(c=>{
+      if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+    });
+  }
+
+  html+=linha('= LUCRO LÍQUIDO DO EXERCÍCIO', D=>D.lucroLiq, D=>D.totRec, 'res');
+  html+=`</tbody></table>`;
+  html+=`<div style="margin-top:8px;font-size:10px;color:var(--tx3);padding:6px 8px">
+    <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
+    AV% = Análise Vertical — participação de cada conta sobre a Receita Operacional do respectivo mês.
+    Somente contas com lançamentos são exibidas.</div>`;
+
+  document.getElementById('dre-blk').innerHTML = html;
+
+  // Indicadores período consolidado
+  const totBase=dadosMes.reduce((s,{D})=>s+D.totRec,0);
+  const totLB=dadosMes.reduce((s,{D})=>s+D.lucroBruto,0);
+  const totLL=dadosMes.reduce((s,{D})=>s+D.lucroLiq,0);
+  const totCMV2=dadosMes.reduce((s,{D})=>s+D.totCMV,0);
+  const totOP2=dadosMes.reduce((s,{D})=>s+D.totOp,0);
+  const sf=(v,lV,lA)=>v>=lV?'sg':v>=lA?'sa':'sr';
+  const mgB=totBase>0?totLB/totBase*100:0, mgL=totBase>0?totLL/totBase*100:0;
+  const pC=totBase>0?totCMV2/totBase*100:0, pO=totBase>0?totOP2/totBase*100:0;
+  document.getElementById('sf-dre').innerHTML=`
+    <div class="si ${sf(mgB,40,25)}"><div class="sv">${P(mgB)}</div><div class="sl">Mg. Bruta</div></div>
+    <div class="si ${sf(mgL,15,5)}"><div class="sv">${P(mgL)}</div><div class="sl">Mg. Líquida</div></div>
+    <div class="si ${sf(100-pC,70,60)}"><div class="sv">${P(pC)}</div><div class="sl">CMV %</div></div>
+    <div class="si ${sf(100-pO,55,40)}"><div class="sv">${P(pO)}</div><div class="sl">Desp. Op. %</div></div>`;
 }
 
 function renderFluxo(){
