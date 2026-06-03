@@ -3684,7 +3684,7 @@ function renderPagar(){
     <td style="color:var(--tx)">${parcelaTag}${c.forn||c.desc}</td>
     <td style="font-size:11px;color:var(--or)">${nomeContaByCod(c.conta)}</td>
     <td>${regTag(c.reg)}</td>
-    <td>${R(c.val)}</td><td><span class="tg tg-bl" style="font-size:10px">${c.banco||'—'}</span></td><td>${stTag(c.status)}</td>
+    <td>${R(c.val)}</td><td><span class="tg tg-bl" style="font-size:10px">${c.contaCorrente||c.banco||'—'}</span></td><td>${stTag(c.status)}</td>
     <td><div class="ac-btns" style="opacity:1">
       ${c.status!=='Pago'?`<button class="ac-btn" title="Dar Baixa" onclick="abrirBaixa(${c.id})"
         style="background:rgba(76,175,80,0.15);color:#81C784;width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px"
@@ -4619,6 +4619,7 @@ function saveEditPagar(){
     val:parseFloat(document.getElementById('mep-val').value)||0,
     forma:document.getElementById('mep-forma').value,
     banco:document.getElementById('mep-banco')?.value||'',
+    contaCorrente:document.getElementById('mep-banco')?.value||'',
     status,
   };
   S.s('pagar',arr); closeMod('mod-editpagar'); renderPagar();
@@ -4686,6 +4687,7 @@ function salvarBaixa(){
   const idx = arr.findIndex(x=>x.id===id); if(idx===-1) return;
   arr[idx] = { ...arr[idx], status:'Pago', dtpag, forma,
     contaCorrente: cc||arr[idx].contaCorrente||'',
+    banco: cc||arr[idx].banco||'',
     obs: obs || arr[idx].obs || '' };
   S.s('pagar', arr);
   closeMod('mod-baixa');
