@@ -855,11 +855,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <table id="rp-tabela">
         <thead>
           <tr id="rp-thead">
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cod')">N° Lanç. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cod"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('venc')">Dt. Vencimento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-venc"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('comp')">Dt. Competência <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-comp"></i></th>
             <th style="white-space:nowrap">Conta Débito</th>
-            <th style="white-space:nowrap">Conta Crédito</th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cat"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('desc')">Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-desc"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forn"></i></th>
@@ -5178,7 +5176,7 @@ function gerarRelPagar(){
       '5.5.04':'imobilizado','5.5.05':'imobilizado','5.5.06':'imobilizado',
     };
     // Grupo 5 cobre todos os serviços/despesas operacionais
-    const GRUPO_CAT = {'3':'servicos/impostos','4':'insumos','5':'servicos/impostos'};
+    const GRUPO_CAT = {'3':'servicos/impostos','5':'servicos/impostos'}; // grupo 4 tratado pela conta completa no CONTA_CAT
 
     arr = arr.filter(x => {
       // a) Lançamento com itens (NFP)
@@ -5199,8 +5197,10 @@ function gerarRelPagar(){
             const grpMap = {'3':'servicos/impostos','4':'insumos','5':'servicos/impostos'};
             // Grupo 4 pode ser insumos ou bebidas — usa o cod completo
             if(it.conta === '4.2' && selCatNorm.has('bebidas')) return true;
-            if(it.conta && it.conta.startsWith('4.') && selCatNorm.has('insumos')) return true;
-            if(grpMap[grp] && selCatNorm.has(grpMap[grp])) return true;
+            if(it.conta === '4.3' && selCatNorm.has('insumos')) return true;
+            if(it.conta === '4.1' && selCatNorm.has('insumos')) return true;
+            if(grp === '5' && selCatNorm.has('servicos/impostos')) return true;
+            if(grp === '3' && selCatNorm.has('servicos/impostos')) return true;
           }
           // Tipo direto — resolve imediatamente
           if(it.tipo === 'Serviço/Imposto' && selCatNorm.has('servicos/impostos')) return true;
@@ -5228,9 +5228,14 @@ function gerarRelPagar(){
       // c) Código da conta no mapa direto
       const cod = (x.conta||'').trim();
       if(cod && CONTA_CAT[cod]) return selCatNorm.has(CONTA_CAT[cod]);
-      // d) Fallback por grupo
+      // d) Fallback por grupo (grupo 4 usa mapa completo para distinguir insumos/bebidas)
       if(cod){
         const grp = cod.split('.')[0];
+        if(grp === '4'){
+          if(cod === '4.2' && selCatNorm.has('bebidas')) return true;
+          if(selCatNorm.has('insumos')) return cod !== '4.2';
+          return false;
+        }
         if(GRUPO_CAT[grp]) return selCatNorm.has(GRUPO_CAT[grp]);
       }
       // e) Palavras-chave no texto
@@ -5467,11 +5472,9 @@ function renderRelPagar(){
       ? `<span class="tg ${catCor}" style="font-size:10px">${catNome}</span>`
       : `<span style="color:var(--tx3)">—</span>`;
     return `<tr>
-      <td style="color:var(--or);font-weight:600;font-size:11px">${c.cod||'—'}</td>
       <td style="white-space:nowrap">${fd(c.venc)}</td>
       <td style="white-space:nowrap">${fd(c.comp||c.venc)}</td>
       <td style="font-size:11px;color:var(--tx2)">${contaDebNome||'—'}</td>
-      <td style="font-size:11px">${ccBadge}</td>
       <td>${catBadge}</td>
       <td style="color:var(--tx);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.desc||''}">${c.desc||'—'}</td>
       <td style="font-weight:500;white-space:nowrap">${fornNome}</td>
@@ -5488,7 +5491,7 @@ function renderRelPagar(){
   // 15 colunas no total (adicionada Categoria)
   document.getElementById('rp-tfoot').innerHTML=`
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
-      <td colspan="13" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
+      <td colspan="11" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--or)">${R(total)}</td>
       <td></td>
     </tr>`;
@@ -5496,7 +5499,7 @@ function renderRelPagar(){
 
 function exportarRelPagar(){
   if(!rpDados.length){ alert('Nenhum dado para exportar. Aplique um filtro primeiro.'); return; }
-  const cab = ['N° Lanç.','Dt. Vencimento','Dt. Competência','Conta Débito','Conta Crédito','Categoria','Descrição','Fornecedor','N° Doc.','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Valor','Status'];
+  const cab = ['Dt. Vencimento','Dt. Competência','Conta Débito','Categoria','Descrição','Fornecedor','N° Doc.','Valor','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Status'];
   const linhas = rpDados.map(c=>[
     c.cod||'',
     c.venc||'',
