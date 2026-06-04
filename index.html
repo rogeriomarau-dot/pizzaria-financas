@@ -23,6 +23,14 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color:var(--tx);font-size:14px;}
+.rc-tab-ativo   { background:var(--or)!important; color:#fff!important; font-weight:500!important; }
+.rc-tab-inativo { background:transparent!important; color:var(--tx2)!important; }
+.rc-atalho {
+  background:var(--dk3); border:1px solid var(--bd); color:var(--tx2);
+  border-radius:4px; padding:3px 9px; font-family:Outfit,sans-serif;
+  font-size:11px; cursor:pointer; transition:.15s;
+}
+.rc-atalho:hover { border-color:var(--or); color:var(--or); }
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--dk4);border-radius:99px;}
@@ -498,10 +506,87 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="kg" id="kpi-rc"></div>
   <div class="cd">
     <div class="ct">Contas a Receber
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <label style="font-size:11px;color:var(--tx2)">Mês:</label>
-        <select id="rc-filtro-mes" onchange="renderReceber()" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px"></select>
-        <button class="btn btn-p btn-sm" onclick="openMod('mod-receber');resetModalReceber()"><i class="fa-solid fa-plus"></i> Nova Venda</button>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:relative">
+
+        <!-- Botão de período -->
+        <button id="rc-periodo-btn" onclick="rcTogglePicker()"
+          style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:6px">
+            <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+            <span id="rc-periodo-label">Junho de 2026</span>
+          </span>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)" id="rc-periodo-chevron"></i>
+        </button>
+
+        <!-- Picker de período -->
+        <div id="rc-picker" style="display:none;position:absolute;top:36px;left:0;z-index:999;
+          background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+          box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+          <!-- Tabs modo -->
+          <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+            <button id="rc-tab-mes" onclick="rcSetModo('mes')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-ativo">Por mês</button>
+            <button id="rc-tab-periodo" onclick="rcSetModo('periodo')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-inativo">Por período</button>
+            <button id="rc-tab-ano" onclick="rcSetModo('ano')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-inativo">Por ano</button>
+          </div>
+
+          <!-- Modo: mês -->
+          <div id="rc-modo-mes">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <button onclick="rcNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+              <span id="rc-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+              <button onclick="rcNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+            </div>
+            <div id="rc-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+          </div>
+
+          <!-- Modo: período (data início/fim) -->
+          <div id="rc-modo-periodo" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data início</label>
+                <input type="date" id="rc-dt-ini"
+                  style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data fim</label>
+                <input type="date" id="rc-dt-fim"
+                  style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+              </div>
+            </div>
+            <button onclick="rcAplicarPeriodo()"
+              style="width:100%;margin-top:10px;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+              <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+            </button>
+          </div>
+
+          <!-- Modo: ano -->
+          <div id="rc-modo-ano" style="display:none">
+            <div id="rc-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+          </div>
+
+          <!-- Rodapé: atalhos rápidos -->
+          <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="rcAtalho('hoje')"    class="rc-atalho">Hoje</button>
+            <button onclick="rcAtalho('semana')"  class="rc-atalho">Esta semana</button>
+            <button onclick="rcAtalho('mes')"     class="rc-atalho">Este mês</button>
+            <button onclick="rcAtalho('trim')"    class="rc-atalho">Trimestre</button>
+            <button onclick="rcAtalho('ano')"     class="rc-atalho">Este ano</button>
+          </div>
+        </div>
+
+        <!-- input hidden para compatibilidade com renderReceber -->
+        <select id="rc-filtro-mes" style="display:none"></select>
+
+        <button class="btn btn-p btn-sm" onclick="openMod('mod-receber');resetModalReceber()">
+          <i class="fa-solid fa-plus"></i> Nova Venda
+        </button>
       </div>
     </div>
     <div class="tw"><table>
@@ -3642,6 +3727,13 @@ function saveReceber(){
   }
   S.s('receber',arr);
   closeMod('mod-receber');
+  // Inicializar filtro de período
+  const _hj = new Date().toISOString().slice(0,7);
+  _rcFiltro  = { tipo:'mes', mes:_hj, ini:null, fim:null, ano:null };
+  _rcAnoNav  = parseInt(_hj.slice(0,4));
+  const [_ry,_rm] = _hj.split('-');
+  const _rLabel = new Date(_ry,_rm-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  setTimeout(()=>{ rcAtualizarLabel(_rLabel.charAt(0).toUpperCase()+_rLabel.slice(1)); }, 100);
   resetModalReceber();
   renderReceber();
   showToast('✓ Venda salva com sucesso!','var(--gr)');
@@ -4791,25 +4883,35 @@ function renderReceber(){
   const arr    = S.g('receber')||[];
   const hoje   = new Date().toISOString().slice(0,7);
 
-  // ── Popula select de meses ──
-  const selMes = document.getElementById('rc-filtro-mes');
-  if(selMes){
-    const meses = [...new Set(arr.map(c=>(c.comp||c.venc||'').slice(0,7)).filter(Boolean))];
-    if(!meses.includes(hoje)) meses.push(hoje);
-    meses.sort().reverse();
-    const mesAtual = selMes.value || hoje;
-    selMes.innerHTML = meses.map(m=>{
-      const [y,mo] = m.split('-');
-      const nome = new Date(y, mo-1, 1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
-      const label = nome.charAt(0).toUpperCase() + nome.slice(1);
-      return `<option value="${m}" ${m===mesAtual?'selected':''}>${label}</option>`;
-    }).join('');
+  // ── Inicializa filtro na primeira carga ──
+  if(!_rcFiltro || !_rcFiltro.tipo){
+    _rcFiltro = { tipo:'mes', mes:hoje, ini:null, fim:null, ano:null };
   }
+  // Inicializa label do botão
+  if(!document.getElementById('rc-periodo-label')?.textContent ||
+     document.getElementById('rc-periodo-label')?.textContent===''){
+    const [y,m] = hoje.split('-');
+    const nome = new Date(y,m-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    rcAtualizarLabel(nome.charAt(0).toUpperCase()+nome.slice(1));
+  }
+  // Inicializa ano do calendário
+  if(_rcFiltro.mes) _rcAnoNav = parseInt(_rcFiltro.mes.slice(0,4));
+  else if(_rcFiltro.ano) _rcAnoNav = _rcFiltro.ano;
 
-  const mesFiltro = selMes ? (selMes.value||hoje) : hoje;
-
-  // ── Filtra por competência ──
-  const filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===mesFiltro);
+  // ── Filtra por _rcFiltro ──
+  let filtrado;
+  if(_rcFiltro.tipo==='mes' && _rcFiltro.mes){
+    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===_rcFiltro.mes);
+  } else if(_rcFiltro.tipo==='periodo' && _rcFiltro.ini && _rcFiltro.fim){
+    filtrado = arr.filter(c=>{
+      const d = c.comp||c.venc||'';
+      return d >= _rcFiltro.ini && d <= _rcFiltro.fim;
+    });
+  } else if(_rcFiltro.tipo==='ano' && _rcFiltro.ano){
+    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,4)===String(_rcFiltro.ano));
+  } else {
+    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===hoje);
+  }
 
   const totalBruto    = filtrado.reduce((a,b)=>a+(b.val||0),0);
   const totalLiq      = filtrado.reduce((a,b)=>a+(b.liq!=null?b.liq:b.val||0),0);
@@ -4831,10 +4933,11 @@ function renderReceber(){
   if(!tbEl) return;
 
   if(!filtrado.length){
+    const labelAtual = document.getElementById('rc-periodo-label')?.textContent || '';
     tbEl.innerHTML=`<tr><td colspan="11" style="text-align:center;color:var(--tx3);padding:32px;font-size:13px">
       <i class="fa-solid fa-inbox" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
-      Nenhum lançamento em ${selMes ? selMes.options[selMes.selectedIndex]?.text : mesFiltro}.<br>
-      <span style="font-size:11px">Clique em <strong style="color:var(--or)">+ Novo Venda</strong> para adicionar.</span>
+      Nenhum lançamento em <strong style="color:var(--tx)">${labelAtual}</strong>.<br>
+      <span style="font-size:11px">Clique em <strong style="color:var(--or)">+ Nova Venda</strong> para adicionar.</span>
     </td></tr>`;
     return;
   }
@@ -6188,8 +6291,7 @@ document.addEventListener('click', e=>{
 // MONTH/YEAR PICKER ENGINE
 // ══════════════════════════════════════
 const mpState = {}; // { comp: { year:2026, sel: Set<'YYYY-MM'> } }
-const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+// MESES_PT e MESES_FULL declarados no bloco FILTRO DE PERÍODO abaixo
 
 function mpInit(key){
   const now = new Date();
@@ -7053,6 +7155,163 @@ function exportarRelCompras(){
 
 function imprimirRelCompras(){ window.print(); }
 
+
+
+// ══════════════════════════════════════
+// FILTRO DE PERÍODO — CONTAS A RECEBER
+// ══════════════════════════════════════
+let _rcModo     = 'mes';    // 'mes' | 'periodo' | 'ano'
+let _rcAnoNav   = new Date().getFullYear();
+let _rcFiltro   = { tipo:'mes', mes: new Date().toISOString().slice(0,7), ini:null, fim:null, ano:null };
+
+function rcTogglePicker(){
+  const p = document.getElementById('rc-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  document.getElementById('rc-periodo-chevron').style.transform = aberto ? '' : 'rotate(180deg)';
+  if(!aberto){ rcRenderGridMeses(); rcRenderGridAnos(); }
+}
+
+function rcFecharPicker(){
+  const p = document.getElementById('rc-picker');
+  if(p) p.style.display = 'none';
+  const ch = document.getElementById('rc-periodo-chevron');
+  if(ch) ch.style.transform = '';
+}
+
+// Fechar picker ao clicar fora
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('rc-picker');
+  const btn    = document.getElementById('rc-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    rcFecharPicker();
+  }
+});
+
+function rcSetModo(modo){
+  _rcModo = modo;
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('rc-tab-'+m);
+    const div = document.getElementById('rc-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes')     rcRenderGridMeses();
+  if(modo==='ano')     rcRenderGridAnos();
+}
+
+function rcNavAno(delta){
+  _rcAnoNav += delta;
+  document.getElementById('rc-nav-ano').textContent = _rcAnoNav;
+  rcRenderGridMeses();
+}
+
+const MESES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function rcRenderGridMeses(){
+  const grid = document.getElementById('rc-grid-meses');
+  if(!grid) return;
+  const ano = _rcAnoNav;
+  const sel = _rcFiltro.tipo==='mes' ? _rcFiltro.mes : '';
+  grid.innerHTML = MESES_PT.map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button onclick="rcSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+      onmouseover="this.style.borderColor='var(--or)'" onmouseout="this.style.borderColor='${ativo?'var(--or)':'var(--bd)'}'"
+    >${m}</button>`;
+  }).join('');
+}
+
+function rcRenderGridAnos(){
+  const grid = document.getElementById('rc-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _rcFiltro.tipo==='ano' ? _rcFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button onclick="rcSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function rcSelecionarMes(val){
+  _rcFiltro = { tipo:'mes', mes:val, ini:null, fim:null, ano:null };
+  const [y,m] = val.split('-');
+  rcAtualizarLabel(`${MESES_FULL[parseInt(m)-1]} de ${y}`);
+  rcFecharPicker();
+  renderReceber();
+}
+
+function rcSelecionarAno(ano){
+  _rcFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano };
+  rcAtualizarLabel(`Ano de ${ano}`);
+  rcFecharPicker();
+  renderReceber();
+}
+
+function rcAplicarPeriodo(){
+  const ini = document.getElementById('rc-dt-ini')?.value;
+  const fim = document.getElementById('rc-dt-fim')?.value;
+  if(!ini || !fim){ alert('Informe as duas datas.'); return; }
+  if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
+  _rcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+  rcAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+  rcFecharPicker();
+  renderReceber();
+}
+
+function rcAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fmtM = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  if(tipo==='hoje'){
+    const d = fmt(hoje);
+    _rcFiltro = { tipo:'periodo', mes:null, ini:d, fim:d, ano:null };
+    rcAtualizarLabel('Hoje — '+d.split('-').reverse().join('/'));
+  } else if(tipo==='semana'){
+    const dow = hoje.getDay();
+    const ini = new Date(hoje); ini.setDate(hoje.getDate()-dow);
+    const fim = new Date(hoje); fim.setDate(hoje.getDate()+(6-dow));
+    _rcFiltro = { tipo:'periodo', mes:null, ini:fmt(ini), fim:fmt(fim), ano:null };
+    rcAtualizarLabel(`Semana: ${fmt(ini).split('-').reverse().join('/')} → ${fmt(fim).split('-').reverse().join('/')}`);
+  } else if(tipo==='mes'){
+    const val = fmtM(hoje);
+    _rcFiltro = { tipo:'mes', mes:val, ini:null, fim:null, ano:null };
+    rcAtualizarLabel(`${MESES_FULL[hoje.getMonth()]} de ${hoje.getFullYear()}`);
+  } else if(tipo==='trim'){
+    const q    = Math.floor(hoje.getMonth()/3);
+    const ini  = new Date(hoje.getFullYear(), q*3, 1);
+    const fim  = new Date(hoje.getFullYear(), q*3+3, 0);
+    _rcFiltro = { tipo:'periodo', mes:null, ini:fmt(ini), fim:fmt(fim), ano:null };
+    rcAtualizarLabel(`${q+1}º Trimestre ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    _rcFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano:hoje.getFullYear() };
+    rcAtualizarLabel(`Ano de ${hoje.getFullYear()}`);
+  }
+  rcFecharPicker();
+  renderReceber();
+}
+
+function rcAtualizarLabel(txt){
+  const el = document.getElementById('rc-periodo-label');
+  if(el) el.textContent = txt;
+}
+
+function rcGetFiltroAtivo(){ return _rcFiltro; }
 
 // ══════════════════════════════════════
 // PRODUTOS DE VENDA / CARDÁPIO
