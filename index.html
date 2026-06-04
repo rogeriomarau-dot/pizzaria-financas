@@ -329,6 +329,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-servicos',this)"><i class="fa-solid fa-screwdriver-wrench"></i>Cadastro de Serviços e Impostos</button>
     <button class="ni" onclick="go('cad-fornecedores',this)"><i class="fa-solid fa-truck"></i>Cadastro de Fornecedores</button>
     <button class="ni" onclick="go('cad-produtos',this)"><i class="fa-solid fa-boxes-stacked"></i>Cadastro de Produtos</button>
+    <button class="ni" onclick="go('cad-produtos-venda',this)"><i class="fa-solid fa-tag"></i>Produtos de Venda / Cardápio</button>
     <button class="ni" onclick="go('cad-catprod',this)"><i class="fa-solid fa-layer-group"></i>Cadastro de Categoria de Produtos</button>
     <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Cobrança</button>
     <button class="ni" onclick="go('cad-recebimentos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Cadastro de Formas de Recebimento</button>
@@ -497,9 +498,23 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="kg" id="kpi-rc"></div>
   <div class="cd">
     <div class="ct">Contas a Receber
-      <button class="btn btn-p btn-sm" onclick="openMod('mod-receber')"><i class="fa-solid fa-plus"></i> Novo</button>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="font-size:11px;color:var(--tx2)">Mês:</label>
+        <select id="rc-filtro-mes" onchange="renderReceber()" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px"></select>
+        <button class="btn btn-p btn-sm" onclick="openMod('mod-receber');resetModalReceber()"><i class="fa-solid fa-plus"></i> Nova Venda</button>
+      </div>
     </div>
-    <div class="tw"><table><thead><tr><th>Vencimento</th><th>Cliente / Origem</th><th>Conta</th><th>Forma</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody id="tb-rc"></tbody></table></div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Competência</th><th>Vencimento</th><th>Comanda</th>
+        <th>Cliente</th><th>Itens</th><th>Forma</th>
+        <th style="text-align:right">Total Bruto</th>
+        <th style="text-align:right">Desconto</th>
+        <th style="text-align:right">Valor Líquido</th>
+        <th>Status</th><th></th>
+      </tr></thead>
+      <tbody id="tb-rc"></tbody>
+    </table></div>
   </div>
 </div>
 
@@ -572,6 +587,27 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <button class="btn btn-p btn-sm" onclick="openMod('mod-prod')"><i class="fa-solid fa-plus"></i> Novo Produto</button>
     </div>
     <div class="tw"><table><thead><tr><th>Código</th><th>Nome do Produto</th><th>Categoria</th><th>Unidade</th><th>Custo Unit.</th><th>Conta Plano</th><th>Status</th><th></th></tr></thead><tbody id="tb-pr"></tbody></table></div>
+  </div>
+</div>
+
+
+<!-- CAD PRODUTOS DE VENDA -->
+<div class="page" id="page-cad-produtos-venda">
+  <div class="cd">
+    <div class="ct">Produtos de Venda / Cardápio
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="pv-filtro-cat" onchange="renderProdVenda()" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px">
+          <option value="">Todas as categorias</option>
+        </select>
+        <button class="btn btn-p btn-sm" onclick="openMod('mod-pvenda');resetModalProdVenda()"><i class="fa-solid fa-plus"></i> Novo Produto</button>
+      </div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Código</th><th>Produto / Descrição</th><th>Categoria</th><th>Und.</th><th>Preço de Venda</th><th>Margem</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody id="tb-pv"></tbody>
+    </table></div>
   </div>
 </div>
 
@@ -663,8 +699,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <th>Nome da Forma de Recebimento</th>
         <th>Tipo</th>
         <th>Prazo de Recebimento</th>
-        <th>Taxa Operadora</th>
-        <th>Parcelas</th>
         <th>Status</th>
         <th>Observação</th>
         <th></th>
@@ -1189,44 +1223,92 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="fr">
       <div class="fg"><label>Nome da Forma de Recebimento</label><input type="text" id="mfr-nome" placeholder="EX: PIX, DINHEIRO, CARTÃO DE CRÉDITO…" oninput="this.value=this.value.toUpperCase()"></div>
       <div class="fg"><label>Tipo</label>
-        <select id="mfr-tipo" onchange="mfrAjustarDefaults()">
-          <option value="Dinheiro">Dinheiro</option>
-          <option value="PIX">PIX</option>
+        <select id="mfr-tipo">
+          <option value="À Vista">À Vista</option>
+          <option value="Antecipado">Antecipado</option>
+          <option value="Parcelado">Parcelado</option>
+          <option value="Crédito">Crédito</option>
           <option value="Débito">Débito</option>
-          <option value="Crédito à Vista">Crédito à Vista</option>
-          <option value="Crédito Parcelado">Crédito Parcelado</option>
-          <option value="Vale Refeição">Vale Refeição</option>
-          <option value="Vale Alimentação">Vale Alimentação</option>
           <option value="Transferência">Transferência</option>
+          <option value="Recorrente">Recorrente</option>
           <option value="Outros">Outros</option>
         </select>
       </div>
     </div>
     <div class="fr">
-      <div class="fg"><label>Prazo de Recebimento (dias) <span style="color:var(--tx3);font-size:10px">0 = imediato</span></label><input type="number" id="mfr-prazo" placeholder="0" min="0" value="0" oninput="mfrAtualizarResumo()"></div>
-      <div class="fg"><label>Taxa da Operadora (%) <span style="color:var(--tx3);font-size:10px">cobrada sobre a venda</span></label>
-        <input type="number" id="mfr-taxa" placeholder="0,00" min="0" max="100" step="0.01" value="0" oninput="mfrAtualizarResumo()">
+      <div class="fg"><label>Prazo de Recebimento (dias)</label><input type="number" id="mfr-prazo" placeholder="0 = imediato" min="0" value="0"></div>
+      <div class="fg"><label>Status</label><select id="mfr-st"><option>Ativo</option><option>Inativo</option></select></div>
+    </div>
+    <div class="fg"><label>Observação</label><input type="text" id="mfr-obs" placeholder="Informações adicionais..."></div>
+    <div class="mf"><button class="bc" onclick="closeMod('mod-forma-rec');resetModalFormaRec()">Cancelar</button><button class="bs" onclick="saveFormaRec()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button></div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTO DE VENDA -->
+<div class="mo" id="mod-pvenda">
+  <div class="mb wide">
+    <div class="mt">
+      <span><i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda</span>
+      <span class="mc" onclick="closeMod('mod-pvenda');resetModalProdVenda()">✕</span>
+    </div>
+    <input type="hidden" id="mpv-id">
+    <div class="fr">
+      <div class="fg"><label>Código <span style="font-size:10px;color:var(--tx3)">(gerado automaticamente)</span></label>
+        <input type="text" id="mpv-cod" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default">
+      </div>
+      <div class="fg"><label>Nome do Produto / Descrição</label>
+        <input type="text" id="mpv-nome" placeholder="EX: RODÍZIO ADULTO, CERVEJA BUDWEISER 600ML…" oninput="this.value=this.value.toUpperCase()">
       </div>
     </div>
-    <div class="fr" id="mfr-row-parcelas" style="display:none">
-      <div class="fg"><label>Nº máximo de Parcelas</label>
-        <select id="mfr-parcelas" onchange="mfrAtualizarResumo()">
-          <option value="1">1× (à vista)</option>
-          <option value="2">2×</option>
-          <option value="3">3×</option>
-          <option value="4">4×</option>
-          <option value="5">5×</option>
-          <option value="6">6×</option>
+    <div class="fr">
+      <div class="fg"><label>Categoria</label>
+        <select id="mpv-cat">
+          <option value="Rodízio">🍕 Rodízio</option>
+          <option value="Bebidas">🥤 Bebidas</option>
+          <option value="Drinks">🍹 Drinks / Coquetéis</option>
+          <option value="Cervejas">🍺 Cervejas</option>
+          <option value="Combos">🎁 Combos / Promoções</option>
+          <option value="Sobremesas">🍮 Sobremesas</option>
+          <option value="Outros">📦 Outros</option>
         </select>
       </div>
-      <div class="fg"><label>Intervalo entre Parcelas (dias)</label><input type="number" id="mfr-intervalo" placeholder="30" min="1" value="30" oninput="mfrAtualizarResumo()"></div>
+      <div class="fg"><label>Unidade de Medida</label>
+        <select id="mpv-un">
+          <option value="un">un (unidade)</option>
+          <option value="pax">pax (pessoa)</option>
+          <option value="ml">ml</option>
+          <option value="L">L (litro)</option>
+          <option value="pct">pct (pacote)</option>
+          <option value="cx">cx (caixa)</option>
+          <option value="dose">dose</option>
+          <option value="combo">combo</option>
+        </select>
+      </div>
     </div>
-    <div id="mfr-resumo" style="display:none;background:rgba(242,100,25,0.08);border:1px solid rgba(242,100,25,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--tx2);line-height:1.7;margin-top:2px;"></div>
     <div class="fr">
-      <div class="fg"><label>Status</label><select id="mfr-st"><option>Ativo</option><option>Inativo</option></select></div>
-      <div class="fg"><label>Observação</label><input type="text" id="mfr-obs" placeholder="Bandeira, operadora, observações..."></div>
+      <div class="fg"><label>Preço de Venda (R$) <span style="color:var(--or);font-size:10px">★ tabela de preços</span></label>
+        <input type="number" id="mpv-preco" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
+      </div>
+      <div class="fg"><label>Custo Unitário (R$) <span style="color:var(--tx3);font-size:10px">opcional — para CMV</span></label>
+        <input type="number" id="mpv-custo" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
+      </div>
     </div>
-    <div class="mf"><button class="bc" onclick="closeMod('mod-forma-rec');resetModalFormaRec()">Cancelar</button><button class="bs" onclick="saveFormaRec()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button></div>
+    <div id="mpv-margem-box" style="display:none;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;padding:8px 14px;font-size:12px;color:var(--tx2);margin-top:-4px;">
+      <i class="fa-solid fa-chart-line" style="color:var(--gr);margin-right:6px"></i>
+      Margem bruta: <strong id="mpv-margem-val" style="color:var(--gr)"></strong> &nbsp;|&nbsp; CMV%: <strong id="mpv-cmv-val" style="color:var(--am)"></strong>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Status</label>
+        <select id="mpv-st"><option>Ativo</option><option>Inativo</option></select>
+      </div>
+      <div class="fg"><label>Observação</label>
+        <input type="text" id="mpv-obs" placeholder="Ex: Serve 1 pessoa, inclui sobremesa...">
+      </div>
+    </div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-pvenda');resetModalProdVenda()">Cancelar</button>
+      <button class="bs" onclick="saveProdVenda()"><i class="fa-solid fa-floppy-disk"></i> Salvar Produto</button>
+    </div>
   </div>
 </div>
 
@@ -1390,21 +1472,123 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- RECEBER -->
 <div class="mo" id="mod-receber">
-  <div class="mb">
-    <div class="mt"><span><i class="fa-solid fa-hand-holding-dollar" style="color:var(--or);margin-right:8px"></i>Novo Recebimento</span><span class="mc" onclick="closeMod('mod-receber')">✕</span></div>
-    <div class="fr">
-      <div class="fg"><label>Data Vencimento</label><input type="date" id="mr-venc"></div>
-      <div class="fg"><label>Cliente / Origem</label><input type="text" id="mr-desc" placeholder="Ex: iFood repasse"></div>
+  <div class="mb wide" style="width:820px">
+    <div class="mt">
+      <span><i class="fa-solid fa-receipt" style="color:var(--or);margin-right:8px"></i>Nova Venda / Lançamento de Recebimento</span>
+      <span class="mc" onclick="closeMod('mod-receber');resetModalReceber()">✕</span>
     </div>
-    <div class="fr">
-      <div class="fg"><label>Conta do Plano</label><select id="mr-conta"><option value="">— Selecione —</option></select></div>
-      <div class="fg"><label>Valor (R$)</label><input type="number" id="mr-val" step="0.01"></div>
+
+    <!-- CABEÇALHO DA VENDA -->
+    <div style="background:var(--dk3);border-radius:8px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--bd)">
+      <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Dados da Venda</div>
+      <!-- Linha 1: Competência + Forma (forma define vencimento automaticamente) -->
+      <div class="fr">
+        <div class="fg"><label>Data de Competência <span style="color:var(--or);font-size:10px">★ mês da venda</span></label>
+          <input type="date" id="mr-comp" onchange="mrSugerirVenc()">
+        </div>
+        <div class="fg"><label>Forma de Recebimento <span style="color:var(--or);font-size:10px">define a data de crédito</span></label>
+          <select id="mr-forma" onchange="mrFormaChanged()"></select>
+        </div>
+      </div>
+      <!-- Linha 2: Comanda + Cliente -->
+      <div class="fr" style="margin-top:10px">
+        <div class="fg"><label>Nº da Comanda <span style="color:var(--tx3);font-size:10px">opcional</span></label>
+          <input type="text" id="mr-comanda" placeholder="Ex: 001, A-12, MESA 5..." oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="fg"><label>Nome do Cliente <span style="color:var(--tx3);font-size:10px">opcional</span></label>
+          <input type="text" id="mr-cliente" placeholder="Ex: João Silva, Mesa 3..." oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+      <!-- Linha 3: Conta + Data Vencimento (calculada automático) -->
+      <div class="fr" style="margin-top:10px">
+        <div class="fg"><label>Conta do Plano</label>
+          <select id="mr-conta"><option value="">— Selecione —</option></select>
+        </div>
+        <div class="fg">
+          <label>Data de Crédito <span style="color:var(--tx3);font-size:10px">calculada pela forma</span></label>
+          <input type="date" id="mr-venc" style="background:var(--dk4);color:var(--or);font-weight:600" title="Calculada automaticamente pela forma de recebimento. Edite se necessário." onchange="mrValidarDatas()">
+        </div>
+      </div>
+      <div id="mr-aviso-comp" style="display:none;background:rgba(255,143,0,0.1);border:1px solid rgba(255,143,0,0.3);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--am);margin-top:6px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Data de crédito anterior à competência — verifique as datas
+      </div>
+      <!-- Info da forma selecionada -->
+      <div id="mr-forma-info" style="display:none;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--tx2);margin-top:8px;">
+        <i class="fa-solid fa-circle-info" style="color:var(--gr);margin-right:6px"></i>
+        <span id="mr-forma-info-txt"></span>
+      </div>
     </div>
-    <div class="fr">
-      <div class="fg"><label>Forma</label><select id="mr-forma"><option>PIX</option><option>Cartão Crédito</option><option>Cartão Débito</option><option>iFood / App</option><option>Dinheiro</option></select></div>
-      <div class="fg"><label>Status</label><select id="mr-status"><option>Pendente</option><option>Recebido</option><option>Vencido</option></select></div>
+
+    <!-- ITENS DA VENDA -->
+    <div style="background:var(--dk3);border-radius:8px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--bd)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Itens Vendidos</div>
+        <button class="btn btn-sm" onclick="mrAddLinha()" style="border-color:var(--or);color:var(--or)"><i class="fa-solid fa-plus"></i> Adicionar Item</button>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--bd)">
+            <th style="text-align:left;padding:6px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;width:38%">Produto</th>
+            <th style="text-align:center;padding:6px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;width:10%">Qtd</th>
+            <th style="text-align:right;padding:6px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;width:14%">Preço Unit.</th>
+            <th style="text-align:right;padding:6px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;width:12%">Desconto</th>
+            <th style="text-align:right;padding:6px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;width:14%">Total Item</th>
+            <th style="width:6%"></th>
+          </tr>
+        </thead>
+        <tbody id="mr-itens-body"></tbody>
+      </table>
     </div>
-    <div class="mf"><button class="bc" onclick="closeMod('mod-receber')">Cancelar</button><button class="bs" onclick="saveReceber()">Salvar</button></div>
+
+    <!-- input oculto para manter compatibilidade com saveReceber -->
+    <input type="hidden" id="mr-desc-geral" value="0">
+
+    <!-- TOTAIS -->
+    <div style="background:rgba(242,100,25,0.07);border:1px solid rgba(242,100,25,0.2);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:1px dashed rgba(255,255,255,0.08)">
+          <span style="font-size:12px;color:var(--tx2)">Subtotal dos itens</span>
+          <span style="font-size:14px;font-weight:500;color:var(--tx)" id="mr-subtotal">R$ 0,00</span>
+        </div>
+
+        <!-- Linha de descontos por item — aparece só quando há desconto -->
+        <div id="mr-desc-row" style="display:none;justify-content:space-between;align-items:center;padding:4px 0">
+          <span style="font-size:12px;color:var(--rd)"><i class="fa-solid fa-tag" style="margin-right:4px"></i>Descontos nos itens</span>
+          <span style="font-size:13px;font-weight:600;color:var(--rd)" id="mr-desc-display">— R$ 0,00</span>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.08)">
+          <span style="font-size:13px;font-weight:500;color:var(--tx)">Total da Venda</span>
+          <span style="font-size:22px;font-weight:700;color:var(--or)" id="mr-total-venda">R$ 0,00</span>
+        </div>
+
+        <div id="mr-liq-box" style="display:none;padding:8px 10px;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span style="font-size:11px;color:var(--tx2)">Valor líquido <small>(após taxa operadora)</small></span>
+              <div style="font-size:10px;color:var(--tx3)" id="mr-taxa-info"></div>
+            </div>
+            <span style="font-size:15px;font-weight:600;color:var(--gr)" id="mr-val-liq">R$ 0,00</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="fr" style="margin-bottom:14px">
+      <div class="fg"><label>Status</label>
+        <select id="mr-status"><option>Recebido</option><option>Pendente</option><option>Vencido</option></select>
+      </div>
+      <div class="fg"><label>Observação</label>
+        <input type="text" id="mr-obs-venda" placeholder="Observações gerais da venda...">
+      </div>
+    </div>
+
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-receber');resetModalReceber()">Cancelar</button>
+      <button class="bs" onclick="saveReceber()"><i class="fa-solid fa-floppy-disk"></i> Salvar Venda</button>
+    </div>
   </div>
 </div>
 
@@ -2319,6 +2503,7 @@ const titles={
   'cad-catprod':['Categorias de Produtos','Classificação de produtos por categoria'],
   'cad-pagamentos':['Formas de Cobrança','Cadastro de formas de cobrança'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
+  'cad-produtos-venda':['Produtos de Venda / Cardápio','Tabela de preços e produtos vendidos no salão'],
   'cad-bancos':['Cadastro de Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
   'rel-pagar':['Relatório — Contas a Pagar','Filtros completos · Exportação CSV · Impressão'],
   'rel-compras':['Relatório — Compras por Categoria','Insumos · Bebidas · Descartáveis · Limpeza · Utensílios · Imobilizado'],
@@ -2332,7 +2517,7 @@ function go(pg,btn){
   document.getElementById('pgt').textContent=t[0];
   document.getElementById('pgs').textContent=t[1];
   // Altera label do botão principal conforme a página
-  const pgsCadastro=['plano','cad-contas','cad-fornecedores','cad-produtos','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
+  const pgsCadastro=['plano','cad-contas','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
   const btnTxt=document.getElementById('btn-novo-txt');
   if(pg==='plano'){btnTxt.textContent='Novo Cadastro';}
   else if(pgsCadastro.includes(pg)){btnTxt.textContent='Novo Cadastro';}
@@ -2387,6 +2572,7 @@ function novoLancamento(){
     'cad-catprod': 'mod-catprod',
     'cad-pagamentos': 'mod-forma-pag',
     'cad-recebimentos': 'mod-forma-rec',
+    'cad-produtos-venda': 'mod-pvenda',
   };
   openMod(modais[id]||'mod-pagar');
 }
@@ -3355,12 +3541,412 @@ function saveParcelado(){
   if(novasLinhas===0){alert('Preencha ao menos uma linha com data e valor.');return;}
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
 }
+// ── variável temporária de itens da comanda ──
+let _mrItens = [];
+
 function saveReceber(){
-  const arr=S.g('receber')||[];
-  arr.push({id:Date.now(),venc:document.getElementById('mr-venc').value,desc:document.getElementById('mr-desc').value,
-    conta:document.getElementById('mr-conta').value,val:parseFloat(document.getElementById('mr-val').value)||0,
-    forma:document.getElementById('mr-forma').value,status:document.getElementById('mr-status').value});
-  S.s('receber',arr);closeMod('mod-receber');renderReceber();
+  const comp = document.getElementById('mr-comp').value;
+  const venc = document.getElementById('mr-venc').value;
+  if(!comp){ alert('Informe a data de competência (mês da venda).'); return; }
+  if(!venc){ alert('Informe a data de vencimento.'); return; }
+  if(!_mrItens.length){ alert('Adicione pelo menos um produto à comanda.'); return; }
+  const totalEl = document.getElementById('mr-total-venda');
+  const val   = totalEl ? parseFloat(totalEl.textContent.replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0;
+  const forma = document.getElementById('mr-forma').value;
+  const formasArr = S.g('formas-recebimento')||[];
+  const fr   = formasArr.find(f=>f.nome===forma);
+  const taxa = fr ? (fr.taxa||0) : 0;
+  const liq  = parseFloat((val*(1-taxa/100)).toFixed(2));
+  const arr  = S.g('receber')||[];
+  arr.push({
+    id:       Date.now(),
+    comp, venc,
+    comanda:  document.getElementById('mr-comanda').value.trim(),
+    cliente:  document.getElementById('mr-cliente').value.trim(),
+    itens:    JSON.parse(JSON.stringify(_mrItens)),
+    subtotal: (()=>{ const el=document.getElementById('mr-subtotal'); return el ? parseFloat((el.textContent||el.value||'0').replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0; })(),
+    desconto: parseFloat(document.getElementById('mr-desc-geral')?.value)||0,
+    val, taxa, liq,
+    conta:    document.getElementById('mr-conta').value,
+    forma,
+    status:   document.getElementById('mr-status').value,
+    desc:     _mrItens.map(i=>i.nome).join(', ')
+  });
+  // Se editando, substitui; se novo, adiciona
+  if(document._mrEditId){
+    const idx = arr.findIndex(x=>x.id===document._mrEditId);
+    if(idx>-1) arr[idx] = {...arr[idx], ...arr[arr.length-1]};
+    arr.pop(); // remove o push duplicado
+    delete document._mrEditId;
+  }
+  S.s('receber',arr);
+  closeMod('mod-receber');
+  resetModalReceber();
+  renderReceber();
+  showToast('✓ Venda salva com sucesso!','var(--gr)');
+}
+
+function resetModalReceber(){
+  _mrItens = [];
+  const hoje = new Date().toISOString().slice(0,10);
+  document.getElementById('mr-comp').value     = hoje.slice(0,7)+'-01';
+  document.getElementById('mr-venc').value     = hoje;
+  document.getElementById('mr-comanda').value  = '';
+  document.getElementById('mr-cliente').value  = '';
+  // mr-desc-geral resetado via try/catch abaixo
+  try{ document.getElementById('mr-subtotal').textContent = 'R$ 0,00'; }catch{}
+  try{ document.getElementById('mr-total-venda').textContent = 'R$ 0,00'; }catch{}
+  try{ document.getElementById('mr-desc-geral').value = '0'; }catch{}
+  try{ document.getElementById('mr-liq-box').style.display='none'; }catch{}
+  try{ document.getElementById('mr-forma-info').style.display='none'; }catch{}
+  document.getElementById('mr-status').value   = 'Pendente';
+  try{ document.getElementById('mr-aviso-comp').style.display='none'; }catch{}
+  try{ document.getElementById('mr-liq-box').style.display='none'; }catch{}
+  try{ document.getElementById('mr-item-total-preview').style.display='none'; }catch{}
+  try{ document.getElementById('mr-item-qtd').value='1'; }catch{}
+  try{ document.getElementById('mr-item-preco').value=''; }catch{}
+  _mrItens = [];
+  delete document._mrEditId;
+  try{ document.querySelector('#mod-receber .mt span:first-child').innerHTML='<i class="fa-solid fa-receipt" style="color:var(--or);margin-right:8px"></i>Nova Venda / Lançamento de Recebimento'; }catch{}
+  mrRenderItens();
+  mrPopularFormas();
+  mrPopularProdutos();
+}
+
+function mrPopularFormas(){
+  const sel = document.getElementById('mr-forma');
+  if(!sel) return;
+  const formas = S.g('formas-recebimento')||[];
+  const ativas = formas.filter(f=>f.st==='Ativo');
+  if(ativas.length){
+    sel.innerHTML = '<option value="">— Selecione —</option>' + ativas.map(f=>{
+      const prazoTxt = f.prazo===0 ? 'Imediato' : `D+${f.prazo}d`;
+      const taxaTxt  = f.taxa>0 ? ` (${parseFloat(f.taxa).toFixed(1)}%)` : '';
+      return `<option value="${f.nome}">${f.nome} — ${prazoTxt}${taxaTxt}</option>`;
+    }).join('');
+  } else {
+    sel.innerHTML = '<option value="">— Selecione —</option><option value="PIX">PIX — Imediato</option><option value="Dinheiro">Dinheiro — Imediato</option><option value="Cartão Débito">Cartão Débito — D+1</option><option value="Cartão Crédito 1X">Cartão Crédito 1X — D+30 (3%)</option><option value="Vale Refeição">Vale Refeição — D+2 (3.5%)</option>';
+  }
+  // Dispara cálculo automático se já tem valor selecionado
+  if(sel.value) mrFormaChanged();
+}
+
+function mrPopularProdutos(){
+  const sel = document.getElementById('mr-item-prod');
+  if(!sel) return;
+  const prods = (S.g('prod-venda')||[]).filter(p=>p.st==='Ativo');
+  const cats  = [...new Set(prods.map(p=>p.cat))];
+  let opts = '<option value="">— Selecione o produto —</option>';
+  cats.forEach(cat=>{
+    opts += `<optgroup label="${cat}">`;
+    prods.filter(p=>p.cat===cat).forEach(p=>{
+      opts += `<option value="${p.id}" data-preco="${p.preco}" data-cat="${p.cat}" data-un="${p.un}">${p.nome} — R$ ${parseFloat(p.preco).toLocaleString('pt-BR',{minimumFractionDigits:2})}</option>`;
+    });
+    opts += '</optgroup>';
+  });
+  sel.innerHTML = opts;
+}
+
+function mrPreencherPreco(){
+  const sel = document.getElementById('mr-item-prod');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt||!opt.value) return;
+  document.getElementById('mr-item-preco').value = opt.getAttribute('data-preco')||'';
+  mrCalcItemTotal();
+}
+
+function mrCalcItemTotal(){
+  const qtd   = parseFloat(document.getElementById('mr-item-qtd').value)||0;
+  const preco = parseFloat(document.getElementById('mr-item-preco').value)||0;
+  const sub   = qtd*preco;
+  const prev  = document.getElementById('mr-item-total-preview');
+  if(sub>0){
+    document.getElementById('mr-item-sub').textContent = 'R$ '+sub.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    prev.style.display='block';
+  } else { prev.style.display='none'; }
+}
+
+function mrAdicionarItem(){
+  const sel   = document.getElementById('mr-item-prod');
+  const opt   = sel.options[sel.selectedIndex];
+  if(!opt||!opt.value){ alert('Selecione um produto.'); return; }
+  const qtd   = parseFloat(document.getElementById('mr-item-qtd').value)||1;
+  const preco = parseFloat(document.getElementById('mr-item-preco').value)||0;
+  if(preco<=0){ alert('Informe o preço unitário.'); return; }
+  _mrItens.push({
+    id:Date.now(), prodId:opt.value,
+    nome: opt.text.split(' — R$')[0],
+    cat:  opt.getAttribute('data-cat')||'',
+    un:   opt.getAttribute('data-un')||'un',
+    qtd, preco,
+    total: parseFloat((qtd*preco).toFixed(2))
+  });
+  document.getElementById('mr-item-qtd').value   = '1';
+  document.getElementById('mr-item-preco').value = '';
+  sel.value = '';
+  document.getElementById('mr-item-total-preview').style.display='none';
+  mrRenderItens();
+  mrCalcTotal();
+}
+
+function mrEditarItem(id){
+  const item = _mrItens.find(i=>i.id===id);
+  if(!item) return;
+  // Remove o item da lista e abre linha de input preenchida com os dados
+  _mrItens = _mrItens.filter(i=>i.id!==id);
+  mrRenderItens();
+  mrCalcTotais();
+  // Abre nova linha de input
+  mrAddLinha();
+  // Aguarda DOM e preenche os campos
+  setTimeout(()=>{
+    const sel = document.getElementById('mri-prod');
+    if(sel){
+      // Seleciona o produto correto pelo prodId
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].value==item.prodId){ sel.selectedIndex=i; break; }
+      }
+    }
+    const qtdEl   = document.getElementById('mri-qtd');
+    const precoEl = document.getElementById('mri-preco');
+    const descEl  = document.getElementById('mri-desc');
+    if(qtdEl)   qtdEl.value   = item.qtd;
+    if(precoEl) precoEl.value = item.preco;
+    if(descEl)  descEl.value  = item.desc||0;
+    mriCalcTotal();
+  },50);
+}
+
+function mrRemoverItem(id){
+  _mrItens = _mrItens.filter(i=>i.id!==id);
+  mrRenderItens();
+  mrCalcTotais();
+}
+
+function mrRenderItens(){
+  const tbody = document.getElementById('mr-itens-body');
+  if(!tbody) return;
+  if(!_mrItens.length){
+    tbody.innerHTML='<tr id="mr-itens-empty"><td colspan="6" style="text-align:center;color:var(--tx3);padding:18px;font-size:12px"><i class="fa-solid fa-cart-plus" style="margin-right:6px"></i>Clique em <strong style="color:var(--or)">+ Adicionar Item</strong> para incluir produtos</td></tr>';
+    return;
+  }
+  const catCor={'Rodízio':'tg-or','Bebidas':'tg-bl','Drinks':'tg-gy','Cervejas':'tg-am','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  tbody.innerHTML = _mrItens.map(i=>`
+    <tr>
+      <td style="color:var(--tx);font-weight:500">${i.nome} <span class="tg ${catCor[i.cat]||'tg-gy'}" style="font-size:10px;margin-left:4px">${i.cat}</span></td>
+      <td style="text-align:center;color:var(--tx2)">${i.qtd} ${i.un}</td>
+      <td style="text-align:right;color:var(--tx2)">${R(i.preco)}</td>
+      <td style="text-align:right;font-size:12px;font-weight:500">${(i.desc&&i.desc>0)?'<span style="color:var(--rd);background:rgba(229,57,53,0.1);padding:2px 7px;border-radius:4px">-'+R(i.desc)+'</span>':'<span style="color:var(--tx3)">—</span>'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--or)">${R(i.total)}</td>
+      <td style="text-align:center;white-space:nowrap">
+        <button class="ac-btn ac-edit" onclick="mrEditarItem(${i.id})" title="Editar item" style="margin-right:2px"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" onclick="mrRemoverItem(${i.id})" title="Remover item"><i class="fa-solid fa-trash-can"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+// mrCalcTotal substituída por mrCalcTotais
+
+function mrSugerirVenc(){
+  // Chamado ao mudar competência — recalcula vencimento pela forma
+  mrFormaChanged();
+}
+
+function mrFormaChanged(){
+  const comp  = document.getElementById('mr-comp').value;
+  const forma = document.getElementById('mr-forma')?.value||'';
+  const formasArr = S.g('formas-recebimento')||[];
+  const fr    = formasArr.find(f=>f.nome===forma);
+  // Calcula data de crédito = competência + prazo da forma
+  if(comp && fr!=null){
+    const prazo = fr.prazo||0;
+    const base  = new Date(comp+'T12:00:00');
+    base.setDate(base.getDate()+prazo);
+    document.getElementById('mr-venc').value = base.toISOString().slice(0,10);
+  } else if(comp){
+    document.getElementById('mr-venc').value = comp;
+  }
+  // Mostra info da forma
+  const infoBox = document.getElementById('mr-forma-info');
+  const infoTxt = document.getElementById('mr-forma-info-txt');
+  if(fr && infoBox && infoTxt){
+    const taxa  = fr.taxa||0;
+    const prazo = fr.prazo||0;
+    const prazoTxt = prazo===0 ? 'imediato' : `D+${prazo} dia${prazo>1?'s':''}`;
+    const taxaTxt  = taxa>0 ? ` • Taxa: <span style="color:var(--rd)">${taxa.toFixed(2)}%</span>` : ' • <span style="color:var(--gr)">Sem taxa</span>';
+    infoTxt.innerHTML = `Prazo de crédito: <strong style="color:var(--tx)">${prazoTxt}</strong>${taxaTxt}`;
+    infoBox.style.display='block';
+  } else if(infoBox){
+    infoBox.style.display='none';
+  }
+  mrValidarDatas();
+  mrCalcLiquido();
+}
+
+function mrValidarDatas(){
+  const comp  = document.getElementById('mr-comp').value;
+  const venc  = document.getElementById('mr-venc').value;
+  const aviso = document.getElementById('mr-aviso-comp');
+  if(aviso){ if(comp&&venc&&venc<comp) aviso.style.display='block'; else aviso.style.display='none'; }
+}
+
+// mrAddLinha — abre linha de input inline na tabela de itens
+function mrAddLinha(){
+  // Se já existe uma linha de input aberta, confirma ela primeiro
+  if(document.getElementById('mr-input-row')) return;
+  const prods = (S.g('prod-venda')||[]).filter(p=>p.st==='Ativo');
+  if(!prods.length){
+    if(confirm('Nenhum produto cadastrado. Ir para Produtos de Venda / Cardápio?')){
+      closeMod('mod-receber'); go('cad-produtos-venda', document.querySelector('.ni[onclick*="cad-produtos-venda"]'));
+    }
+    return;
+  }
+  const cats = [...new Set(prods.map(p=>p.cat))];
+  let optsHtml = '<option value="">— Selecione —</option>';
+  cats.forEach(cat=>{
+    optsHtml += `<optgroup label="${cat}">`;
+    prods.filter(p=>p.cat===cat).forEach(p=>{
+      optsHtml += `<option value="${p.id}" data-preco="${p.preco}" data-cat="${p.cat}" data-un="${p.un}" data-nome="${p.nome}">${p.nome}</option>`;
+    });
+    optsHtml += '</optgroup>';
+  });
+  const tbody = document.getElementById('mr-itens-body');
+  // Remove empty state
+  const emptyRow = document.getElementById('mr-itens-empty');
+  if(emptyRow) emptyRow.remove();
+  // Injeta linha de input
+  const tr = document.createElement('tr');
+  tr.id = 'mr-input-row';
+  tr.style.background = 'rgba(242,100,25,0.06)';
+  tr.innerHTML = `
+    <td style="padding:6px 4px">
+      <select id="mri-prod" style="width:100%;background:var(--dk4);border:1px solid var(--or);color:var(--tx);border-radius:4px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:12px"
+        onchange="mriPreencherPreco()">${optsHtml}</select>
+    </td>
+    <td style="padding:6px 4px;text-align:center">
+      <input type="number" id="mri-qtd" value="1" min="0.5" step="0.5"
+        style="width:60px;background:var(--dk4);border:1px solid var(--bd);color:var(--tx);border-radius:4px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:12px;text-align:center"
+        oninput="mriCalcTotal()">
+    </td>
+    <td style="padding:6px 4px;text-align:right">
+      <input type="number" id="mri-preco" min="0" step="0.01" placeholder="0,00"
+        style="width:90px;background:var(--dk4);border:1px solid var(--bd);color:var(--tx);border-radius:4px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:12px;text-align:right"
+        oninput="mriCalcTotal()">
+    </td>
+    <td style="padding:6px 4px;text-align:right">
+      <input type="number" id="mri-desc" min="0" step="0.01" placeholder="0,00" value="0"
+        style="width:80px;background:var(--dk4);border:1px solid var(--bd);color:var(--tx);border-radius:4px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:12px;text-align:right"
+        oninput="mriCalcTotal()">
+    </td>
+    <td style="padding:6px 4px;text-align:right;font-weight:600;color:var(--or)" id="mri-total-cell">R$ 0,00</td>
+    <td style="padding:6px 4px;text-align:center;white-space:nowrap">
+      <button onclick="mriConfirmar()" class="btn btn-p btn-sm" style="padding:4px 8px;font-size:11px;margin-right:4px" title="Confirmar item">
+        <i class="fa-solid fa-check"></i>
+      </button>
+      <button onclick="mriCancelar()" class="btn btn-sm" style="padding:4px 8px;font-size:11px;border-color:var(--rd);color:var(--rd)" title="Cancelar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </td>`;
+  tbody.appendChild(tr);
+  document.getElementById('mri-prod').focus();
+}
+
+function mriPreencherPreco(){
+  const sel = document.getElementById('mri-prod');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt||!opt.value) return;
+  document.getElementById('mri-preco').value = opt.getAttribute('data-preco')||'';
+  mriCalcTotal();
+}
+
+function mriCalcTotal(){
+  const qtd   = parseFloat(document.getElementById('mri-qtd')?.value)||0;
+  const preco = parseFloat(document.getElementById('mri-preco')?.value)||0;
+  const desc  = parseFloat(document.getElementById('mri-desc')?.value)||0;
+  const tot   = Math.max(0,(qtd*preco)-desc);
+  const cell  = document.getElementById('mri-total-cell');
+  if(cell) cell.textContent = 'R$ '+tot.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+function mriConfirmar(){
+  const sel   = document.getElementById('mri-prod');
+  const opt   = sel.options[sel.selectedIndex];
+  if(!opt||!opt.value){ alert('Selecione um produto.'); return; }
+  const qtd   = parseFloat(document.getElementById('mri-qtd').value)||1;
+  const preco = parseFloat(document.getElementById('mri-preco').value)||0;
+  const desc  = parseFloat(document.getElementById('mri-desc').value)||0;
+  if(preco<=0){ alert('Informe o preço unitário.'); return; }
+  const total = parseFloat(Math.max(0,(qtd*preco)-desc).toFixed(2));
+  _mrItens.push({
+    id:     Date.now(),
+    prodId: opt.value,
+    nome:   opt.getAttribute('data-nome')||opt.text.split(' — R$')[0],
+    cat:    opt.getAttribute('data-cat')||'',
+    un:     opt.getAttribute('data-un')||'un',
+    qtd, preco, desc, total
+  });
+  mriCancelar();
+  mrRenderItens();
+  mrCalcTotais();
+}
+
+function mriCancelar(){
+  const row = document.getElementById('mr-input-row');
+  if(row) row.remove();
+  // Restaura empty se sem itens
+  if(!_mrItens.length){
+    const tbody = document.getElementById('mr-itens-body');
+    if(tbody) tbody.innerHTML='<tr id="mr-itens-empty"><td colspan="6" style="text-align:center;color:var(--tx3);padding:18px;font-size:12px"><i class="fa-solid fa-cart-plus" style="margin-right:6px"></i>Clique em <strong style="color:var(--or)">+ Adicionar Item</strong> para incluir produtos</td></tr>';
+  }
+}
+
+function mrCalcTotais(){
+  // Subtotal bruto dos itens (qtd × preço, sem descontos)
+  const subtotalBruto = _mrItens.reduce((a,b)=>a+(b.qtd*b.preco),0);
+  // Total dos descontos por item
+  const totalDesc     = _mrItens.reduce((a,b)=>a+(b.desc||0),0);
+  // Total líquido = soma dos totais já com desconto por item
+  const total         = _mrItens.reduce((a,b)=>a+b.total,0);
+
+  // Atualiza campo oculto para saveReceber
+  try{ document.getElementById('mr-desc-geral').value = totalDesc.toFixed(2); }catch{}
+
+  const el_sub  = document.getElementById('mr-subtotal');
+  const el_tot  = document.getElementById('mr-total-venda');
+  const el_desc = document.getElementById('mr-desc-display');
+  const el_row  = document.getElementById('mr-desc-row');
+
+  if(el_sub) el_sub.textContent = 'R$ '+subtotalBruto.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  if(el_tot) el_tot.textContent = 'R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
+  // Linha de desconto: só aparece se há algum desconto nos itens
+  if(el_row && el_desc){
+    if(totalDesc>0){
+      el_desc.textContent = '— R$ '+totalDesc.toLocaleString('pt-BR',{minimumFractionDigits:2});
+      el_row.style.display = 'flex';
+    } else {
+      el_row.style.display = 'none';
+    }
+  }
+  mrCalcLiquido();
+}
+
+function mrCalcLiquido(){
+  const totalEl = document.getElementById('mr-total-venda');
+  const rawTxt  = totalEl ? (totalEl.textContent||'0') : '0';
+  const val     = parseFloat(rawTxt.replace('R$','').replace(/\s/g,'').replace(/\./g,'').replace(',','.'))||0;
+  const forma   = document.getElementById('mr-forma')?.value||'';
+  const box     = document.getElementById('mr-liq-box');
+  if(!box) return;
+  if(!val||!forma){ box.style.display='none'; return; }
+  const formasArr = S.g('formas-recebimento')||[];
+  const fr    = formasArr.find(f=>f.nome===forma);
+  const taxa  = fr?(fr.taxa||0):0;
+  if(taxa===0){ box.style.display='none'; return; }
+  const liq   = (val*(1-taxa/100)).toFixed(2);
+  document.getElementById('mr-taxa-info').textContent  = 'Taxa '+taxa.toFixed(2)+'%';
+  document.getElementById('mr-val-liq').textContent    = 'R$ '+parseFloat(liq).toLocaleString('pt-BR',{minimumFractionDigits:2});
+  box.style.display='block';
 }
 function saveEstoque(){
   const arr=S.g('estoque')||[];
@@ -4141,21 +4727,90 @@ function renderPagar(){
 }
 
 function renderReceber(){
-  const arr=S.g('receber')||[];
-  document.getElementById('kpi-rc').innerHTML=`
-    <div class="kc"><div class="kl">Total a Receber</div><div class="kv" style="color:var(--gr)">${R(arr.reduce((a,b)=>a+b.val,0))}</div></div>
-    <div class="kc"><div class="kl">Vencido</div><div class="kv" style="color:var(--rd)">${R(arr.filter(x=>x.status==='Vencido').reduce((a,b)=>a+b.val,0))}</div></div>
-    <div class="kc"><div class="kl">Recebido Mês</div><div class="kv">${R(D.fat)}</div></div>
-    <div class="kc"><div class="kl">Inadimplência</div><div class="kv" style="color:var(--am)">4,2%</div></div>`;
-  document.getElementById('tb-rc').innerHTML=arr.map(c=>`<tr>
-    <td>${fd(c.venc)}</td><td style="color:var(--tx)">${c.desc}</td>
-    <td style="font-size:11px;color:var(--or)">${nomeContaByCod(c.conta)}</td>
-    <td><span class="tg tg-bl">${c.forma}</span></td><td>${R(c.val)}</td><td>${stTag(c.status)}</td>
-    <td><div class="ac-btns" style="opacity:1">
-      <button class="ac-btn ac-edit" title="Editar" onclick="editReceber(${c.id})"><i class="fa-solid fa-pen"></i></button>
-      <button class="ac-btn ac-del" title="Excluir" onclick="del('receber',${c.id},renderReceber)"><i class="fa-solid fa-trash-can"></i></button>
-    </div></td>
-  </tr>`).join('');
+  const arr    = S.g('receber')||[];
+  const hoje   = new Date().toISOString().slice(0,7);
+
+  // ── Popula select de meses ──
+  const selMes = document.getElementById('rc-filtro-mes');
+  if(selMes){
+    const meses = [...new Set(arr.map(c=>(c.comp||c.venc||'').slice(0,7)).filter(Boolean))];
+    if(!meses.includes(hoje)) meses.push(hoje);
+    meses.sort().reverse();
+    const mesAtual = selMes.value || hoje;
+    selMes.innerHTML = meses.map(m=>{
+      const [y,mo] = m.split('-');
+      const nome = new Date(y, mo-1, 1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
+      const label = nome.charAt(0).toUpperCase() + nome.slice(1);
+      return `<option value="${m}" ${m===mesAtual?'selected':''}>${label}</option>`;
+    }).join('');
+  }
+
+  const mesFiltro = selMes ? (selMes.value||hoje) : hoje;
+
+  // ── Filtra por competência ──
+  const filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===mesFiltro);
+
+  const totalBruto    = filtrado.reduce((a,b)=>a+(b.val||0),0);
+  const totalLiq      = filtrado.reduce((a,b)=>a+(b.liq!=null?b.liq:b.val||0),0);
+  const totalRecebido = filtrado.filter(x=>x.status==='Recebido').reduce((a,b)=>a+(b.liq!=null?b.liq:b.val||0),0);
+  const totalPendente = filtrado.filter(x=>x.status!=='Recebido').reduce((a,b)=>a+(b.val||0),0);
+  const totalVencido  = filtrado.filter(x=>x.status==='Vencido').reduce((a,b)=>a+(b.val||0),0);
+  const totalDesconto = filtrado.reduce((a,b)=>a+(b.desconto||0),0);
+
+  // ── KPIs ──
+  const kpiEl = document.getElementById('kpi-rc');
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="kc"><div class="kl"><i class="fa-solid fa-arrow-trend-up" style="color:var(--or);margin-right:4px"></i>Faturamento Bruto</div><div class="kv" style="color:var(--tx)">${R(totalBruto)}</div><div class="kd nt">mês selecionado</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-circle-check" style="color:var(--gr);margin-right:4px"></i>Valor Líquido</div><div class="kv" style="color:var(--gr)">${R(totalLiq)}</div><div class="kd nt">após taxas</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-clock" style="color:var(--am);margin-right:4px"></i>A Receber</div><div class="kv" style="color:var(--am)">${R(totalPendente)}</div><div class="kd nt">pendente + vencido</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-tag" style="color:var(--bl);margin-right:4px"></i>Descontos</div><div class="kv" style="color:var(--rd)">${R(totalDesconto)}</div><div class="kd nt">mês selecionado</div></div>`;
+
+  // ── Tabela ──
+  const tbEl = document.getElementById('tb-rc');
+  if(!tbEl) return;
+
+  if(!filtrado.length){
+    tbEl.innerHTML=`<tr><td colspan="11" style="text-align:center;color:var(--tx3);padding:32px;font-size:13px">
+      <i class="fa-solid fa-inbox" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
+      Nenhum lançamento em ${selMes ? selMes.options[selMes.selectedIndex]?.text : mesFiltro}.<br>
+      <span style="font-size:11px">Clique em <strong style="color:var(--or)">+ Novo Venda</strong> para adicionar.</span>
+    </td></tr>`;
+    return;
+  }
+
+  tbEl.innerHTML = filtrado.map(c=>{
+    const temDesc = c.desconto>0;
+    const liqVal  = c.liq!=null ? c.liq : c.val;
+    const liqCell = (c.taxa>0)
+      ? `<span style="color:var(--gr);font-weight:500">${R(liqVal)}</span>`
+      : `<span style="color:var(--tx3)">—</span>`;
+    const descCell = temDesc
+      ? `<span style="color:var(--rd);font-size:11px">-${R(c.desconto)}</span>`
+      : `<span style="color:var(--tx3)">—</span>`;
+    const numItens = Array.isArray(c.itens) ? c.itens.length : 0;
+    const descItens = numItens
+      ? c.itens.map(i=>`${i.qtd}× ${i.nome}`).join(' | ')
+      : (c.desc||'—');
+    const compMes = (c.comp||c.venc||'').slice(0,7);
+    const [cy,cm2] = compMes.split('-');
+    const compLabel = cy ? new Date(cy,cm2-1,1).toLocaleString('pt-BR',{month:'short',year:'2-digit'}) : '—';
+    return `<tr>
+      <td style="color:var(--or);font-size:11px;font-weight:500">${compLabel}</td>
+      <td>${fd(c.venc)}</td>
+      <td style="color:var(--or);font-weight:600">${c.comanda||'—'}</td>
+      <td style="color:var(--tx)">${c.cliente||'—'}</td>
+      <td style="font-size:11px;color:var(--tx2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${descItens}">${numItens?numItens+' item'+(numItens!==1?'s':''):descItens.slice(0,30)}</td>
+      <td><span class="tg tg-bl" style="font-size:10px">${c.forma||'—'}</span></td>
+      <td style="font-weight:500;text-align:right">${R(c.val||0)}</td>
+      <td style="text-align:right">${descCell}</td>
+      <td style="text-align:right">${liqCell}</td>
+      <td>${stTag(c.status)}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-edit" title="Editar" onclick="editReceber(${c.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" title="Excluir" onclick="del('receber',${c.id},renderReceber)"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderEstoque(){
@@ -4681,13 +5336,13 @@ function renderFormasPag(){
 // FORMAS DE RECEBIMENTO
 // ══════════════════════════════════════
 const FORMAS_REC_PADRAO = [
-  {id:1, nome:'DINHEIRO',              tipo:'Dinheiro',          prazo:0,  taxa:0,   parcelas:1, intervalo:0,  st:'Ativo', obs:'Recebimento imediato'},
-  {id:2, nome:'PIX',                   tipo:'PIX',               prazo:0,  taxa:0,   parcelas:1, intervalo:0,  st:'Ativo', obs:'Recebimento imediato'},
-  {id:3, nome:'CARTÃO DE DÉBITO',      tipo:'Débito',            prazo:1,  taxa:1.8, parcelas:1, intervalo:0,  st:'Ativo', obs:'D+1 dia útil'},
-  {id:4, nome:'CARTÃO DE CRÉDITO 1X',  tipo:'Crédito à Vista',   prazo:30, taxa:3.0, parcelas:1, intervalo:0,  st:'Ativo', obs:'D+30 dias'},
-  {id:5, nome:'CARTÃO DE CRÉDITO 2X',  tipo:'Crédito Parcelado', prazo:30, taxa:4.0, parcelas:2, intervalo:30, st:'Ativo', obs:'2 parcelas de 30 dias'},
-  {id:6, nome:'CARTÃO DE CRÉDITO 3X',  tipo:'Crédito Parcelado', prazo:30, taxa:5.0, parcelas:3, intervalo:30, st:'Ativo', obs:'3 parcelas de 30 dias'},
-  {id:7, nome:'VALE REFEIÇÃO',         tipo:'Vale Refeição',     prazo:2,  taxa:3.5, parcelas:1, intervalo:0,  st:'Ativo', obs:'VR / Alelo / Sodexo / Ticket'},
+  {id:1, nome:'Dinheiro',          tipo:'À Vista',      prazo:0,  st:'Ativo', obs:''},
+  {id:2, nome:'PIX',               tipo:'À Vista',      prazo:0,  st:'Ativo', obs:'Recebimento imediato'},
+  {id:3, nome:'Cartão de Débito',  tipo:'Débito',       prazo:1,  st:'Ativo', obs:'D+1'},
+  {id:4, nome:'Cartão de Crédito', tipo:'Crédito',      prazo:30, st:'Ativo', obs:'D+30'},
+  {id:5, nome:'Transferência',     tipo:'Transferência',prazo:1,  st:'Ativo', obs:''},
+  {id:6, nome:'Boleto',            tipo:'Parcelado',    prazo:3,  st:'Ativo', obs:'Após compensação'},
+  {id:7, nome:'iFood / Delivery',  tipo:'Recorrente',   prazo:14, st:'Ativo', obs:'Repasse quinzenal'},
 ];
 
 function initFormasRecPadrao(){
@@ -4702,88 +5357,41 @@ function getFormasRecebimento(){
   return FORMAS_REC_PADRAO.map(f=>f.nome);
 }
 
-function mfrAjustarDefaults(){
-  const tipo = document.getElementById('mfr-tipo').value;
-  const isEdit = !!document.getElementById('mfr-id').value;
-  const rowParc = document.getElementById('mfr-row-parcelas');
-  const def = {
-    'Dinheiro':          {prazo:0,  taxa:0},
-    'PIX':               {prazo:0,  taxa:0},
-    'Débito':            {prazo:1,  taxa:1.8},
-    'Crédito à Vista':   {prazo:30, taxa:3.0},
-    'Crédito Parcelado': {prazo:30, taxa:4.5},
-    'Vale Refeição':     {prazo:2,  taxa:3.5},
-    'Vale Alimentação':  {prazo:2,  taxa:3.5},
-    'Transferência':     {prazo:1,  taxa:0},
-  };
-  if(!isEdit && def[tipo]){
-    document.getElementById('mfr-prazo').value = def[tipo].prazo;
-    document.getElementById('mfr-taxa').value  = def[tipo].taxa;
-  }
-  rowParc.style.display = tipo==='Crédito Parcelado' ? 'grid' : 'none';
-  mfrAtualizarResumo();
-}
-
-function mfrAtualizarResumo(){
-  const tipo  = document.getElementById('mfr-tipo').value;
-  const taxa  = parseFloat(document.getElementById('mfr-taxa').value)||0;
-  const prazo = parseInt(document.getElementById('mfr-prazo').value)||0;
-  const parc  = parseInt(document.getElementById('mfr-parcelas')?.value)||1;
-  const intv  = parseInt(document.getElementById('mfr-intervalo')?.value)||30;
-  const box   = document.getElementById('mfr-resumo');
-  if(!tipo){ box.style.display='none'; return; }
-  const liq   = (100 - taxa).toFixed(2);
-  const prazoTxt = prazo===0 ? 'imediatamente (mesmo dia)' : `em ${prazo} dia${prazo>1?'s':''} útil${prazo>1?'eis':''}`;
-  let parcTxt = '';
-  if(tipo==='Crédito Parcelado' && parc>1){
-    parcTxt = ` • Parcelado em até <strong style="color:var(--or)">${parc}×</strong> com intervalo de ${intv} dias entre parcelas`;
-  }
-  box.style.display='block';
-  box.innerHTML=`<i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:6px"></i>Em uma venda de <strong style="color:var(--tx)">R$ 100,00</strong>, o valor líquido creditado será <strong style="color:var(--gr)">R$ ${liq}</strong> — o crédito cai na conta <strong style="color:var(--tx)">${prazoTxt}</strong>${parcTxt}.`;
-}
-
 function saveFormaRec(){
   const idVal = document.getElementById('mfr-id').value;
   const nome  = document.getElementById('mfr-nome').value.trim();
   if(!nome){ alert('Informe o nome da forma de recebimento.'); return; }
-  const tipo = document.getElementById('mfr-tipo').value;
   const arr = S.g('formas-recebimento')||[];
-  const obj = {
-    nome,
-    tipo,
-    prazo:    parseInt(document.getElementById('mfr-prazo').value)||0,
-    taxa:     parseFloat(document.getElementById('mfr-taxa').value)||0,
-    parcelas: tipo==='Crédito Parcelado' ? (parseInt(document.getElementById('mfr-parcelas').value)||1) : 1,
-    intervalo:tipo==='Crédito Parcelado' ? (parseInt(document.getElementById('mfr-intervalo').value)||30) : 0,
-    st:       document.getElementById('mfr-st').value,
-    obs:      document.getElementById('mfr-obs').value,
-  };
   if(idVal){
     const idx = arr.findIndex(x=>x.id===Number(idVal));
-    if(idx>-1) arr[idx]={...arr[idx],...obj};
+    if(idx>-1) arr[idx]={...arr[idx],
+      nome, tipo:document.getElementById('mfr-tipo').value,
+      prazo:parseInt(document.getElementById('mfr-prazo').value)||0,
+      st:document.getElementById('mfr-st').value,
+      obs:document.getElementById('mfr-obs').value,
+    };
   } else {
     const ids = arr.map(x=>x.id||0);
-    arr.push({id: ids.length?Math.max(...ids)+1:1, ...obj});
+    arr.push({id: ids.length?Math.max(...ids)+1:1,
+      nome, tipo:document.getElementById('mfr-tipo').value,
+      prazo:parseInt(document.getElementById('mfr-prazo').value)||0,
+      st:document.getElementById('mfr-st').value,
+      obs:document.getElementById('mfr-obs').value,
+    });
   }
   S.s('formas-recebimento', arr);
   closeMod('mod-forma-rec');
   resetModalFormaRec();
   renderFormasRec();
-  showToast('✓ Forma de recebimento salva!','var(--gr)');
 }
 
 function resetModalFormaRec(){
   document.getElementById('mfr-id').value='';
   document.getElementById('mfr-nome').value='';
-  document.getElementById('mfr-tipo').value='Dinheiro';
   document.getElementById('mfr-prazo').value='0';
-  document.getElementById('mfr-taxa').value='0';
-  document.getElementById('mfr-parcelas').value='1';
-  document.getElementById('mfr-intervalo').value='30';
   document.getElementById('mfr-obs').value='';
+  document.getElementById('mfr-tipo').value='À Vista';
   document.getElementById('mfr-st').value='Ativo';
-  document.getElementById('mfr-row-parcelas').style.display='none';
-  document.getElementById('mfr-resumo').style.display='none';
   document.querySelector('#mod-forma-rec .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-hand-holding-dollar" style="color:var(--or);margin-right:8px"></i>Nova Forma de Recebimento';
 }
@@ -4791,49 +5399,37 @@ function resetModalFormaRec(){
 function editFormaRec(id){
   const arr = S.g('formas-recebimento')||[];
   const f = arr.find(x=>x.id===id); if(!f) return;
-  document.getElementById('mfr-id').value       = f.id;
-  document.getElementById('mfr-nome').value      = f.nome||'';
-  document.getElementById('mfr-tipo').value      = f.tipo||'Dinheiro';
-  document.getElementById('mfr-prazo').value     = f.prazo||0;
-  document.getElementById('mfr-taxa').value      = f.taxa||0;
-  document.getElementById('mfr-parcelas').value  = f.parcelas||1;
-  document.getElementById('mfr-intervalo').value = f.intervalo||30;
-  document.getElementById('mfr-st').value        = f.st||'Ativo';
-  document.getElementById('mfr-obs').value       = f.obs||'';
-  document.getElementById('mfr-row-parcelas').style.display = f.tipo==='Crédito Parcelado' ? 'grid' : 'none';
+  document.getElementById('mfr-id').value   = f.id;
+  document.getElementById('mfr-nome').value = f.nome||'';
+  document.getElementById('mfr-tipo').value = f.tipo||'À Vista';
+  document.getElementById('mfr-prazo').value= f.prazo||0;
+  document.getElementById('mfr-st').value   = f.st||'Ativo';
+  document.getElementById('mfr-obs').value  = f.obs||'';
   document.querySelector('#mod-forma-rec .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Forma de Recebimento';
-  mfrAtualizarResumo();
   openMod('mod-forma-rec');
 }
 
 function renderFormasRec(){
   const arr = S.g('formas-recebimento')||[];
   const tipoCor = {
-    'Dinheiro':'tg-gr','PIX':'tg-gr','Débito':'tg-bl',
-    'Crédito à Vista':'tg-am','Crédito Parcelado':'tg-or',
-    'Vale Refeição':'tg-gy','Vale Alimentação':'tg-gy',
-    'Transferência':'tg-gy','Outros':'tg-gy'
+    'À Vista':'tg-gr','Antecipado':'tg-pu','Parcelado':'tg-am',
+    'Crédito':'tg-bl','Débito':'tg-or','Transferência':'tg-gy',
+    'Recorrente':'tg-rd','Outros':'tg-gy'
   };
   document.getElementById('tb-formas-rec').innerHTML = arr.length===0
-    ? `<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhuma forma de recebimento cadastrada</td></tr>`
-    : arr.map(f=>{
-      const liq = f.taxa>0 ? `<span style="color:var(--rd);font-size:11px">${parseFloat(f.taxa).toFixed(2)}%</span>` : `<span style="color:var(--gr);font-size:11px">Isento</span>`;
-      const parc = (f.tipo==='Crédito Parcelado'&&f.parcelas>1) ? `<span class="tg tg-am">até ${f.parcelas}×</span>` : `<span style="color:var(--tx3)">—</span>`;
-      return `<tr>
+    ? `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhuma forma de recebimento cadastrada</td></tr>`
+    : arr.map(f=>`<tr>
     <td style="color:var(--tx);font-weight:500">${f.nome}</td>
     <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
-    <td style="color:var(--tx2)">${f.prazo===0?'<span class="tg tg-gr">Imediato</span>':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
-    <td>${liq}</td>
-    <td>${parc}</td>
+    <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
     <td>${stTag(f.st)}</td>
     <td style="font-size:11px;color:var(--tx3)">${f.obs||'—'}</td>
     <td><div class="ac-btns" style="opacity:1">
       <button class="ac-btn ac-edit" title="Editar" onclick="editFormaRec(${f.id})"><i class="fa-solid fa-pen"></i></button>
       <button class="ac-btn ac-del" title="Excluir" onclick="del('formas-recebimento',${f.id},renderFormasRec)"><i class="fa-solid fa-trash-can"></i></button>
     </div></td>
-  </tr>`;
-    }).join('');
+  </tr>`).join('');
 }
 
 // ══════════════════════════════════════
@@ -6396,6 +6992,148 @@ function exportarRelCompras(){
 
 function imprimirRelCompras(){ window.print(); }
 
+
+// ══════════════════════════════════════
+// PRODUTOS DE VENDA / CARDÁPIO
+// ══════════════════════════════════════
+const PROD_VENDA_PADRAO = [
+  {id:101, cod:'PV-001', nome:'RODÍZIO ADULTO',          cat:'Rodízio',    un:'pax',   preco:59.90, custo:18.00, st:'Ativo', obs:'Inclui pizzas ilimitadas + sobremesa'},
+  {id:102, cod:'PV-002', nome:'RODÍZIO INFANTIL',         cat:'Rodízio',    un:'pax',   preco:34.90, custo:10.00, st:'Ativo', obs:'Até 10 anos'},
+  {id:103, cod:'PV-003', nome:'RODÍZIO ADULTO + BEBIDA',  cat:'Combos',     un:'combo', preco:74.90, custo:22.00, st:'Ativo', obs:'Inclui 1 refri lata ou suco'},
+  {id:104, cod:'PV-004', nome:'RODÍZIO INFANTIL + SUCO',  cat:'Combos',     un:'combo', preco:44.90, custo:13.00, st:'Ativo', obs:''},
+  {id:105, cod:'PV-005', nome:'CERVEJA BUDWEISER 600ML',  cat:'Cervejas',   un:'un',    preco:18.00, custo:7.50,  st:'Ativo', obs:'Long neck'},
+  {id:106, cod:'PV-006', nome:'CERVEJA HEINEKEN 600ML',   cat:'Cervejas',   un:'un',    preco:19.00, custo:8.00,  st:'Ativo', obs:''},
+  {id:107, cod:'PV-007', nome:'CERVEJA SEM ÁLCOOL 350ML', cat:'Cervejas',   un:'un',    preco:12.00, custo:5.00,  st:'Ativo', obs:''},
+  {id:108, cod:'PV-008', nome:'COCA-COLA LATA 350ML',     cat:'Bebidas',    un:'un',    preco:8.00,  custo:2.80,  st:'Ativo', obs:''},
+  {id:109, cod:'PV-009', nome:'COCA-COLA ZERO LATA 350ML',cat:'Bebidas',    un:'un',    preco:8.00,  custo:2.80,  st:'Ativo', obs:''},
+  {id:110, cod:'PV-010', nome:'SUCO NATURAL 300ML',       cat:'Bebidas',    un:'un',    preco:10.00, custo:3.00,  st:'Ativo', obs:'Laranja, Maracujá, Limão'},
+  {id:111, cod:'PV-011', nome:'ÁGUA MINERAL 500ML',       cat:'Bebidas',    un:'un',    preco:5.00,  custo:1.50,  st:'Ativo', obs:'Com ou sem gás'},
+  {id:112, cod:'PV-012', nome:'CAIPIRINHA LIMÃO',         cat:'Drinks',     un:'dose',  preco:22.00, custo:6.00,  st:'Ativo', obs:''},
+  {id:113, cod:'PV-013', nome:'CAIPIROSKA MORANGO',       cat:'Drinks',     un:'dose',  preco:24.00, custo:7.00,  st:'Ativo', obs:''},
+  {id:114, cod:'PV-014', nome:'SOBREMESA TIRAMISU',       cat:'Sobremesas', un:'un',    preco:16.00, custo:5.50,  st:'Ativo', obs:''},
+  {id:115, cod:'PV-015', nome:'SOBREMESA PETIT GATEAU',   cat:'Sobremesas', un:'un',    preco:18.00, custo:6.00,  st:'Ativo', obs:'Com sorvete'},
+];
+
+function initProdVendaPadrao(){
+  if(!(S.g('prod-venda')||[]).length){
+    S.s('prod-venda', PROD_VENDA_PADRAO);
+  }
+}
+
+function gerarCodPV(){
+  const arr = S.g('prod-venda')||[];
+  const nums = arr.map(p=>{ const m=p.cod&&p.cod.match(/PV-(\d+)/); return m?parseInt(m[1]):0; });
+  const next = nums.length ? Math.max(...nums)+1 : 1;
+  return 'PV-'+String(next).padStart(3,'0');
+}
+
+function mpvCalcMargem(){
+  const preco = parseFloat(document.getElementById('mpv-preco').value)||0;
+  const custo = parseFloat(document.getElementById('mpv-custo').value)||0;
+  const box   = document.getElementById('mpv-margem-box');
+  if(!box) return;
+  if(!preco||!custo){ box.style.display='none'; return; }
+  const margem = ((preco-custo)/preco*100).toFixed(1);
+  const cmv    = (custo/preco*100).toFixed(1);
+  document.getElementById('mpv-margem-val').textContent = margem+'%';
+  document.getElementById('mpv-cmv-val').textContent    = cmv+'%';
+  box.style.display='block';
+}
+
+function saveProdVenda(){
+  const nome  = document.getElementById('mpv-nome').value.trim();
+  const preco = parseFloat(document.getElementById('mpv-preco').value)||0;
+  if(!nome){ alert('Informe o nome do produto.'); return; }
+  if(preco<=0){ alert('Informe o preço de venda.'); return; }
+  const idVal = document.getElementById('mpv-id').value;
+  const arr   = S.g('prod-venda')||[];
+  const obj   = {
+    nome, preco,
+    cat:   document.getElementById('mpv-cat').value,
+    un:    document.getElementById('mpv-un').value,
+    custo: parseFloat(document.getElementById('mpv-custo').value)||0,
+    st:    document.getElementById('mpv-st').value,
+    obs:   document.getElementById('mpv-obs').value.trim(),
+  };
+  if(idVal){
+    const idx = arr.findIndex(x=>x.id===Number(idVal));
+    if(idx>-1) arr[idx] = {...arr[idx], ...obj};
+  } else {
+    const ids = arr.map(x=>x.id||0);
+    obj.id  = ids.length ? Math.max(...ids)+1 : 1;
+    obj.cod = gerarCodPV();
+    arr.push(obj);
+  }
+  S.s('prod-venda', arr);
+  closeMod('mod-pvenda');
+  resetModalProdVenda();
+  renderProdVenda();
+  showToast('✓ Produto salvo no cardápio!','var(--gr)');
+}
+
+function resetModalProdVenda(){
+  document.getElementById('mpv-id').value    = '';
+  document.getElementById('mpv-cod').value   = gerarCodPV();
+  document.getElementById('mpv-nome').value  = '';
+  document.getElementById('mpv-cat').value   = 'Rodízio';
+  document.getElementById('mpv-un').value    = 'pax';
+  document.getElementById('mpv-preco').value = '';
+  document.getElementById('mpv-custo').value = '';
+  document.getElementById('mpv-st').value    = 'Ativo';
+  document.getElementById('mpv-obs').value   = '';
+  try{ document.getElementById('mpv-margem-box').style.display='none'; }catch{}
+  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda'; }catch{}
+}
+
+function editProdVenda(id){
+  const arr = S.g('prod-venda')||[];
+  const p   = arr.find(x=>x.id===id); if(!p) return;
+  document.getElementById('mpv-id').value    = p.id;
+  document.getElementById('mpv-cod').value   = p.cod||'';
+  document.getElementById('mpv-nome').value  = p.nome||'';
+  document.getElementById('mpv-cat').value   = p.cat||'Rodízio';
+  document.getElementById('mpv-un').value    = p.un||'pax';
+  document.getElementById('mpv-preco').value = p.preco||'';
+  document.getElementById('mpv-custo').value = p.custo||'';
+  document.getElementById('mpv-st').value    = p.st||'Ativo';
+  document.getElementById('mpv-obs').value   = p.obs||'';
+  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Produto de Venda'; }catch{}
+  mpvCalcMargem();
+  openMod('mod-pvenda');
+}
+
+function renderProdVenda(){
+  const arr     = S.g('prod-venda')||[];
+  const filtCat = document.getElementById('pv-filtro-cat')?.value||'';
+  // popula filtro
+  const selFilt = document.getElementById('pv-filtro-cat');
+  if(selFilt){
+    const cats = [...new Set(arr.map(p=>p.cat))].sort();
+    const cur  = selFilt.value;
+    selFilt.innerHTML = '<option value="">Todas as categorias</option>'+cats.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+  }
+  const filtrado = filtCat ? arr.filter(p=>p.cat===filtCat) : arr;
+  const catCor   = {'Rodízio':'tg-or','Bebidas':'tg-bl','Drinks':'tg-gy','Cervejas':'tg-am','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  document.getElementById('tb-pv').innerHTML = filtrado.length===0
+    ? `<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhum produto cadastrado</td></tr>`
+    : filtrado.map(p=>{
+      const margem = p.preco&&p.custo ? ((p.preco-p.custo)/p.preco*100).toFixed(1)+'%' : '—';
+      const corMg  = p.preco&&p.custo ? ((p.preco-p.custo)/p.preco*100)>50?'var(--gr)':((p.preco-p.custo)/p.preco*100)>30?'var(--am)':'var(--rd)' : 'var(--tx3)';
+      return `<tr>
+        <td style="color:var(--or);font-size:11px;font-weight:600">${p.cod||'—'}</td>
+        <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+        <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+        <td style="color:var(--tx2);text-align:center">${p.un}</td>
+        <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.preco)}</td>
+        <td style="text-align:right;font-size:11px;color:${corMg}">${margem}</td>
+        <td>${stTag(p.st)}</td>
+        <td><div class="ac-btns" style="opacity:1">
+          <button class="ac-btn ac-edit" title="Editar" onclick="editProdVenda(${p.id})"><i class="fa-solid fa-pen"></i></button>
+          <button class="ac-btn ac-del" title="Excluir" onclick="del('prod-venda',${p.id},renderProdVenda)"><i class="fa-solid fa-trash-can"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+}
 // ══════════════════════════════════════
 // BACKUP & RESTAURAÇÃO
 // ══════════════════════════════════════
@@ -6457,6 +7195,7 @@ function initAll(){
   renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
   initCatProdPadrao(); renderCategoriasProd();
+  initProdVendaPadrao(); renderProdVenda(); resetModalProdVenda();
   initFormasPadrao();
   initFormasRecPadrao(); renderFormasPag();
   // Preenche selects dos modais
