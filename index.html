@@ -584,7 +584,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <!-- input hidden para compatibilidade com renderReceber -->
         <select id="rc-filtro-mes" style="display:none"></select>
 
-        <button class="btn btn-p btn-sm" onclick="openMod('mod-receber');resetModalReceber()">
+        <button class="btn btn-p btn-sm" onclick="delete document._mrEditId; _mrItens=[]; openMod('mod-receber');resetModalReceber()">
           <i class="fa-solid fa-plus"></i> Nova Venda
         </button>
       </div>
@@ -1621,7 +1621,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="mb wide" style="width:820px">
     <div class="mt">
       <span><i class="fa-solid fa-receipt" style="color:var(--or);margin-right:8px"></i>Nova Venda / Lançamento de Recebimento</span>
-      <span class="mc" onclick="closeMod('mod-receber');resetModalReceber()">✕</span>
+      <span class="mc" onclick="delete document._mrEditId; _mrItens=[]; closeMod('mod-receber');resetModalReceber()">✕</span>
     </div>
 
     <!-- CABEÇALHO DA VENDA -->
@@ -1732,7 +1732,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
 
     <div class="mf">
-      <button class="bc" onclick="closeMod('mod-receber');resetModalReceber()">Cancelar</button>
+      <button class="bc" onclick="delete document._mrEditId; _mrItens=[]; closeMod('mod-receber');resetModalReceber()">Cancelar</button>
       <button class="bs" onclick="saveReceber()"><i class="fa-solid fa-floppy-disk"></i> Salvar Venda</button>
     </div>
   </div>
@@ -3695,7 +3695,8 @@ function saveReceber(){
   const venc = document.getElementById('mr-venc').value;
   if(!comp){ alert('Informe a data de competência (mês da venda).'); return; }
   if(!venc){ alert('Informe a data de vencimento.'); return; }
-  if(!_mrItens.length){ alert('Adicione pelo menos um produto à comanda.'); return; }
+  // Só exige itens em novo lançamento — na edição pode ter ficado sem alterar itens
+  if(!_mrItens.length && !document._mrEditId){ alert('Adicione pelo menos um produto à comanda.'); return; }
   const totalEl = document.getElementById('mr-total-venda');
   const val   = totalEl ? parseFloat(totalEl.textContent.replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0;
   const forma = document.getElementById('mr-forma').value;
@@ -3704,8 +3705,9 @@ function saveReceber(){
   const taxa = fr ? (fr.taxa||0) : 0;
   const liq  = parseFloat((val*(1-taxa/100)).toFixed(2));
   const arr  = S.g('receber')||[];
-  arr.push({
-    id:       Date.now(),
+
+  // Monta objeto com todos os campos incluindo cliente e comanda
+  const novoObj = {
     comp, venc,
     comanda:  document.getElementById('mr-comanda').value.trim(),
     cliente:  document.getElementById('mr-cliente').value.trim(),
@@ -3717,30 +3719,41 @@ function saveReceber(){
     forma,
     status:   document.getElementById('mr-status').value,
     desc:     _mrItens.map(i=>i.nome).join(', ')
-  });
-  // Se editando, substitui; se novo, adiciona
+  };
+
+  // Se editando: atualiza o registro existente preservando o id original
   if(document._mrEditId){
     const idx = arr.findIndex(x=>x.id===document._mrEditId);
-    if(idx>-1) arr[idx] = {...arr[idx], ...arr[arr.length-1]};
-    arr.pop(); // remove o push duplicado
+    if(idx>-1){
+      arr[idx] = { ...arr[idx], ...novoObj };
+    } else {
+      // id não encontrado — insere como novo
+      arr.push({ id: Date.now(), ...novoObj });
+    }
     delete document._mrEditId;
+  } else {
+    // Novo lançamento
+    arr.push({ id: Date.now(), ...novoObj });
   }
   S.s('receber',arr);
   closeMod('mod-receber');
-  // Inicializar filtro de período
-  const _hj = new Date().toISOString().slice(0,7);
-  _rcFiltro  = { tipo:'mes', mes:_hj, ini:null, fim:null, ano:null };
-  _rcAnoNav  = parseInt(_hj.slice(0,4));
-  const [_ry,_rm] = _hj.split('-');
-  const _rLabel = new Date(_ry,_rm-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  setTimeout(()=>{ rcAtualizarLabel(_rLabel.charAt(0).toUpperCase()+_rLabel.slice(1)); }, 100);
+
+  // Mantém o filtro no mês da competência do lançamento salvo
+  const _compMes = comp.slice(0,7);
+  _rcFiltro  = { tipo:'mes', mes:_compMes, ini:null, fim:null, ano:null };
+  _rcAnoNav  = parseInt(_compMes.slice(0,4));
+  const [_ry,_rm] = _compMes.split('-');
+  const _rLabel = new Date(_ry, parseInt(_rm)-1, 1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  setTimeout(()=>{ rcAtualizarLabel(_rLabel.charAt(0).toUpperCase()+_rLabel.slice(1)); rcRenderGridMeses(); }, 80);
+
   resetModalReceber();
   renderReceber();
   showToast('✓ Venda salva com sucesso!','var(--gr)');
 }
 
 function resetModalReceber(){
-  _mrItens = [];
+  // Só limpa itens se não estiver em modo edição
+  if(!document._mrEditId) _mrItens = [];
   const hoje = new Date().toISOString().slice(0,10);
   document.getElementById('mr-comp').value     = hoje.slice(0,7)+'-01';
   document.getElementById('mr-venc').value     = hoje;
@@ -3758,9 +3771,11 @@ function resetModalReceber(){
   try{ document.getElementById('mr-item-total-preview').style.display='none'; }catch{}
   try{ document.getElementById('mr-item-qtd').value='1'; }catch{}
   try{ document.getElementById('mr-item-preco').value=''; }catch{}
-  _mrItens = [];
-  delete document._mrEditId;
-  try{ document.querySelector('#mod-receber .mt span:first-child').innerHTML='<i class="fa-solid fa-receipt" style="color:var(--or);margin-right:8px"></i>Nova Venda / Lançamento de Recebimento'; }catch{}
+  // Só limpa itens e editId se for novo lançamento (não edição)
+  if(!document._mrEditId){
+    _mrItens = [];
+    try{ document.querySelector('#mod-receber .mt span:first-child').innerHTML='<i class="fa-solid fa-receipt" style="color:var(--or);margin-right:8px"></i>Nova Venda / Lançamento de Recebimento'; }catch{}
+  }
   mrRenderItens();
   mrPopularFormas();
   mrPopularProdutos();
@@ -5964,31 +5979,60 @@ function salvarBaixa(){
 }
 
 function editReceber(id){
-  const arr=S.g('receber')||[];
-  const c=arr.find(x=>x.id===id); if(!c)return;
-  document.getElementById('mer-id').value=id;
-  document.getElementById('mer-venc').value=c.venc||'';
-  document.getElementById('mer-desc').value=c.desc||'';
-  fillSelectContas('mer-conta',ct=>ct.natureza==='receita');
-  document.getElementById('mer-conta').value=c.conta||'';
-  document.getElementById('mer-val').value=c.val||'';
-  document.getElementById('mer-forma').value=c.forma||'PIX';
-  document.getElementById('mer-status').value=c.status||'Pendente';
-  openMod('mod-editreceber');
+  const arr = S.g('receber')||[];
+  const c   = arr.find(x=>x.id===id); if(!c) return;
+
+  // Guarda id de edição e itens ANTES de abrir o modal
+  document._mrEditId = id;
+  _mrItens = c.itens ? JSON.parse(JSON.stringify(c.itens)) : [];
+
+  // Abre o modal primeiro
+  openMod('mod-receber');
+
+  // Popula formas e produtos (funções seguras)
+  mrPopularFormas();
+  mrPopularProdutos();
+
+  // Preenche todos os campos com delay para garantir DOM pronto
+  setTimeout(()=>{
+    // Datas
+    document.getElementById('mr-comp').value    = c.comp || (c.venc||'').slice(0,7)+'-01';
+    document.getElementById('mr-venc').value    = c.venc  || '';
+
+    // Identificação
+    document.getElementById('mr-comanda').value = c.comanda || '';
+    document.getElementById('mr-cliente').value = c.cliente || c.desc || '';
+
+    // Financeiro
+    document.getElementById('mr-conta').value   = c.conta  || '';
+    document.getElementById('mr-status').value  = c.status || 'Pendente';
+    try{ document.getElementById('mr-desc-geral').value = c.desconto||0; }catch{}
+
+    // Forma de recebimento
+    const sel = document.getElementById('mr-forma');
+    if(sel && c.forma){
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].value===c.forma){ sel.selectedIndex=i; break; }
+      }
+    }
+
+    // Aviso e info
+    try{ document.getElementById('mr-aviso-comp').style.display='none'; }catch{}
+    try{ document.getElementById('mr-forma-info').style.display='none'; }catch{}
+    try{ document.getElementById('mr-liq-box').style.display='none'; }catch{}
+
+    // Renderiza itens e recalcula totais
+    mrRenderItens();
+    mrCalcTotais();
+
+    // Título
+    try{ document.querySelector('#mod-receber .mt span:first-child').innerHTML=
+      '<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Venda / Comanda'; }catch{}
+  }, 150);
 }
+
 function saveEditReceber(){
-  const id=Number(document.getElementById('mer-id').value);
-  const arr=S.g('receber')||[];
-  const idx=arr.findIndex(x=>x.id===id); if(idx===-1)return;
-  arr[idx]={...arr[idx],
-    venc:document.getElementById('mer-venc').value,
-    desc:document.getElementById('mer-desc').value,
-    conta:document.getElementById('mer-conta').value,
-    val:parseFloat(document.getElementById('mer-val').value)||0,
-    forma:document.getElementById('mer-forma').value,
-    status:document.getElementById('mer-status').value,
-  };
-  S.s('receber',arr); closeMod('mod-editreceber'); renderReceber();
+  saveReceber();
 }
 
 function editForn(id){
