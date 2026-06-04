@@ -604,7 +604,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Código</th><th>Produto / Descrição</th><th>Categoria</th><th>Und.</th><th>Preço de Venda</th><th>Margem</th><th>Status</th><th></th>
+        <th>Código</th><th>Produto / Descrição</th><th>Categoria</th><th>Und.</th><th style="text-align:right">Custo Unit.</th><th style="text-align:right">Preço Venda</th><th style="text-align:right">Margem</th><th style="text-align:right">Lucro Unit.</th><th>Conta Receita</th><th>Status</th><th></th>
       </tr></thead>
       <tbody id="tb-pv"></tbody>
     </table></div>
@@ -1246,65 +1246,126 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- MODAL PRODUTO DE VENDA -->
 <div class="mo" id="mod-pvenda">
-  <div class="mb wide">
+  <div class="mb wide" style="width:760px">
     <div class="mt">
-      <span><i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda</span>
+      <span><i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda / Cardápio</span>
       <span class="mc" onclick="closeMod('mod-pvenda');resetModalProdVenda()">✕</span>
     </div>
     <input type="hidden" id="mpv-id">
-    <div class="fr">
-      <div class="fg"><label>Código <span style="font-size:10px;color:var(--tx3)">(gerado automaticamente)</span></label>
-        <input type="text" id="mpv-cod" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default">
+
+    <!-- Identificação -->
+    <div style="background:rgba(242,100,25,0.06);border:1px solid rgba(242,100,25,0.15);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500">
+        <i class="fa-solid fa-barcode" style="margin-right:6px"></i>Identificação
       </div>
-      <div class="fg"><label>Nome do Produto / Descrição</label>
-        <input type="text" id="mpv-nome" placeholder="EX: RODÍZIO ADULTO, CERVEJA BUDWEISER 600ML…" oninput="this.value=this.value.toUpperCase()">
+      <div class="fr">
+        <div class="fg" style="max-width:140px">
+          <label>Código <span style="font-size:10px;color:var(--tx3)">automático</span></label>
+          <input type="text" id="mpv-cod" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default">
+        </div>
+        <div class="fg">
+          <label>Nome do Produto / Descrição *</label>
+          <input type="text" id="mpv-nome" placeholder="EX: RODÍZIO ADULTO, CERVEJA BUDWEISER 600ML…" oninput="this.value=this.value.toUpperCase()">
+        </div>
       </div>
-    </div>
-    <div class="fr">
-      <div class="fg"><label>Categoria</label>
-        <select id="mpv-cat">
-          <option value="Rodízio">🍕 Rodízio</option>
-          <option value="Bebidas">🥤 Bebidas</option>
-          <option value="Drinks">🍹 Drinks / Coquetéis</option>
-          <option value="Cervejas">🍺 Cervejas</option>
-          <option value="Combos">🎁 Combos / Promoções</option>
-          <option value="Sobremesas">🍮 Sobremesas</option>
-          <option value="Outros">📦 Outros</option>
-        </select>
-      </div>
-      <div class="fg"><label>Unidade de Medida</label>
-        <select id="mpv-un">
-          <option value="un">un (unidade)</option>
-          <option value="pax">pax (pessoa)</option>
-          <option value="ml">ml</option>
-          <option value="L">L (litro)</option>
-          <option value="pct">pct (pacote)</option>
-          <option value="cx">cx (caixa)</option>
-          <option value="dose">dose</option>
-          <option value="combo">combo</option>
-        </select>
-      </div>
-    </div>
-    <div class="fr">
-      <div class="fg"><label>Preço de Venda (R$) <span style="color:var(--or);font-size:10px">★ tabela de preços</span></label>
-        <input type="number" id="mpv-preco" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
-      </div>
-      <div class="fg"><label>Custo Unitário (R$) <span style="color:var(--tx3);font-size:10px">opcional — para CMV</span></label>
-        <input type="number" id="mpv-custo" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
-      </div>
-    </div>
-    <div id="mpv-margem-box" style="display:none;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;padding:8px 14px;font-size:12px;color:var(--tx2);margin-top:-4px;">
-      <i class="fa-solid fa-chart-line" style="color:var(--gr);margin-right:6px"></i>
-      Margem bruta: <strong id="mpv-margem-val" style="color:var(--gr)"></strong> &nbsp;|&nbsp; CMV%: <strong id="mpv-cmv-val" style="color:var(--am)"></strong>
-    </div>
-    <div class="fr">
-      <div class="fg"><label>Status</label>
-        <select id="mpv-st"><option>Ativo</option><option>Inativo</option></select>
-      </div>
-      <div class="fg"><label>Observação</label>
-        <input type="text" id="mpv-obs" placeholder="Ex: Serve 1 pessoa, inclui sobremesa...">
+      <div class="fr" style="margin-top:10px">
+        <div class="fg">
+          <label>Categoria *</label>
+          <select id="mpv-cat" onchange="mpvSugerirConta()">
+            <option value="Rodízio">🍕 Rodízio</option>
+            <option value="Bebidas">🥤 Bebidas</option>
+            <option value="Drinks">🍹 Drinks / Coquetéis</option>
+            <option value="Cervejas">🍺 Cervejas</option>
+            <option value="Combos">🎁 Combos / Promoções</option>
+            <option value="Sobremesas">🍮 Sobremesas</option>
+            <option value="Outros">📦 Outros</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Unidade de Medida *</label>
+          <select id="mpv-un">
+            <option value="pax">pax (pessoa)</option>
+            <option value="un">un (unidade)</option>
+            <option value="dose">dose</option>
+            <option value="combo">combo</option>
+            <option value="ml">ml</option>
+            <option value="L">L (litro)</option>
+            <option value="pct">pct (pacote)</option>
+            <option value="cx">cx (caixa)</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="mpv-st"><option>Ativo</option><option>Inativo</option></select>
+        </div>
       </div>
     </div>
+
+    <!-- Precificação -->
+    <div style="background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500">
+        <i class="fa-solid fa-circle-dollar-to-slot" style="margin-right:6px"></i>Precificação
+      </div>
+      <div class="fr">
+        <div class="fg">
+          <label>Preço de Venda (R$) <span style="color:var(--or);font-size:10px">★ tabela de preços</span></label>
+          <input type="number" id="mpv-preco" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
+        </div>
+        <div class="fg">
+          <label>Custo Unitário (R$) <span style="color:var(--tx3);font-size:10px">para cálculo de CMV</span></label>
+          <input type="number" id="mpv-custo" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
+        </div>
+        <div class="fg">
+          <label>Preço Promocional (R$) <span style="color:var(--tx3);font-size:10px">opcional</span></label>
+          <input type="number" id="mpv-preco-promo" step="0.01" min="0" placeholder="0,00">
+        </div>
+      </div>
+      <!-- Painel de indicadores -->
+      <div id="mpv-margem-box" style="display:none;margin-top:10px;background:var(--dk2);border:1px solid var(--bd);border-radius:6px;padding:10px 14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center">
+          <div>
+            <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">Margem Bruta</div>
+            <div style="font-size:16px;font-weight:600" id="mpv-margem-val" style="color:var(--gr)">—</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">CMV %</div>
+            <div style="font-size:16px;font-weight:600" id="mpv-cmv-val" style="color:var(--am)">—</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">Lucro Unit.</div>
+            <div style="font-size:16px;font-weight:600;color:var(--gr)" id="mpv-lucro-val">—</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--tx3);margin-bottom:3px">Mark-up</div>
+            <div style="font-size:16px;font-weight:600;color:var(--bl)" id="mpv-markup-val">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contabilização -->
+    <div style="background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500">
+        <i class="fa-solid fa-book" style="margin-right:6px"></i>Contabilização
+      </div>
+      <div class="fr">
+        <div class="fg">
+          <label>Conta do Plano de Contas (Receita)</label>
+          <select id="mpv-conta"><option value="">— Selecione a conta —</option></select>
+        </div>
+        <div class="fg">
+          <label>Conta de Custo (CMV)</label>
+          <select id="mpv-conta-custo"><option value="">— Selecione a conta —</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Observação -->
+    <div class="fg" style="margin-bottom:12px">
+      <label>Observação / Descrição Complementar</label>
+      <input type="text" id="mpv-obs" placeholder="Ex: Serve 1 pessoa, inclui sobremesa, acompanha drink de boas-vindas...">
+    </div>
+
     <div class="mf">
       <button class="bc" onclick="closeMod('mod-pvenda');resetModalProdVenda()">Cancelar</button>
       <button class="bs" onclick="saveProdVenda()"><i class="fa-solid fa-floppy-disk"></i> Salvar Produto</button>
@@ -6997,7 +7058,7 @@ function imprimirRelCompras(){ window.print(); }
 // PRODUTOS DE VENDA / CARDÁPIO
 // ══════════════════════════════════════
 const PROD_VENDA_PADRAO = [
-  {id:101, cod:'PV-001', nome:'RODÍZIO ADULTO',          cat:'Rodízio',    un:'pax',   preco:59.90, custo:18.00, st:'Ativo', obs:'Inclui pizzas ilimitadas + sobremesa'},
+  {id:101, cod:'PV-001', nome:'RODÍZIO ADULTO',          cat:'Rodízio',    un:'pax',   preco:59.90, custo:18.00, conta:'1.1', contaCusto:'4.1', st:'Ativo', obs:'Inclui pizzas ilimitadas + sobremesa'},
   {id:102, cod:'PV-002', nome:'RODÍZIO INFANTIL',         cat:'Rodízio',    un:'pax',   preco:34.90, custo:10.00, st:'Ativo', obs:'Até 10 anos'},
   {id:103, cod:'PV-003', nome:'RODÍZIO ADULTO + BEBIDA',  cat:'Combos',     un:'combo', preco:74.90, custo:22.00, st:'Ativo', obs:'Inclui 1 refri lata ou suco'},
   {id:104, cod:'PV-004', nome:'RODÍZIO INFANTIL + SUCO',  cat:'Combos',     un:'combo', preco:44.90, custo:13.00, st:'Ativo', obs:''},
@@ -7032,12 +7093,45 @@ function mpvCalcMargem(){
   const custo = parseFloat(document.getElementById('mpv-custo').value)||0;
   const box   = document.getElementById('mpv-margem-box');
   if(!box) return;
-  if(!preco||!custo){ box.style.display='none'; return; }
-  const margem = ((preco-custo)/preco*100).toFixed(1);
-  const cmv    = (custo/preco*100).toFixed(1);
-  document.getElementById('mpv-margem-val').textContent = margem+'%';
-  document.getElementById('mpv-cmv-val').textContent    = cmv+'%';
+  if(!preco){ box.style.display='none'; return; }
+  if(!custo){ box.style.display='none'; return; }
+  const margem = ((preco-custo)/preco*100);
+  const cmv    = (custo/preco*100);
+  const lucro  = preco-custo;
+  const markup = custo>0 ? (preco/custo) : 0;
+  const corMg  = margem>=50?'var(--gr)':margem>=30?'var(--am)':'var(--rd)';
+  const corCmv = cmv<=30?'var(--gr)':cmv<=50?'var(--am)':'var(--rd)';
+  document.getElementById('mpv-margem-val').textContent = margem.toFixed(1)+'%';
+  document.getElementById('mpv-margem-val').style.color = corMg;
+  document.getElementById('mpv-cmv-val').textContent    = cmv.toFixed(1)+'%';
+  document.getElementById('mpv-cmv-val').style.color    = corCmv;
+  document.getElementById('mpv-lucro-val').textContent  = 'R$ '+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  document.getElementById('mpv-markup-val').textContent = markup.toFixed(2)+'×';
   box.style.display='block';
+}
+
+function mpvSugerirConta(){
+  const cat   = document.getElementById('mpv-cat')?.value||'';
+  const sel   = document.getElementById('mpv-conta');
+  if(!sel) return;
+  // Tenta selecionar automaticamente uma conta de receita compatível
+  const opts  = Array.from(sel.options);
+  const lower = cat.toLowerCase();
+  // Palavras-chave por categoria
+  const kw = {
+    'rodízio':    ['rodízio','alimentação','venda alim','receita alim'],
+    'bebidas':    ['bebidas','beverage','venda beb'],
+    'drinks':     ['drinks','bebidas','bar'],
+    'cervejas':   ['cerveja','bebidas alcoólicas','bar'],
+    'combos':     ['combo','alimentação','venda'],
+    'sobremesas': ['sobremesa','alimentação'],
+    'outros':     ['receita','venda'],
+  };
+  const keys = kw[lower] || kw['outros'];
+  for(const opt of opts){
+    const t = opt.text.toLowerCase();
+    if(keys.some(k=>t.includes(k))){ sel.value=opt.value; break; }
+  }
 }
 
 function saveProdVenda(){
@@ -7049,11 +7143,14 @@ function saveProdVenda(){
   const arr   = S.g('prod-venda')||[];
   const obj   = {
     nome, preco,
-    cat:   document.getElementById('mpv-cat').value,
-    un:    document.getElementById('mpv-un').value,
-    custo: parseFloat(document.getElementById('mpv-custo').value)||0,
-    st:    document.getElementById('mpv-st').value,
-    obs:   document.getElementById('mpv-obs').value.trim(),
+    cat:        document.getElementById('mpv-cat').value,
+    un:         document.getElementById('mpv-un').value,
+    custo:      parseFloat(document.getElementById('mpv-custo').value)||0,
+    precoPromo: parseFloat(document.getElementById('mpv-preco-promo')?.value)||0,
+    conta:      document.getElementById('mpv-conta')?.value||'',
+    contaCusto: document.getElementById('mpv-conta-custo')?.value||'',
+    st:         document.getElementById('mpv-st').value,
+    obs:        document.getElementById('mpv-obs').value.trim(),
   };
   if(idVal){
     const idx = arr.findIndex(x=>x.id===Number(idVal));
@@ -7081,13 +7178,35 @@ function resetModalProdVenda(){
   document.getElementById('mpv-custo').value = '';
   document.getElementById('mpv-st').value    = 'Ativo';
   document.getElementById('mpv-obs').value   = '';
+  try{ document.getElementById('mpv-preco-promo').value = ''; }catch{}
   try{ document.getElementById('mpv-margem-box').style.display='none'; }catch{}
-  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda'; }catch{}
+  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto de Venda / Cardápio'; }catch{}
+  // Popula selects de conta
+  mpvPopularContas();
+}
+
+function mpvPopularContas(){
+  const fillSel = (id, filtro)=>{
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const contas = getAllContas().filter(filtro);
+    sel.innerHTML = '<option value="">— Selecione —</option>' +
+      contas.map(c=>`<option value="${c.cod}">${c.cod} — ${c.nome}</option>`).join('');
+  };
+  fillSel('mpv-conta',      c=>c.natureza==='receita'||c.natureza==='Receita'||c.grupo==='1');
+  fillSel('mpv-conta-custo',c=>c.natureza==='despesa'||c.natureza==='Despesa'||c.grupo==='4'||c.grupo==='5');
+}
+
+function getAllContas(){
+  const pc   = getPC ? getPC().filter(x=>x.tipo==='conta') : [];
+  const cad  = S.g('cad-contas')||[];
+  return [...pc,...cad];
 }
 
 function editProdVenda(id){
   const arr = S.g('prod-venda')||[];
   const p   = arr.find(x=>x.id===id); if(!p) return;
+  resetModalProdVenda();
   document.getElementById('mpv-id').value    = p.id;
   document.getElementById('mpv-cod').value   = p.cod||'';
   document.getElementById('mpv-nome').value  = p.nome||'';
@@ -7097,7 +7216,10 @@ function editProdVenda(id){
   document.getElementById('mpv-custo').value = p.custo||'';
   document.getElementById('mpv-st').value    = p.st||'Ativo';
   document.getElementById('mpv-obs').value   = p.obs||'';
-  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Produto de Venda'; }catch{}
+  try{ document.getElementById('mpv-preco-promo').value = p.precoPromo||''; }catch{}
+  try{ document.getElementById('mpv-conta').value       = p.conta||''; }catch{}
+  try{ document.getElementById('mpv-conta-custo').value = p.contaCusto||''; }catch{}
+  try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Produto de Venda / Cardápio'; }catch{}
   mpvCalcMargem();
   openMod('mod-pvenda');
 }
@@ -7117,15 +7239,21 @@ function renderProdVenda(){
   document.getElementById('tb-pv').innerHTML = filtrado.length===0
     ? `<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhum produto cadastrado</td></tr>`
     : filtrado.map(p=>{
-      const margem = p.preco&&p.custo ? ((p.preco-p.custo)/p.preco*100).toFixed(1)+'%' : '—';
-      const corMg  = p.preco&&p.custo ? ((p.preco-p.custo)/p.preco*100)>50?'var(--gr)':((p.preco-p.custo)/p.preco*100)>30?'var(--am)':'var(--rd)' : 'var(--tx3)';
+      const temCusto = p.preco>0 && p.custo>0;
+      const margem   = temCusto ? ((p.preco-p.custo)/p.preco*100) : null;
+      const lucro    = temCusto ? (p.preco-p.custo) : null;
+      const corMg    = margem!=null ? (margem>=50?'var(--gr)':margem>=30?'var(--am)':'var(--rd)') : 'var(--tx3)';
+      const contaNome= p.conta ? (p.conta+' — '+(nomeContaByCod?nomeContaByCod(p.conta):p.conta)) : '—';
       return `<tr>
         <td style="color:var(--or);font-size:11px;font-weight:600">${p.cod||'—'}</td>
-        <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+        <td style="color:var(--tx);font-weight:500">${p.nome}${p.precoPromo>0?` <span style="font-size:10px;background:rgba(33,150,243,0.15);color:var(--bl);padding:1px 6px;border-radius:3px;margin-left:4px">PROMO ${R(p.precoPromo)}</span>`:''}</td>
         <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
         <td style="color:var(--tx2);text-align:center">${p.un}</td>
+        <td style="text-align:right;color:var(--tx2)">${p.custo>0?R(p.custo):'—'}</td>
         <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.preco)}</td>
-        <td style="text-align:right;font-size:11px;color:${corMg}">${margem}</td>
+        <td style="text-align:right;font-size:11px;color:${corMg}">${margem!=null?margem.toFixed(1)+'%':'—'}</td>
+        <td style="text-align:right;font-size:11px;color:var(--gr)">${lucro!=null?R(lucro):'—'}</td>
+        <td style="font-size:11px;color:var(--tx3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${contaNome}">${p.conta||'—'}</td>
         <td>${stTag(p.st)}</td>
         <td><div class="ac-btns" style="opacity:1">
           <button class="ac-btn ac-edit" title="Editar" onclick="editProdVenda(${p.id})"><i class="fa-solid fa-pen"></i></button>
@@ -7195,7 +7323,7 @@ function initAll(){
   renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
   initCatProdPadrao(); renderCategoriasProd();
-  initProdVendaPadrao(); renderProdVenda(); resetModalProdVenda();
+  initProdVendaPadrao(); renderProdVenda(); resetModalProdVenda(); mpvPopularContas();
   initFormasPadrao();
   initFormasRecPadrao(); renderFormasPag();
   // Preenche selects dos modais
