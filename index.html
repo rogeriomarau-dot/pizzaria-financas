@@ -504,9 +504,27 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="kg" id="kpi-pg"></div>
   <div class="cd">
     <div class="ct">Contas a Pagar
-      <button class="btn btn-p btn-sm" onclick="openMod('mod-pagar')"><i class="fa-solid fa-plus"></i> Novo Lançamento</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-p btn-sm" onclick="openMod('mod-pagar')"><i class="fa-solid fa-plus"></i> Novo Lançamento</button>
+        <button class="btn btn-sm" onclick="diagDuplicidade()"
+          style="border-color:rgba(255,143,0,0.4);color:var(--am)"
+          title="Detecta lançamentos com itens E val simultâneos que causam dupla contagem no DRE">
+          <i class="fa-solid fa-stethoscope"></i> Diagnóstico DRE
+        </button>
+      </div>
     </div>
-    <div class="tw"><table><thead><tr><th>Código</th><th>Vencimento</th><th>Competência</th><th>Fornecedor / Descrição</th><th>Plano de Contas</th><th>Regime</th><th>Valor</th><th>Conta/Banco</th><th>Status</th><th></th></tr></thead><tbody id="tb-pg"></tbody></table></div>
+    <div class="tw"><table><thead><tr>
+      <th class="sortable" onclick="sortPG('cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortPG('venc',this)">Vencimento <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortPG('comp',this)">Competência <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortPG('forn',this)">Fornecedor / Descrição <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortPG('conta',this)">Plano de Contas <i class="fa-solid sort-icon"></i></th>
+      <th>Regime</th>
+      <th class="sortable" style="text-align:right" onclick="sortPG('val',this)">Valor <i class="fa-solid sort-icon"></i></th>
+      <th>Conta/Banco</th>
+      <th class="sortable" onclick="sortPG('status',this)">Status <i class="fa-solid sort-icon"></i></th>
+      <th></th>
+    </tr></thead><tbody id="tb-pg"></tbody></table></div>
   </div>
 </div>
 
@@ -516,6 +534,24 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="cd">
     <div class="ct">Contas a Receber
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:relative">
+
+        <!-- Filtros rápidos — padrão igual cadastros -->
+        <select id="rc-filtro-status" onchange="renderReceber()"
+          style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;outline:none">
+          <option value="">Todos os status</option>
+          <option value="Pendente">⏳ Pendente</option>
+          <option value="Recebido">✅ Recebido</option>
+          <option value="Vencido">🔴 Vencido</option>
+        </select>
+        <select id="rc-filtro-forma" onchange="renderReceber()"
+          style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;outline:none">
+          <option value="">Todas as formas</option>
+          <option value="PIX">PIX</option>
+          <option value="Cartão Crédito">Cartão Crédito</option>
+          <option value="Cartão Débito">Cartão Débito</option>
+          <option value="iFood / App">iFood / App</option>
+          <option value="Dinheiro">Dinheiro</option>
+        </select>
 
         <!-- Botão de período -->
         <button id="rc-periodo-btn" onclick="rcTogglePicker()"
@@ -598,14 +634,20 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </button>
       </div>
     </div>
+
     <div class="tw"><table>
       <thead><tr>
-        <th>Competência</th><th>Vencimento</th><th>Comanda</th>
-        <th>Cliente</th><th>Itens</th><th>Forma</th>
-        <th style="text-align:right">Total Bruto</th>
+        <th class="sortable" onclick="sortRC('comp',this)">Competência <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortRC('venc',this)">Vencimento <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortRC('comanda',this)">Comanda <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortRC('cliente',this)">Cliente <i class="fa-solid sort-icon"></i></th>
+        <th>Itens</th>
+        <th class="sortable" onclick="sortRC('forma',this)">Forma <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="sortRC('val',this)">Total Bruto <i class="fa-solid sort-icon"></i></th>
         <th style="text-align:right">Desconto</th>
         <th style="text-align:right">Valor Líquido</th>
-        <th>Status</th><th></th>
+        <th class="sortable" onclick="sortRC('status',this)">Status <i class="fa-solid sort-icon"></i></th>
+        <th></th>
       </tr></thead>
       <tbody id="tb-rc"></tbody>
     </table></div>
@@ -1128,10 +1170,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <!-- Linha 1: Datas + Ordenar -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <div class="fg"><label>Data Compra — De</label>
-        <input type="date" id="rc-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <input type="date" id="rcc-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
       </div>
       <div class="fg"><label>Data Compra — Até</label>
-        <input type="date" id="rc-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <input type="date" id="rcc-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
       </div>
       <div class="fg"><label>Unidade de Medida</label>
         <select id="rc-un" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
@@ -1288,6 +1330,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
+    <!-- Tabs tipo de filtro -->
+    <div style="display:flex;gap:0;margin-bottom:12px;background:var(--dk3);border-radius:6px;padding:3px;width:fit-content">
+      <button id="rv-tab-periodo" onclick="rvSetTipoFiltro('periodo')"
+        style="padding:5px 16px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+        class="rc-tab-ativo">Por período (caixa)</button>
+      <button id="rv-tab-comp" onclick="rvSetTipoFiltro('comp')"
+        style="padding:5px 16px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+        class="rc-tab-inativo">Por competência</button>
+    </div>
+    <!-- Filtros por período (caixa) -->
+    <div id="rv-filtros-periodo">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <div class="fg">
         <label>Período — De</label>
@@ -1328,7 +1381,51 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         O <strong style="color:var(--tx)">indicador de Rodízios</strong> conta todas as vendas dos produtos com categoria "Rodízio" — KPI fundamental para pizzarias.
       </div>
     </div>
-  </div>
+    </div><!-- fim rv-filtros-periodo -->
+
+    <!-- Filtros por competência -->
+    <div id="rv-filtros-comp" style="display:none">
+      <div style="display:grid;grid-template-columns:180px 180px 1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="fg">
+          <label>Mês/Ano competência</label>
+          <input type="month" id="rv-comp-mes" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        </div>
+        <div class="fg">
+          <label>Ano (todos os meses)</label>
+          <select id="rv-comp-ano" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+            <option value="">— Selecione o ano —</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Categoria</label>
+          <select id="rv-cat-comp" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+            <option value="">Todas as categorias</option>
+            <option value="Rodízio">🍕 Rodízio</option>
+            <option value="Bebidas">🥤 Bebidas</option>
+            <option value="Cervejas">🍺 Cervejas</option>
+            <option value="Drinks">🍹 Drinks / Coquetéis</option>
+            <option value="Combos">🎁 Combos / Promoções</option>
+            <option value="Sobremesas">🍮 Sobremesas</option>
+            <option value="Outros">📦 Outros</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Produto</label>
+          <select id="rv-prod-comp" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+            <option value="">Todos os produtos</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);padding:4px 0 8px 0">
+        <i class="fa-solid fa-circle-info" style="color:var(--bl);margin-right:4px"></i>
+        <strong style="color:var(--tx)">Consulta por competência:</strong> filtra as vendas pela data em que ocorreram (mês da venda), independente da data de recebimento.
+      </div>
+    </div>
+  </div><!-- fim card filtros -->
 
   <!-- Aviso modo resumido -->
   <div id="rv-aviso-modo" style="display:none;background:rgba(255,143,0,0.1);border:1px solid rgba(255,143,0,0.3);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:var(--am)">
@@ -4843,18 +4940,203 @@ function dreListaMeses(de, ate){
   return meses;
 }
 
+
+// ══════════════════════════════════════
+// DIAGNÓSTICO DRE — AUDITORIA POR CONTA
+// ══════════════════════════════════════
+function diagDuplicidade(){
+  const pagar  = S.g('pagar')  || [];
+  const regime = _dreRegime || 'comp';
+
+  // Lê o período atual do DRE
+  const de  = document.getElementById('dre-de')?.value  || '';
+  const ate = document.getElementById('dre-ate')?.value || '';
+
+  // Filtra igual o DRE faz
+  const filtP = dreFiltrar(pagar, regime, de, ate);
+
+  // Acumula por conta — igual dreAcumular
+  const totC = dreAcumular(filtP);
+
+  // Monta lista detalhada por conta com os lançamentos
+  const porConta = {};
+  filtP.forEach(lanc => {
+    const totalItens = (lanc.itens && lanc.itens.length)
+      ? lanc.itens.reduce((s, it) => s + (it.total || 0), 0) : 0;
+    const fonte = totalItens > 0 ? 'itens' : 'val';
+    const valor = totalItens > 0 ? totalItens : (lanc.val || 0);
+    const cod   = (totalItens > 0 && lanc.itens[0]?.conta) ? lanc.itens[0].conta : (lanc.conta || '—');
+    if(!porConta[cod]) porConta[cod] = { total: 0, itens: [] };
+    porConta[cod].total += valor;
+    porConta[cod].itens.push({ lanc, valor, fonte });
+  });
+
+  // Detecta também lançamentos com val+itens simultâneos
+  const comDupli = filtP.filter(lanc => {
+    const ti = (lanc.itens && lanc.itens.length)
+      ? lanc.itens.reduce((s, it) => s + (it.total || 0), 0) : 0;
+    return ti > 0 && (lanc.val || 0) > 0 && Math.abs(ti - (lanc.val||0)) > 0.01;
+  });
+
+  const labelRegime = regime === 'comp' ? 'Competência' : 'Caixa';
+  const labelPer    = de && ate ? (de===ate ? de : de+' a '+ate) : de || ate || 'Todo o período';
+
+  let tabelaContas = '';
+  Object.keys(porConta).sort().forEach(cod => {
+    const g = porConta[cod];
+    tabelaContas += `
+      <tr style="background:rgba(242,100,25,0.06);cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        <td colspan="3" style="padding:7px 10px;font-size:12px;font-weight:600;color:var(--or)">
+          <i class="fa-solid fa-chevron-right" style="font-size:9px;margin-right:6px"></i>
+          Conta ${cod} &nbsp;·&nbsp; <span style="color:var(--tx2);font-weight:400">${g.itens.length} lançamento(s)</span>
+        </td>
+        <td style="padding:7px 10px;text-align:right;font-size:13px;font-weight:700;color:var(--gr)">${R(g.total)}</td>
+      </tr>
+      <tr style="display:none">
+        <td colspan="4" style="padding:0 0 4px 24px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            ${g.itens.map(({lanc, valor, fonte}) => `
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+                <td style="padding:4px 8px;color:var(--or);font-size:10px">${lanc.cod||'—'}</td>
+                <td style="padding:4px 8px;color:var(--tx)">${lanc.forn||lanc.desc||'—'}</td>
+                <td style="padding:4px 8px;color:var(--tx3);font-size:10px">${lanc.comp||lanc.venc||'—'}</td>
+                <td style="padding:4px 8px;text-align:right;color:var(--gr)">${R(valor)}</td>
+                <td style="padding:4px 8px">
+                  ${fonte==='itens'
+                    ? '<span style="background:rgba(33,150,243,0.15);color:var(--bl);padding:1px 5px;border-radius:3px;font-size:9px">ITENS</span>'
+                    : '<span style="background:rgba(255,255,255,0.07);color:var(--tx3);padding:1px 5px;border-radius:3px;font-size:9px">VAL</span>'}
+                </td>
+              </tr>`).join('')}
+          </table>
+        </td>
+      </tr>`;
+  });
+
+  // ── Detecta lançamentos onde comp e venc são de meses diferentes ──
+  const compVencDiverg = filtP.filter(lanc => {
+    const ymComp = (lanc.comp || '').slice(0,7);
+    const ymVenc = (lanc.venc || '').slice(0,7);
+    return ymComp && ymVenc && ymComp !== ymVenc;
+  });
+
+  let alertaDiverg = '';
+  if(compVencDiverg.length){
+    const labelOutro = regime === 'comp' ? 'vencimento' : 'competência';
+    const labelEste  = regime === 'comp' ? 'competência' : 'vencimento';
+    alertaDiverg = `
+      <div style="background:rgba(33,150,243,0.1);border:1px solid rgba(33,150,243,0.3);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--bl)">
+        <i class="fa-solid fa-arrows-left-right" style="margin-right:6px"></i>
+        <strong style="color:var(--tx)">${compVencDiverg.length} lançamento(s) com competência ≠ vencimento</strong> no período.
+        No <strong>Regime de ${labelEste.charAt(0).toUpperCase()+labelEste.slice(1)}</strong>, o DRE usa a data de <strong>${labelEste}</strong>.
+        Se você comparar com um relatório filtrado por <strong>${labelOutro}</strong>, os valores vão diferir.
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+          ${compVencDiverg.map(l=>`
+            <span style="background:rgba(33,150,243,0.12);border:1px solid rgba(33,150,243,0.2);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--tx2)">
+              <strong style="color:var(--or)">${l.cod||'—'}</strong>
+              comp:${(l.comp||'').slice(0,7)} · venc:${(l.venc||'').slice(0,7)} · ${R(l.val||0)}
+            </span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  let alertaDupli = '';
+  if(comDupli.length){
+    alertaDupli = `
+      <div style="background:rgba(229,57,53,0.12);border:1px solid rgba(229,57,53,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--rd)">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
+        <strong>${comDupli.length} lançamento(s) com val + itens divergentes detectados.</strong>
+        Clique em <strong>Corrigir</strong> para sincronizar o val com o total dos itens.
+        <button onclick="diagCorrigirTodos()" style="margin-left:10px;background:rgba(229,57,53,0.2);border:1px solid rgba(229,57,53,0.4);color:var(--rd);border-radius:4px;padding:3px 10px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">
+          <i class="fa-solid fa-wrench" style="margin-right:4px"></i>Corrigir
+        </button>
+      </div>`;
+  } else {
+    alertaDupli = `
+      <div style="background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.25);border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:12px;color:var(--gr)">
+        <i class="fa-solid fa-circle-check" style="margin-right:6px"></i>
+        Nenhum lançamento com val+itens duplicados. Estrutura íntegra.
+      </div>`;
+  }
+
+  const html = `
+    <div style="background:var(--dk2);border:1px solid var(--bd2);border-radius:12px;padding:20px;width:680px;max-width:95vw;font-family:Outfit,sans-serif;max-height:80vh;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--tx)"><i class="fa-solid fa-stethoscope" style="color:var(--or);margin-right:8px"></i>Auditoria DRE — Contas a Pagar</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:3px">Regime: <strong style="color:var(--or)">${labelRegime}</strong> &nbsp;·&nbsp; Período: <strong style="color:var(--tx)">${labelPer}</strong> &nbsp;·&nbsp; ${filtP.length} lançamento(s) incluídos</div>
+        </div>
+        <button onclick="document.getElementById('mod-diag').remove()" style="background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer">✕</button>
+      </div>
+
+      ${alertaDiverg}${alertaDupli}
+
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:10px">
+        <i class="fa-solid fa-circle-info" style="color:var(--bl);margin-right:4px"></i>
+        Clique em cada conta para expandir os lançamentos. Compare os totais abaixo com o DRE e o Contas a Pagar.
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--or)">
+            <th style="text-align:left;padding:6px 10px;color:var(--tx3);font-size:10px;text-transform:uppercase;letter-spacing:1px" colspan="3">Conta / Lançamentos</th>
+            <th style="text-align:right;padding:6px 10px;color:var(--tx3);font-size:10px;text-transform:uppercase;letter-spacing:1px">Total DRE</th>
+          </tr>
+        </thead>
+        <tbody>${tabelaContas}</tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--bd)">
+            <td colspan="3" style="padding:9px 10px;font-size:13px;font-weight:600;color:var(--tx)">TOTAL GERAL (todas as contas)</td>
+            <td style="padding:9px 10px;text-align:right;font-size:14px;font-weight:700;color:var(--gr)">
+              ${R(Object.values(porConta).reduce((s,g)=>s+g.total,0))}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx3)">
+        <i class="fa-solid fa-lightbulb" style="color:var(--am);margin-right:4px"></i>
+        Se o total de uma conta aqui diferir do Contas a Pagar, verifique: (1) o regime de filtragem, (2) se há lançamentos sem conta definida, (3) se a data de competência está correta no lançamento.
+      </div>
+    </div>`;
+
+  let mod = document.getElementById('mod-diag');
+  if(mod) mod.remove();
+  mod = document.createElement('div');
+  mod.id = 'mod-diag';
+  mod.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;z-index:8000;padding:20px';
+  mod.onclick = (e) => { if(e.target===mod) mod.remove(); };
+  mod.innerHTML = html;
+  document.body.appendChild(mod);
+}
+
+function diagCorrigirTodos(){
+  const pagar = S.g('pagar') || [];
+  let corrigidos = 0;
+  const novo = pagar.map(lanc => {
+    const totalItens = (lanc.itens && lanc.itens.length)
+      ? lanc.itens.reduce((s, it) => s + (it.total || 0), 0) : 0;
+    if(totalItens > 0 && Math.abs((lanc.val||0) - totalItens) > 0.01){
+      corrigidos++;
+      return { ...lanc, val: totalItens };
+    }
+    return lanc;
+  });
+  S.s('pagar', novo);
+  document.getElementById('mod-diag')?.remove();
+  renderPagar(); renderDRE();
+  showToast(`✅ ${corrigidos} lançamento(s) corrigido(s)!`, 'var(--gr)');
+}
+
 function dreAcumular(lancamentos){
   const tot = {};
   lancamentos.forEach(lanc => {
-    if(lanc.itens && lanc.itens.length){
-      lanc.itens.forEach(it => {
-        const cod = it.conta || lanc.conta || '';
-        if(cod) tot[cod] = (tot[cod]||0) + (it.total||0);
-      });
-    } else {
-      const cod = lanc.conta || '';
-      if(cod) tot[cod] = (tot[cod]||0) + (lanc.val||0);
-    }
+    // DRE financeiro: usa SEMPRE lanc.val + lanc.conta (cabeçalho do lançamento)
+    // Os itens de NF existem apenas para o Relatório de Compras/Estoque
+    // Usar itens causava duplicidade quando val e totalItens eram iguais mas
+    // o sistema somava pelos dois caminhos em versões antigas dos dados
+    const cod = lanc.conta || '';
+    const val = lanc.val || 0;
+    if(cod && val) tot[cod] = (tot[cod]||0) + val;
   });
   return tot;
 }
@@ -4925,7 +5207,10 @@ function renderDRE(){
 // ── DRE CONSOLIDADO ──
 function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime){
   const filtP = dreFiltrar(pagar, regime, de, ate);
-  const filtR = (de||ate) ? receber.filter(x=>{ const ym=(x.venc||'').slice(0,7); return (!de||ym>=de)&&(!ate||ym<=ate); }) : receber;
+  const filtR = (de||ate) ? receber.filter(x=>{
+    const ym = (regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7);
+    return (!de||ym>=de)&&(!ate||ym<=ate);
+  }) : receber;
   const totC  = dreAcumular(filtP);
   const totR  = {};
   filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
@@ -5014,7 +5299,14 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
   html += `</tbody></table>`;
   html += `<div style="margin-top:10px;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
     <span style="font-size:10px;color:var(--tx3)"><i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
-    Regime de <strong style="color:var(--or)">${labelRegime}</strong> · ${filtP.length} lançamento(s) · AV% = participação sobre Receita Operacional</span></div>`;
+    Regime de <strong style="color:var(--or)">${labelRegime}</strong>
+    &nbsp;·&nbsp; Critério: <strong style="color:var(--tx)">${regime==='comp'?'data de competência':'data de vencimento'}</strong>
+    &nbsp;·&nbsp; ${filtP.length} lançamento(s) incluídos
+    &nbsp;·&nbsp; AV% = participação sobre Receita Operacional
+    &nbsp;&nbsp;<button onclick="diagDuplicidade()" style="background:rgba(242,100,25,0.12);border:1px solid rgba(242,100,25,0.25);color:var(--or);border-radius:4px;padding:2px 8px;font-family:Outfit,sans-serif;font-size:10px;cursor:pointer;vertical-align:middle">
+      <i class="fa-solid fa-stethoscope" style="margin-right:3px"></i>Auditar lançamentos
+    </button>
+    </span></div>`;
 
   document.getElementById('dre-blk').innerHTML = html;
 
@@ -5042,7 +5334,7 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
   // Calcular dados por mês
   const dadosMes = meses.map(ym=>{
     const filtP = dreFiltrar(pagar, regime, ym, ym);
-    const filtR = receber.filter(x=>(x.venc||'').slice(0,7)===ym);
+    const filtR = receber.filter(x=>(regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7)===ym);
     const totC  = dreAcumular(filtP);
     const totR  = {};
     filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
@@ -5186,13 +5478,16 @@ function renderCaixa(){
 }
 
 function renderPagar(){
-  const arr=S.g('pagar')||[];
+  let arr=S.g('pagar')||[];
   const venc=arr.filter(x=>x.status==='Vencida').reduce((a,b)=>a+b.val,0);
   document.getElementById('kpi-pg').innerHTML=`
     <div class="kc"><div class="kl">Total a Pagar</div><div class="kv">${R(arr.reduce((a,b)=>a+b.val,0))}</div></div>
     <div class="kc"><div class="kl">Vencidas</div><div class="kv" style="color:var(--rd)">${R(venc)}</div></div>
     <div class="kc"><div class="kl">Qtd. Contas</div><div class="kv">${arr.length}</div></div>
     <div class="kc"><div class="kl">Próx. 7 dias</div><div class="kv">${R(arr.filter(x=>x.status==='Pendente').reduce((a,b)=>a+b.val,0))}</div></div>`;
+  // ── Aplica ordenação ──
+  arr = _sortLanc(arr, _pgSort.col, _pgSort.dir);
+
   document.getElementById('tb-pg').innerHTML=arr.map(c=>{
     const parcelaTag = c.totalParcelas
       ? `<span class="tg tg-gy" style="font-size:10px">${c.parcela}/${c.totalParcelas}</span> `
@@ -5249,6 +5544,12 @@ function renderReceber(){
     filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===hoje);
   }
 
+  // ── Aplica filtros adicionais (status e forma) ──
+  const filtStatus = document.getElementById('rc-filtro-status')?.value||'';
+  const filtForma  = document.getElementById('rc-filtro-forma')?.value||'';
+  if(filtStatus) filtrado = filtrado.filter(c=>c.status===filtStatus);
+  if(filtForma)  filtrado = filtrado.filter(c=>c.forma===filtForma);
+
   const totalBruto    = filtrado.reduce((a,b)=>a+(b.val||0),0);
   const totalLiq      = filtrado.reduce((a,b)=>a+(b.liq!=null?b.liq:b.val||0),0);
   const totalRecebido = filtrado.filter(x=>x.status==='Recebido').reduce((a,b)=>a+(b.liq!=null?b.liq:b.val||0),0);
@@ -5277,6 +5578,9 @@ function renderReceber(){
     </td></tr>`;
     return;
   }
+
+  // ── Aplica ordenação ──
+  filtrado = _sortLanc(filtrado, _rcSort.col, _rcSort.dir);
 
   tbEl.innerHTML = filtrado.map(c=>{
     const temDesc = c.desconto>0;
@@ -7304,7 +7608,7 @@ function initRelCompras(){
 }
 
 function limparFiltrosCompras(){
-  ['rc-dt-ini','rc-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['rcc-dt-ini','rcc-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const rcUn=document.getElementById('rc-un'); if(rcUn) rcUn.selectedIndex=0;
   rcMsClearAll('cat'); rcMsClearAll('forn'); rcMsClearAll('prod');
   rcMsClearAll('lanc'); rcMsClearAll('conta');
@@ -7313,8 +7617,8 @@ function limparFiltrosCompras(){
 }
 
 function gerarRelCompras(){
-  const dtIni  = document.getElementById('rc-dt-ini')?.value||'';
-  const dtFim  = document.getElementById('rc-dt-fim')?.value||'';
+  const dtIni  = document.getElementById('rcc-dt-ini')?.value||'';
+  const dtFim  = document.getElementById('rcc-dt-fim')?.value||'';
   const catsF  = rcMsGetSel('cat');
   const fornsF = rcMsGetSel('forn');
   const prodsF = rcMsGetSel('prod');
@@ -7775,8 +8079,8 @@ function rcSelecionarAno(ano){
 }
 
 function rcAplicarPeriodo(){
-  const ini = document.getElementById('rc-dt-ini')?.value;
-  const fim = document.getElementById('rc-dt-fim')?.value;
+  const ini = document.getElementById('rcc-dt-ini')?.value;
+  const fim = document.getElementById('rcc-dt-fim')?.value;
   if(!ini || !fim){ alert('Informe as duas datas.'); return; }
   if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
   _rcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
@@ -7932,7 +8236,28 @@ function saveProdVenda(){
   };
   if(idVal){
     const idx = arr.findIndex(x=>x.id===Number(idVal));
-    if(idx>-1) arr[idx] = {...arr[idx], ...obj};
+    if(idx>-1){
+      const prodAtual = arr[idx];
+      // ── Proteção histórica: se o preço foi alterado, avisa sobre vendas já fechadas ──
+      if(prodAtual.preco !== preco){
+        const vendas = S.g('receber')||[];
+        const vendasFechadas = vendas.filter(v=>{
+          if(v.status !== 'Recebido') return false;
+          return v.itens && v.itens.some(it=>String(it.prodId)===String(prodAtual.id));
+        });
+        if(vendasFechadas.length > 0){
+          const ok = confirm(
+            `⚠️ ATENÇÃO — Proteção de Histórico\n\n`+
+            `Você está alterando o preço de "${prodAtual.nome}" de ${R(prodAtual.preco)} para ${R(preco)}.\n\n`+
+            `Este produto aparece em ${vendasFechadas.length} venda(s) já RECEBIDA(s).\n\n`+
+            `✅ Os lançamentos fechados NÃO serão alterados — o preço histórico está preservado nos itens da venda.\n\n`+
+            `Apenas novas vendas usarão o novo preço. Deseja continuar?`
+          );
+          if(!ok) return;
+        }
+      }
+      arr[idx] = {...arr[idx], ...obj};
+    }
   } else {
     const ids = arr.map(x=>x.id||0);
     obj.id  = ids.length ? Math.max(...ids)+1 : 1;
@@ -8114,19 +8439,65 @@ function rvAtualizarDadosDemo(){
   showToast('✓ Dados demo atualizados com itens discriminados!','var(--gr)');
 }
 
+function rvSetTipoFiltro(tipo){
+  const isPeriodo = tipo === 'periodo';
+  document.getElementById('rv-filtros-periodo').style.display = isPeriodo ? '' : 'none';
+  document.getElementById('rv-filtros-comp').style.display    = isPeriodo ? 'none' : '';
+  document.getElementById('rv-tab-periodo').className = isPeriodo ? 'rc-tab-ativo' : 'rc-tab-inativo';
+  document.getElementById('rv-tab-comp').className    = isPeriodo ? 'rc-tab-inativo' : 'rc-tab-ativo';
+  // Popula select de produto no painel comp
+  const prods = S.g('prod-venda')||[];
+  const sel = document.getElementById('rv-prod-comp');
+  if(sel){
+    const cats = [...new Set(prods.map(p=>p.cat))].sort();
+    let opts = '<option value="">Todos os produtos</option>';
+    cats.forEach(cat=>{
+      opts += `<optgroup label="${cat}">`;
+      prods.filter(p=>p.cat===cat).forEach(p=>{ opts += `<option value="${p.id}">${p.nome}</option>`; });
+      opts += '</optgroup>';
+    });
+    sel.innerHTML = opts;
+  }
+  gerarRelVendas();
+}
+
 function limparFiltrosVendas(){
   ['rv-dt-ini','rv-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   const cat=document.getElementById('rv-cat'); if(cat)cat.value='';
   const prod=document.getElementById('rv-prod'); if(prod)prod.value='';
   const mr=document.getElementById('rv-min-rodizios'); if(mr)mr.value='';
+  const compMes=document.getElementById('rv-comp-mes'); if(compMes)compMes.value='';
+  const compAno=document.getElementById('rv-comp-ano'); if(compAno)compAno.value='';
+  const catComp=document.getElementById('rv-cat-comp'); if(catComp)catComp.value='';
+  const prodComp=document.getElementById('rv-prod-comp'); if(prodComp)prodComp.value='';
   gerarRelVendas();
 }
 
 function gerarRelVendas(){
-  const dtIni  = document.getElementById('rv-dt-ini')?.value||'';
-  const dtFim  = document.getElementById('rv-dt-fim')?.value||'';
-  const catF   = document.getElementById('rv-cat')?.value||'';
-  const prodF  = document.getElementById('rv-prod')?.value||'';
+  const tabComp   = document.getElementById('rv-tab-comp');
+  const modoComp  = tabComp && tabComp.classList.contains('rc-tab-ativo');
+
+  let dtIni, dtFim, catF, prodF;
+  if(modoComp){
+    const compMes = document.getElementById('rv-comp-mes')?.value||'';
+    const compAno = document.getElementById('rv-comp-ano')?.value||'';
+    catF  = document.getElementById('rv-cat-comp')?.value||'';
+    prodF = document.getElementById('rv-prod-comp')?.value||'';
+    if(compMes){
+      dtIni = compMes+'-01';
+      // último dia do mês
+      const [y,m] = compMes.split('-');
+      dtFim = new Date(y, m, 0).toISOString().slice(0,10);
+    } else if(compAno){
+      dtIni = compAno+'-01-01';
+      dtFim = compAno+'-12-31';
+    }
+  } else {
+    dtIni = document.getElementById('rv-dt-ini')?.value||'';
+    dtFim = document.getElementById('rv-dt-fim')?.value||'';
+    catF  = document.getElementById('rv-cat')?.value||'';
+    prodF = document.getElementById('rv-prod')?.value||'';
+  }
   const minRod = parseInt(document.getElementById('rv-min-rodizios')?.value)||0;
 
   const vendas    = S.g('receber')||[];
@@ -8149,7 +8520,7 @@ function gerarRelVendas(){
     mapa[key].fat += parseFloat((qtd * precoUnit).toFixed(2));
   };
 
-  // Filtra vendas pelo período
+  // Filtra vendas pelo período (usa competência como referência principal)
   const vendasFiltradas = vendas.filter(v=>{
     const dt = (v.comp || v.venc || '').slice(0,10);
     if(dtIni && dt < dtIni) return false;
@@ -8459,6 +8830,43 @@ function exportarRelVendas(){
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+csv);
   a.download='rel_vendas_'+(new Date().toISOString().slice(0,10))+'.csv';
   a.click();
+}
+
+
+// ══════════════════════════════════════
+// ORDENAÇÃO — CONTAS A RECEBER E PAGAR
+// ══════════════════════════════════════
+let _rcSort = { col: 'comp', dir: 'desc' };
+let _pgSort = { col: 'venc', dir: 'asc'  };
+
+function sortRC(col, thEl){
+  const dir = (_rcSort.col === col && _rcSort.dir === 'asc') ? 'desc' : 'asc';
+  _rcSort = { col, dir };
+  // Atualiza visual dos th
+  thEl.closest('table').querySelectorAll('th.sortable').forEach(th => th.classList.remove('asc','desc'));
+  thEl.classList.add(dir);
+  renderReceber();
+}
+
+function sortPG(col, thEl){
+  const dir = (_pgSort.col === col && _pgSort.dir === 'asc') ? 'desc' : 'asc';
+  _pgSort = { col, dir };
+  thEl.closest('table').querySelectorAll('th.sortable').forEach(th => th.classList.remove('asc','desc'));
+  thEl.classList.add(dir);
+  renderPagar();
+}
+
+function _sortLanc(arr, col, dir){
+  return [...arr].sort((a, b) => {
+    let va = a[col], vb = b[col];
+    if(typeof va === 'number' && typeof vb === 'number')
+      return dir === 'asc' ? va - vb : vb - va;
+    va = String(va || '').toLowerCase();
+    vb = String(vb || '').toLowerCase();
+    if(va < vb) return dir === 'asc' ? -1 : 1;
+    if(va > vb) return dir === 'asc' ?  1 : -1;
+    return 0;
+  });
 }
 
 // ══════════════════════════════════════
