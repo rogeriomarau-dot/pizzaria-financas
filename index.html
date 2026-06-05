@@ -49,6 +49,15 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color
 .fg input,.fg select,.fg textarea{width:100%;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);
   border-radius:6px;padding:11px 14px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--or);}
+/* CABEÇALHOS ORDENÁVEIS */
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+th.sortable:hover{color:var(--or)!important;}
+th.sortable .sort-icon{font-size:9px;margin-left:4px;opacity:0.4;transition:opacity 0.15s;}
+th.sortable.asc .sort-icon,th.sortable.desc .sort-icon{opacity:1;color:var(--or);}
+th.sortable.asc .sort-icon::before{content:'\f0de';}   /* fa-sort-up */
+th.sortable.desc .sort-icon::before{content:'\f0dd';}  /* fa-sort-down */
+th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort */
+
 /* PADRONIZAÇÃO MAIÚSCULAS — campos de nome nos cadastros */
 #msc-nome,#mcc-nome,#mec-nome,
 #mfn-nome,#mef-nome,
@@ -345,6 +354,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="sb-sec">Relatórios</div>
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
+    <button class="ni" onclick="go('rel-vendas',this)"><i class="fa-solid fa-chart-bar"></i>Rel. Vendas de Produtos</button>
     <div class="sb-ft">
       <div class="cl-info"><div class="cl-name" id="cn">Pizzaria Bella Napoli</div><div class="cl-seg">Delivery • Porto Alegre/RS</div></div>
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -651,7 +661,15 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="ct">Cadastro de Contas
       <button class="btn btn-p btn-sm" onclick="openMod('mod-cadconta')"><i class="fa-solid fa-plus"></i> Nova Conta</button>
     </div>
-    <div class="tw"><table><thead><tr><th>Código</th><th>Nome da Conta</th><th>Grupo</th><th>Subgrupo</th><th>Natureza</th><th>Status</th><th></th></tr></thead><tbody id="tb-cc"></tbody></table></div>
+    <div class="tw"><table><thead><tr>
+      <th class="sortable" onclick="sortCad('cc','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','nome',this)">Nome da Conta <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','grupo',this)">Grupo <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','subgrupo',this)">Subgrupo <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','natureza',this)">Natureza <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+      <th></th>
+    </tr></thead><tbody id="tb-cc"></tbody></table></div>
   </div>
 </div>
 
@@ -661,7 +679,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="ct">Cadastro de Fornecedores
       <button class="btn btn-p btn-sm" onclick="resetModalForn();openMod('mod-forn')"><i class="fa-solid fa-plus"></i> Novo Fornecedor</button>
     </div>
-    <div class="tw"><table><thead><tr><th style="width:36px;text-align:center;color:var(--tx3)">#</th><th>Razão Social / Nome</th><th>CNPJ / CPF</th><th>Cidade / UF</th><th>Telefone</th><th>Contato Vendedor</th><th>E-mail</th><th>Status</th><th></th></tr></thead><tbody id="tb-fn"></tbody></table></div>
+    <div class="tw"><table><thead><tr>
+      <th style="width:36px;text-align:center;color:var(--tx3)">#</th>
+      <th class="sortable" onclick="sortCad('fn','n',this)">Razão Social / Nome <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('fn','doc',this)">CNPJ / CPF <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('fn','cidade',this)">Cidade / UF <i class="fa-solid sort-icon"></i></th>
+      <th>Telefone</th>
+      <th class="sortable" onclick="sortCad('fn','vendedor',this)">Contato Vendedor <i class="fa-solid sort-icon"></i></th>
+      <th>E-mail</th>
+      <th class="sortable" onclick="sortCad('fn','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+      <th></th>
+    </tr></thead><tbody id="tb-fn"></tbody></table></div>
   </div>
 </div>
 
@@ -671,7 +699,16 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="ct">Cadastro de Produtos (Compras)
       <button class="btn btn-p btn-sm" onclick="openMod('mod-prod')"><i class="fa-solid fa-plus"></i> Novo Produto</button>
     </div>
-    <div class="tw"><table><thead><tr><th>Código</th><th>Nome do Produto</th><th>Categoria</th><th>Unidade</th><th>Custo Unit.</th><th>Conta Plano</th><th>Status</th><th></th></tr></thead><tbody id="tb-pr"></tbody></table></div>
+    <div class="tw"><table><thead><tr>
+      <th class="sortable" onclick="sortCad('pr','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','n',this)">Nome do Produto <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','un',this)">Unidade <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','custo',this)">Custo Unit. <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','conta',this)">Conta Plano <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('pr','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+      <th></th>
+    </tr></thead><tbody id="tb-pr"></tbody></table></div>
   </div>
 </div>
 
@@ -689,7 +726,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Código</th><th>Produto / Descrição</th><th>Categoria</th><th>Und.</th><th style="text-align:right">Custo Unit.</th><th style="text-align:right">Preço Venda</th><th style="text-align:right">Margem</th><th style="text-align:right">Lucro Unit.</th><th>Conta Receita</th><th>Status</th><th></th>
+        <th class="sortable" onclick="sortCad('pv','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('pv','nome',this)">Produto / Descrição <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('pv','cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('pv','un',this)">Und. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="sortCad('pv','custo',this)">Custo Unit. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="sortCad('pv','preco',this)">Preço Venda <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="sortCad('pv','margem',this)">Margem <i class="fa-solid sort-icon"></i></th>
+        <th style="text-align:right">Lucro Unit.</th>
+        <th class="sortable" onclick="sortCad('pv','conta',this)">Conta Receita <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('pv','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+        <th></th>
       </tr></thead>
       <tbody id="tb-pv"></tbody>
     </table></div>
@@ -704,12 +751,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Categoria</th>
-        <th>Código</th>
-        <th>Und.</th>
-        <th>Nome do Insumo</th>
-        <th>Preço de Custo</th>
-        <th>Conta Plano</th>
+        <th class="sortable" onclick="sortCad('ins','cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('ins','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('ins','un',this)">Und. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('ins','nome',this)">Nome do Insumo <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('ins','valor',this)">Preço de Custo <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('ins','conta',this)">Conta Plano <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-ins"></tbody>
@@ -725,12 +772,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Código</th>
-        <th>Nome / Descrição</th>
-        <th>Categoria</th>
-        <th>Valor de Referência</th>
-        <th>Conta Plano de Contas</th>
-        <th>Status</th>
+        <th class="sortable" onclick="sortCad('serv','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('serv','nome',this)">Nome / Descrição <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('serv','cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('serv','valor',this)">Valor de Referência <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('serv','conta',this)">Conta Plano de Contas <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('serv','st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-serv"></tbody>
@@ -744,10 +791,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Código</th>
-        <th>Nome da Categoria</th>
+        <th class="sortable" onclick="sortCad('catprod','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('catprod','nome',this)">Nome da Categoria <i class="fa-solid sort-icon"></i></th>
         <th>Cor / Ícone</th>
-        <th>Status</th>
+        <th class="sortable" onclick="sortCad('catprod','st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-catprod"></tbody>
@@ -763,10 +810,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Nome da Forma de Pagamento</th>
-        <th>Tipo</th>
-        <th>Prazo de Compensação</th>
-        <th>Status</th>
+        <th class="sortable" onclick="sortCad('fp','nome',this)">Nome da Forma de Pagamento <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fp','tipo',this)">Tipo <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fp','prazo',this)">Prazo de Compensação <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fp','st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-formas-pag"></tbody>
@@ -781,10 +828,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th>Nome da Forma de Recebimento</th>
-        <th>Tipo</th>
-        <th>Prazo de Recebimento</th>
-        <th>Status</th>
+        <th class="sortable" onclick="sortCad('fr','nome',this)">Nome da Forma de Recebimento <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fr','tipo',this)">Tipo <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fr','prazo',this)">Prazo de Recebimento <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('fr','st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th>Observação</th>
         <th></th>
       </tr></thead>
@@ -805,9 +852,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="tw"><table>
       <thead><tr>
         <th style="width:40px;text-align:center">#</th>
-        <th>Nome da Conta / Banco</th>
-        <th>Tipo</th>
-        <th>Status</th>
+        <th class="sortable" onclick="sortCad('bancos','nome',this)">Nome da Conta / Banco <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('bancos','tipo',this)">Tipo <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('bancos','st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-bancos"></tbody>
@@ -1141,7 +1188,32 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
       </div>
     </div>
-    <!-- Linha 3: Ordenar -->
+    <!-- Linha 3: Nº Lançamento + Conta Plano -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <!-- N° LANÇAMENTO multi-select -->
+      <div class="fg"><label>N° Lançamento</label>
+        <div class="rc-ms-wrap" id="rc-lanc-wrap" style="position:relative">
+          <div class="rc-ms-btn" onclick="rcMsToggle('lanc')" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;min-height:36px">
+            <span id="rc-lanc-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— Todos —</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx2);flex-shrink:0;margin-left:6px"></i>
+          </div>
+          <div class="rc-ms-drop" id="rc-lanc-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:100%;max-height:220px;overflow-y:auto">
+          </div>
+        </div>
+      </div>
+      <!-- CONTA PLANO multi-select -->
+      <div class="fg"><label>Conta do Plano de Contas</label>
+        <div class="rc-ms-wrap" id="rc-conta-wrap" style="position:relative">
+          <div class="rc-ms-btn" onclick="rcMsToggle('conta')" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;min-height:36px">
+            <span id="rc-conta-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">— Todas —</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx2);flex-shrink:0;margin-left:6px"></i>
+          </div>
+          <div class="rc-ms-drop" id="rc-conta-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:100%;max-height:220px;overflow-y:auto">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Linha 4: Ordenar -->
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
       <div class="fg"><label>Ordenar por</label>
         <select id="rc-order" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onchange="gerarRelCompras()">
@@ -1156,6 +1228,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <option value="preco-desc">Preço Unit. (maior→menor)</option>
           <option value="preco-asc">Preço Unit. (menor→maior)</option>
           <option value="forn-asc">Fornecedor (A→Z)</option>
+          <option value="lanc-asc">N° Lançamento (A→Z)</option>
+          <option value="lanc-desc">N° Lançamento (Z→A)</option>
+          <option value="contaNome-asc">Conta Plano (A→Z)</option>
+          <option value="contaNome-desc">Conta Plano (Z→A)</option>
         </select>
       </div>
       <div></div>
@@ -1187,8 +1263,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('preco')">Preço Unit. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-preco"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('total')">Total <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-total"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-forn"></i></th>
-            <th style="white-space:nowrap">N° Lançamento</th>
-            <th style="white-space:nowrap">Conta Plano</th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('lanc')">N° Lançamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-lanc"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('contaNome')">Conta Plano <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-contaNome"></i></th>
           </tr>
         </thead>
         <tbody id="rc-tbody"></tbody>
@@ -1196,6 +1272,142 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </table>
     </div>
   </div>
+</div>
+
+
+<!-- RELATÓRIO DE VENDAS DE PRODUTOS -->
+<div class="page" id="page-rel-vendas">
+
+  <!-- Filtros -->
+  <div class="cd" style="margin-bottom:12px">
+    <div class="ct" style="margin-bottom:14px">
+      <span><i class="fa-solid fa-sliders" style="color:var(--or);margin-right:8px"></i>Filtros de Vendas</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="limparFiltrosVendas()"><i class="fa-solid fa-eraser"></i> Limpar</button>
+        <button class="btn btn-p btn-sm" onclick="gerarRelVendas()"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+        <button class="btn btn-sm" onclick="exportarRelVendas()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+        <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="fg">
+        <label>Período — De</label>
+        <input type="date" id="rv-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <div class="fg">
+        <label>Período — Até</label>
+        <input type="date" id="rv-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <div class="fg">
+        <label>Categoria</label>
+        <select id="rv-cat" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+          <option value="">Todas as categorias</option>
+          <option value="Rodízio">🍕 Rodízio</option>
+          <option value="Bebidas">🥤 Bebidas</option>
+          <option value="Cervejas">🍺 Cervejas</option>
+          <option value="Drinks">🍹 Drinks / Coquetéis</option>
+          <option value="Combos">🎁 Combos / Promoções</option>
+          <option value="Sobremesas">🍮 Sobremesas</option>
+          <option value="Outros">📦 Outros</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Produto</label>
+        <select id="rv-prod" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+          <option value="">Todos os produtos</option>
+        </select>
+      </div>
+    </div>
+    <!-- Filtro qtd mínima de rodízios -->
+    <div style="display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:end">
+      <div class="fg">
+        <label>Qtd Mínima de Rodízios</label>
+        <input type="number" id="rv-min-rodizios" min="0" placeholder="Ex: 50" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <div style="font-size:11px;color:var(--tx3);padding-bottom:10px">
+        <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
+        O <strong style="color:var(--tx)">indicador de Rodízios</strong> conta todas as vendas dos produtos com categoria "Rodízio" — KPI fundamental para pizzarias.
+      </div>
+    </div>
+  </div>
+
+  <!-- Aviso modo resumido -->
+  <div id="rv-aviso-modo" style="display:none;background:rgba(255,143,0,0.1);border:1px solid rgba(255,143,0,0.3);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:var(--am)">
+    <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
+    <strong>Modo Catálogo:</strong> Não há vendas com itens discriminados no período. Exibindo produtos cadastrados com suas margens. Para ver quantidades vendidas, registre vendas em <strong>Contas a Receber</strong> usando o botão <em>"+ Nova Venda"</em> e adicione os itens da comanda.
+    <button onclick="rvAtualizarDadosDemo()" style="margin-left:12px;background:rgba(255,143,0,0.2);border:1px solid rgba(255,143,0,0.4);color:var(--am);border-radius:4px;padding:3px 10px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">
+      <i class="fa-solid fa-rotate" style="margin-right:4px"></i>Carregar dados demo
+    </button>
+  </div>
+
+  <!-- KPIs — oculto até haver dados -->
+  <div id="kpi-rv" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px"></div>
+
+  <!-- Banner Rodízios — oculto até haver dados -->
+  <div id="rv-rodizio-banner" style="display:none;background:rgba(242,100,25,0.1);border:1px solid rgba(242,100,25,0.3);border-radius:10px;padding:16px 20px;margin-bottom:12px;align-items:center;gap:20px">
+    <div style="font-size:40px">🍕</div>
+    <div>
+      <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px">Total de Rodízios Vendidos (PAX)</div>
+      <div style="font-size:36px;font-weight:700;color:var(--or)" id="rv-rodizio-total">0</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:10px;color:var(--tx2);margin-bottom:4px">Faturamento Rodízios</div>
+      <div style="font-size:20px;font-weight:600;color:var(--gr)" id="rv-rodizio-fat">R$ 0,00</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:4px">Ticket Médio / Pax</div>
+      <div style="font-size:16px;font-weight:600;color:var(--tx)" id="rv-rodizio-ticket">R$ 0,00</div>
+    </div>
+  </div>
+
+  <!-- Gráficos — ocultos até haver dados -->
+  <div id="rv-graficos-wrap" style="display:none">
+    <div class="g2" style="margin-bottom:12px">
+      <div class="cd">
+        <div class="ct">Ranking de Bebidas — Quantidade Vendida <span class="cs">Top 10</span></div>
+        <div class="cw" style="height:300px"><canvas id="c-rv-bebidas" role="img" aria-label="bebidas"></canvas></div>
+      </div>
+      <div class="cd">
+        <div class="ct">Ranking de Produtos — Maior Lucro Total <span class="cs">Margem × Qtd vendida</span></div>
+        <div class="cw" style="height:300px"><canvas id="c-rv-margem" role="img" aria-label="margem"></canvas></div>
+      </div>
+    </div>
+    <div class="cd" style="margin-bottom:12px">
+      <div class="ct">Evolução de Vendas por Produto <span class="cs">Quantidade vendida por período</span></div>
+      <div class="cw" style="height:220px"><canvas id="c-rv-evolucao" role="img" aria-label="evolucao"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="cd" id="rv-tabela-card" style="display:none">
+    <div class="ct">
+      <span id="rv-titulo">Detalhamento das Vendas por Produto</span>
+      <span class="cs" id="rv-total-label"></span>
+    </div>
+    <div class="tw" id="rv-tabela-wrap">
+      <table>
+        <thead><tr>
+          <th>Produto</th>
+          <th>Categoria</th>
+          <th style="text-align:center">Qtd Vendida</th>
+          <th style="text-align:center">Und.</th>
+          <th style="text-align:right">Preço Unit.</th>
+          <th style="text-align:right">Custo Unit.</th>
+          <th style="text-align:right">Faturamento</th>
+          <th style="text-align:right">Margem %</th>
+          <th style="text-align:right">Lucro Total</th>
+        </tr></thead>
+        <tbody id="rv-tbody"></tbody>
+        <tfoot><tr id="rv-tfoot"></tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Estado vazio — aparece quando sem dados -->
+  <div id="rv-vazio" style="display:none;text-align:center;padding:60px 24px;color:var(--tx3)">
+    <i class="fa-solid fa-chart-bar" style="font-size:40px;margin-bottom:16px;display:block;opacity:0.3"></i>
+    <div style="font-size:15px;font-weight:500;margin-bottom:8px;color:var(--tx2)">Nenhuma venda encontrada</div>
+    <div style="font-size:12px">Ajuste o período ou verifique se há vendas cadastradas com itens discriminados em <strong style="color:var(--or)">Contas a Receber</strong>.</div>
+  </div>
+
 </div>
 
     </div><!-- ca -->
@@ -1329,7 +1541,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 </div>
 
-<!-- MODAL PRODUTO DE VENDA -->
+<!-- MODAL — Produto de Venda (já existente abaixo) -->
 <div class="mo" id="mod-pvenda">
   <div class="mb wide" style="width:760px">
     <div class="mt">
@@ -1433,15 +1645,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500">
         <i class="fa-solid fa-book" style="margin-right:6px"></i>Contabilização
       </div>
-      <div class="fr">
-        <div class="fg">
-          <label>Conta do Plano de Contas (Receita)</label>
-          <select id="mpv-conta"><option value="">— Selecione a conta —</option></select>
-        </div>
-        <div class="fg">
-          <label>Conta de Custo (CMV)</label>
-          <select id="mpv-conta-custo"><option value="">— Selecione a conta —</option></select>
-        </div>
+      <div class="fg">
+        <label>Conta do Plano de Contas (Receita) <span style="color:var(--rd)">*</span></label>
+        <select id="mpv-conta" style="border-color:rgba(242,100,25,0.4)"><option value="">— Selecione obrigatoriamente a conta de receita —</option></select>
+        <div style="font-size:10px;color:var(--tx3);margin-top:4px"><i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>Campo obrigatório — necessário para lançamentos e DRE</div>
       </div>
     </div>
 
@@ -2474,9 +2681,43 @@ function initData(){
       {id:9,cod:'PAG-00009',venc:'2026-06-20',comp:'2026-06-01',forn:'Embalagens Express',desc:'Caixas Pizza e Descartáveis',conta:'5.3.08',forma:'Boleto',val:620,status:'Pendente',reg:'competencia',obs:''},
     ]);
     S.s('receber',[
-      {id:1,venc:'2026-06-26',desc:'iFood — repasse semanal',conta:'1.1',forma:'iFood / App',val:4200,status:'Pendente'},
-      {id:2,venc:'2026-06-28',desc:'Evento Aniversário — Cliente João',conta:'1.1',forma:'PIX',val:2400,status:'Pendente'},
-      {id:3,venc:'2026-06-30',desc:'Cartão Crédito — Stone',conta:'1.1',forma:'Cartão Crédito',val:6400,status:'Pendente'},
+      {id:1,comp:'2026-06-01',venc:'2026-06-26',desc:'iFood — repasse semanal',conta:'1.1',forma:'iFood / App',val:4200,status:'Pendente',
+        comanda:'IFOOD-001',cliente:'iFood',
+        itens:[
+          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:28,preco:59.90,desc:0,total:1677.20},
+          {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:8,preco:34.90,desc:0,total:279.20},
+          {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:22,preco:8.00,desc:0,total:176.00},
+          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:18,preco:18.00,desc:0,total:324.00},
+          {prodId:110,nome:'SUCO NATURAL 300ML',cat:'Bebidas',un:'un',qtd:14,preco:10.00,desc:0,total:140.00},
+          {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:12,preco:22.00,desc:0,total:264.00},
+          {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:30,preco:5.00,desc:0,total:150.00},
+          {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:10,preco:19.00,desc:0,total:190.00},
+        ]
+      },
+      {id:2,comp:'2026-06-03',venc:'2026-06-28',desc:'Evento Aniversário — Cliente João',conta:'1.1',forma:'PIX',val:2400,status:'Pendente',
+        comanda:'MESA-12',cliente:'João Silva',
+        itens:[
+          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:15,preco:59.90,desc:0,total:898.50},
+          {prodId:103,nome:'RODÍZIO ADULTO + BEBIDA',cat:'Combos',un:'combo',qtd:8,preco:74.90,desc:0,total:599.20},
+          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:20,preco:18.00,desc:0,total:360.00},
+          {prodId:113,nome:'CAIPIROSKA MORANGO',cat:'Drinks',un:'dose',qtd:10,preco:24.00,desc:0,total:240.00},
+          {prodId:114,nome:'SOBREMESA TIRAMISU',cat:'Sobremesas',un:'un',qtd:8,preco:16.00,desc:0,total:128.00},
+        ]
+      },
+      {id:3,comp:'2026-06-05',venc:'2026-06-30',desc:'Sábado — Salão Lotado',conta:'1.1',forma:'Cartão Crédito',val:6400,status:'Pendente',
+        comanda:'CAIXA-SAB',cliente:'',
+        itens:[
+          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:52,preco:59.90,desc:0,total:3114.80},
+          {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:12,preco:34.90,desc:0,total:418.80},
+          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:35,preco:18.00,desc:0,total:630.00},
+          {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:18,preco:19.00,desc:0,total:342.00},
+          {prodId:109,nome:'COCA-COLA ZERO LATA 350ML',cat:'Bebidas',un:'un',qtd:20,preco:8.00,desc:0,total:160.00},
+          {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:25,preco:8.00,desc:0,total:200.00},
+          {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:40,preco:5.00,desc:0,total:200.00},
+          {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:15,preco:22.00,desc:0,total:330.00},
+          {prodId:115,nome:'SOBREMESA PETIT GATEAU',cat:'Sobremesas',un:'un',qtd:10,preco:18.00,desc:0,total:180.00},
+        ]
+      },
     ]);
     S.s('estoque',[
       {id:1,n:'Mussarela',c:'Laticínios',q:8,m:15,u:'kg'},
@@ -2545,6 +2786,56 @@ function initData(){
   })();
   // Garante que insumos existe
   if(!S.g('insumos')) S.s('insumos', []);
+
+  // ── Migração: remove itens duplicados em lançamentos parcelados ──
+  // Dois mecanismos: 1) via totalParcelas, 2) via itens idênticos no mesmo fornecedor
+  (function migrarItensParcelas(){
+    const arr = S.g('pagar') || [];
+    let dirty = false;
+
+    // ── Mecanismo 1: agrupa por totalParcelas (lançamentos novos) ──
+    const grupos = {};
+    arr.forEach((x, idx) => {
+      if(!x.itens || !x.totalParcelas || x.totalParcelas <= 1) return;
+      const chave = `${x.forn||''}|${x.comp||''}|${x.totalNF||''}|${x.totalParcelas}`;
+      if(!grupos[chave]) grupos[chave] = [];
+      grupos[chave].push({ idx, parcela: x.parcela || 1 });
+    });
+    Object.values(grupos).forEach(grupo => {
+      if(grupo.length <= 1) return;
+      grupo.sort((a,b) => a.parcela - b.parcela);
+      grupo.slice(1).forEach(g => {
+        if(arr[g.idx].itens){ arr[g.idx] = {...arr[g.idx], itens:undefined}; dirty=true; }
+      });
+    });
+
+    // ── Mecanismo 2: detecta lançamentos com itens idênticos do mesmo fornecedor ──
+    // (cobre lançamentos antigos sem totalParcelas)
+    const assinatura = (x) => {
+      if(!x.itens) return null;
+      // Assinatura = forn + comp + hash dos nomes dos itens ordenados
+      const nomes = [...x.itens].sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(i=>i.nome||'').join('|');
+      return `${x.forn||''}::${x.comp||''}::${nomes}`;
+    };
+    const vistos = new Map(); // assinatura → primeiro idx que a tem
+    arr.forEach((x, idx) => {
+      if(!x.itens) return;
+      const sig = assinatura(x);
+      if(!sig) return;
+      if(vistos.has(sig)){
+        // Duplicata — remove itens desta parcela
+        arr[idx] = {...arr[idx], itens:undefined};
+        dirty = true;
+      } else {
+        vistos.set(sig, idx);
+      }
+    });
+
+    if(dirty){
+      S.s('pagar', arr);
+      console.log('[Migração] Itens duplicados em parcelas corrigidos automaticamente.');
+    }
+  })();
 }
 
 // ══════════════════════════════════════
@@ -2653,12 +2944,16 @@ const titles={
   'cad-bancos':['Cadastro de Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
   'rel-pagar':['Relatório — Contas a Pagar','Filtros completos · Exportação CSV · Impressão'],
   'rel-compras':['Relatório — Compras por Categoria','Insumos · Bebidas · Descartáveis · Limpeza · Utensílios · Imobilizado'],
+  'rel-vendas':['Relatório — Vendas de Produtos','Rodízios · Bebidas · Bebidas · Ranking · Gráficos automáticos'],
 };
 function go(pg,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('act'));
   document.getElementById('page-'+pg).classList.add('act');
   btn.classList.add('act');
+  // Volta ao topo da área de conteúdo
+  const ca = document.querySelector('.ca');
+  if(ca) ca.scrollTop = 0;
   const t=titles[pg]||[pg,''];
   document.getElementById('pgt').textContent=t[0];
   document.getElementById('pgs').textContent=t[1];
@@ -2670,11 +2965,12 @@ function go(pg,btn){
   else{btnTxt.textContent='Novo Lançamento';}
   // Oculta botão Novo Lançamento no relatório
   const btnNovo = document.getElementById('btn-novo');
-  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar') ? 'none' : '';
+  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas') ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='dre')         { dreMesAtual(); dreSetRegime(_dreRegime); }
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
+  if(pg==='rel-vendas')  initRelVendas();
 }
 
 // ══════════════════════════════════════
@@ -3679,12 +3975,18 @@ function saveParcelado(){
       conta:contaAuto, val, forma, status:st, reg,
       obs: n<=1 ? (n===0?'À Vista':'Pagamento Único') : `Parcela ${i} de ${totalParcelas}`,
       parcela:n<=1?null:i, totalParcelas:n<=1?null:totalParcelas,
-      itens:mppItens.length?[...mppItens]:undefined,
+      // Itens (NF) somente na 1ª parcela — evita duplicação no Rel. Compras
+      itens: (i===1 && mppItens.length) ? [...mppItens] : undefined,
       totalNF:totalNF||undefined,
       banco: document.getElementById('mpp-banco')?.value||'',
     });
   }
   if(novasLinhas===0){alert('Preencha ao menos uma linha com data e valor.');return;}
+  // Avisa se nenhum item tem conta classificada
+  if(!contaAuto){
+    const confirmar = confirm('⚠️ Atenção!\n\nNenhum item deste lançamento possui Conta do Plano de Contas classificada.\n\nOs lançamentos sem conta não aparecem no DRE e nos relatórios financeiros.\n\nRecomenda-se classificar os itens com a conta correta.\n\nDeseja salvar mesmo assim?');
+    if(!confirmar) return;
+  }
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
 }
 // ── variável temporária de itens da comanda ──
@@ -3693,8 +3995,15 @@ let _mrItens = [];
 function saveReceber(){
   const comp = document.getElementById('mr-comp').value;
   const venc = document.getElementById('mr-venc').value;
+  const conta = document.getElementById('mr-conta').value;
   if(!comp){ alert('Informe a data de competência (mês da venda).'); return; }
   if(!venc){ alert('Informe a data de vencimento.'); return; }
+  if(!conta){ 
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano antes de salvar a venda.\n\nEste campo é necessário para o correto registro no DRE.');
+    const sel = document.getElementById('mr-conta');
+    if(sel){ sel.style.borderColor='var(--rd)'; sel.focus(); setTimeout(()=>sel.style.borderColor='',3000); }
+    return;
+  }
   // Só exige itens em novo lançamento — na edição pode ter ficado sem alterar itens
   if(!_mrItens.length && !document._mrEditId){ alert('Adicione pelo menos um produto à comanda.'); return; }
   const totalEl = document.getElementById('mr-total-venda');
@@ -5883,6 +6192,12 @@ function onMepStatusChange(){
 }
 function saveEditPagar(){
   const id=Number(document.getElementById('mep-id').value);
+  const conta=document.getElementById('mep-conta').value;
+  if(!conta){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas antes de salvar.\n\nEste campo é necessário para o correto registro no DRE.');
+    const sel=document.getElementById('mep-conta'); if(sel){sel.style.borderColor='var(--rd)';sel.focus();setTimeout(()=>sel.style.borderColor='',3000);}
+    return;
+  }
   const arr=S.g('pagar')||[];
   const idx=arr.findIndex(x=>x.id===id); if(idx===-1)return;
   const status = document.getElementById('mep-status').value;
@@ -6884,6 +7199,8 @@ let rcSortDir = 'desc';
 function initRelCompras(){
   rcMsBuildForn();
   rcMsBuildProd();
+  rcMsBuildLanc();
+  rcMsBuildConta();
   gerarRelCompras();
 }
 
@@ -6891,18 +7208,21 @@ function limparFiltrosCompras(){
   ['rc-dt-ini','rc-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const rcUn=document.getElementById('rc-un'); if(rcUn) rcUn.selectedIndex=0;
   rcMsClearAll('cat'); rcMsClearAll('forn'); rcMsClearAll('prod');
+  rcMsClearAll('lanc'); rcMsClearAll('conta');
   document.getElementById('rc-order').value='data-desc';
   gerarRelCompras();
 }
 
 function gerarRelCompras(){
-  const dtIni = document.getElementById('rc-dt-ini')?.value||'';
-  const dtFim = document.getElementById('rc-dt-fim')?.value||'';
-  const catsF = rcMsGetSel('cat');
+  const dtIni  = document.getElementById('rc-dt-ini')?.value||'';
+  const dtFim  = document.getElementById('rc-dt-fim')?.value||'';
+  const catsF  = rcMsGetSel('cat');
   const fornsF = rcMsGetSel('forn');
   const prodsF = rcMsGetSel('prod');
-  const unF   = document.getElementById('rc-un')?.value||'';
-  const order = document.getElementById('rc-order')?.value||'data-desc';
+  const lancsF = rcMsGetSel('lanc');
+  const contaF = rcMsGetSel('conta');
+  const unF    = document.getElementById('rc-un')?.value||'';
+  const order  = document.getElementById('rc-order')?.value||'data-desc';
 
   // Coleta todos os itens de compra (NFP) que pertencem às cats filtráveis
   const pagar = S.g('pagar')||[];
@@ -6942,6 +7262,8 @@ function gerarRelCompras(){
   if(catsF.length)  itens = itens.filter(x=>catsF.includes(x.cat));
   if(fornsF.length) itens = itens.filter(x=>fornsF.includes(String(x.fornId)));
   if(prodsF.length) itens = itens.filter(x=>prodsF.includes(x.nome));
+  if(lancsF.length) itens = itens.filter(x=>lancsF.includes(x.lanc));
+  if(contaF.length) itens = itens.filter(x=>contaF.includes(x.conta));
   if(unF)           itens = itens.filter(x=>x.un === unF);
 
   // Ordena
@@ -6956,6 +7278,8 @@ function gerarRelCompras(){
       case 'total': va=a.total; vb=b.total; break;
       case 'val':   va=a.total; vb=b.total; break;
       case 'forn':  va=a.forn;  vb=b.forn;  break;
+      case 'lanc':  va=a.lanc;  vb=b.lanc;  break;
+      case 'contaNome': va=a.contaNome; vb=b.contaNome; break;
       default:      va=a.data;  vb=b.data;
     }
     if(typeof va === 'number' && typeof vb === 'number'){
@@ -7036,10 +7360,18 @@ function rcMsCbToggle(el, key){
   rcMsUpdateLabel(key);
 }
 function rcMsUpdateLabel(key){
-  const sel = [...document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item.sel')].map(e=>e.dataset.val);
+  const selEls = [...document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item.sel')];
   const lbl = document.getElementById('rc-'+key+'-label');
-  const def = {cat:'— Todas —', forn:'— Todos —', prod:'— Todos —'};
-  lbl.textContent = sel.length===0 ? def[key] : sel.length===1 ? sel[0] : sel.length+' selecionados';
+  const def = {cat:'— Todas —', forn:'— Todos —', prod:'— Todos —', lanc:'— Todos —', conta:'— Todas —'};
+  if(selEls.length===0){
+    lbl.textContent = def[key];
+  } else if(selEls.length===1){
+    // Pega o texto visível do item (não o data-val que pode ser um ID numérico)
+    const span = selEls[0].querySelector('span:last-child');
+    lbl.textContent = span ? span.textContent : selEls[0].dataset.val;
+  } else {
+    lbl.textContent = selEls.length+' selecionados';
+  }
 }
 function rcMsGetSel(key){
   return [...document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item.sel')].map(e=>e.dataset.val);
@@ -7067,6 +7399,44 @@ function rcMsBuildForn(){
   drop.innerHTML = todos + (forns.length===0
     ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhum fornecedor cadastrado</div>'
     : forns.map(f=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'forn')" data-val="${f.id}"><span class="rc-ms-chk"></span><span>${f.n}</span></div>`).join(''));
+}
+
+function rcMsBuildLanc(){
+  const pagar = S.g('pagar')||[];
+  const lancSet = new Map();
+  pagar.forEach(lanc=>{
+    if(!lanc.itens || !lanc.itens.length) return;
+    const cod = lanc.cod||String(lanc.id);
+    if(!lancSet.has(cod)) lancSet.set(cod, cod);
+  });
+  const drop = document.getElementById('rc-lanc-drop');
+  if(!drop) return;
+  const lista = [...lancSet.values()].sort();
+  const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('lanc')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todos)</span></div>`;
+  drop.innerHTML = todos + (lista.length===0
+    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhum lançamento encontrado</div>'
+    : lista.map(l=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'lanc')" data-val="${l}"><span class="rc-ms-chk"></span><span>${l}</span></div>`).join(''));
+}
+
+function rcMsBuildConta(){
+  const pagar = S.g('pagar')||[];
+  const contaSet = new Map();
+  pagar.forEach(lanc=>{
+    if(!lanc.itens || !lanc.itens.length) return;
+    lanc.itens.forEach(it=>{
+      if(!it.conta) return;
+      const contaNome = nomeContaByCod(it.conta)||it.conta;
+      const label = `${it.conta} — ${contaNome}`;
+      if(!contaSet.has(it.conta)) contaSet.set(it.conta, label);
+    });
+  });
+  const drop = document.getElementById('rc-conta-drop');
+  if(!drop) return;
+  const lista = [...contaSet.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('conta')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todas)</span></div>`;
+  drop.innerHTML = todos + (lista.length===0
+    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta encontrada</div>'
+    : lista.map(([cod,lbl])=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${cod}"><span class="rc-ms-chk"></span><span>${lbl}</span></div>`).join(''));
 }
 
 function rcMsBuildProd(){
@@ -7101,7 +7471,7 @@ function sortRelCompras(col){
   const dir = (rcSortCol===col && rcSortDir==='asc') ? 'desc' : 'asc';
   document.getElementById('rc-order').value = col+'-'+dir;
   // Atualiza ícones das colunas
-  ['data','nome','un','qtd','preco','total','forn'].forEach(c=>{
+  ['data','nome','un','qtd','preco','total','forn','lanc','contaNome'].forEach(c=>{
     const ic = document.getElementById('rc-sort-'+c);
     if(!ic) return;
     if(c===col) ic.className = 'fa-solid fa-sort-'+(dir==='asc'?'up':'down')+' fa-xs';
@@ -7440,8 +7810,15 @@ function mpvSugerirConta(){
 function saveProdVenda(){
   const nome  = document.getElementById('mpv-nome').value.trim();
   const preco = parseFloat(document.getElementById('mpv-preco').value)||0;
+  const conta = document.getElementById('mpv-conta')?.value||'';
   if(!nome){ alert('Informe o nome do produto.'); return; }
   if(preco<=0){ alert('Informe o preço de venda.'); return; }
+  if(!conta){ 
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas (Receita) antes de salvar.\n\nEste campo é necessário para o correto lançamento no DRE.');
+    const sel = document.getElementById('mpv-conta');
+    if(sel){ sel.style.borderColor='var(--rd)'; sel.focus(); setTimeout(()=>sel.style.borderColor='rgba(242,100,25,0.4)',3000); }
+    return;
+  }
   const idVal = document.getElementById('mpv-id').value;
   const arr   = S.g('prod-venda')||[];
   const obj   = {
@@ -7450,8 +7827,7 @@ function saveProdVenda(){
     un:         document.getElementById('mpv-un').value,
     custo:      parseFloat(document.getElementById('mpv-custo').value)||0,
     precoPromo: parseFloat(document.getElementById('mpv-preco-promo')?.value)||0,
-    conta:      document.getElementById('mpv-conta')?.value||'',
-    contaCusto: document.getElementById('mpv-conta-custo')?.value||'',
+    conta,
     st:         document.getElementById('mpv-st').value,
     obs:        document.getElementById('mpv-obs').value.trim(),
   };
@@ -7484,7 +7860,7 @@ function resetModalProdVenda(){
   try{ document.getElementById('mpv-preco-promo').value = ''; }catch{}
   try{ document.getElementById('mpv-margem-box').style.display='none'; }catch{}
   try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto (Vendas)'; }catch{}
-  // Popula selects de conta
+  // Popula select de conta
   mpvPopularContas();
 }
 
@@ -7493,11 +7869,10 @@ function mpvPopularContas(){
     const sel = document.getElementById(id);
     if(!sel) return;
     const contas = getAllContas().filter(filtro);
-    sel.innerHTML = '<option value="">— Selecione —</option>' +
+    sel.innerHTML = '<option value="">— Selecione obrigatoriamente a conta —</option>' +
       contas.map(c=>`<option value="${c.cod}">${c.cod} — ${c.nome}</option>`).join('');
   };
-  fillSel('mpv-conta',      c=>c.natureza==='receita'||c.natureza==='Receita'||c.grupo==='1');
-  fillSel('mpv-conta-custo',c=>c.natureza==='despesa'||c.natureza==='Despesa'||c.grupo==='4'||c.grupo==='5');
+  fillSel('mpv-conta', c=>c.natureza==='receita'||c.natureza==='Receita'||c.grupo==='1');
 }
 
 function getAllContas(){
@@ -7521,7 +7896,6 @@ function editProdVenda(id){
   document.getElementById('mpv-obs').value   = p.obs||'';
   try{ document.getElementById('mpv-preco-promo').value = p.precoPromo||''; }catch{}
   try{ document.getElementById('mpv-conta').value       = p.conta||''; }catch{}
-  try{ document.getElementById('mpv-conta-custo').value = p.contaCusto||''; }catch{}
   try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Produto (Vendas)'; }catch{}
   mpvCalcMargem();
   openMod('mod-pvenda');
@@ -7565,6 +7939,694 @@ function renderProdVenda(){
       </tr>`;
     }).join('');
 }
+// ══════════════════════════════════════
+// RELATÓRIO DE VENDAS DE PRODUTOS
+// ══════════════════════════════════════
+let rvDados = [];
+
+function initRelVendas(){
+  // Popula select de produtos
+  const prods = S.g('prod-venda')||[];
+  const sel = document.getElementById('rv-prod');
+  if(sel){
+    const cats = [...new Set(prods.map(p=>p.cat))].sort();
+    let opts = '<option value="">Todos os produtos</option>';
+    cats.forEach(cat=>{
+      opts += `<optgroup label="${cat}">`;
+      prods.filter(p=>p.cat===cat).forEach(p=>{
+        opts += `<option value="${p.id}">${p.nome}</option>`;
+      });
+      opts += '</optgroup>';
+    });
+    sel.innerHTML = opts;
+  }
+  // Data padrão: mês atual
+  const hoje = new Date();
+  const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  const fim  = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
+  const elIni = document.getElementById('rv-dt-ini');
+  const elFim = document.getElementById('rv-dt-fim');
+  if(elIni && !elIni.value) elIni.value = ini;
+  if(elFim && !elFim.value) elFim.value = fim;
+  gerarRelVendas();
+}
+
+function rvAtualizarDadosDemo(){
+  // Força gravação das vendas demo com itens, sobrescrevendo dados antigos sem itens
+  if(!confirm('Isso vai substituir os lançamentos de demonstração do Contas a Receber por versões com itens discriminados para testar o relatório.\n\nContinuar?')) return;
+  S.s('receber',[
+    {id:Date.now()+1,comp:'2026-06-01',venc:'2026-06-26',desc:'iFood — repasse semanal',conta:'1.1',forma:'iFood / App',val:4200,status:'Pendente',comanda:'IFOOD-001',cliente:'iFood',
+      itens:[
+        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:28,preco:59.90,desc:0,total:1677.20},
+        {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:8,preco:34.90,desc:0,total:279.20},
+        {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:22,preco:8.00,desc:0,total:176.00},
+        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:18,preco:18.00,desc:0,total:324.00},
+        {prodId:110,nome:'SUCO NATURAL 300ML',cat:'Bebidas',un:'un',qtd:14,preco:10.00,desc:0,total:140.00},
+        {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:12,preco:22.00,desc:0,total:264.00},
+        {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:30,preco:5.00,desc:0,total:150.00},
+        {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:10,preco:19.00,desc:0,total:190.00},
+      ]},
+    {id:Date.now()+2,comp:'2026-06-03',venc:'2026-06-28',desc:'Evento Aniversário — Cliente João',conta:'1.1',forma:'PIX',val:2400,status:'Pendente',comanda:'MESA-12',cliente:'João Silva',
+      itens:[
+        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:15,preco:59.90,desc:0,total:898.50},
+        {prodId:103,nome:'RODÍZIO ADULTO + BEBIDA',cat:'Combos',un:'combo',qtd:8,preco:74.90,desc:0,total:599.20},
+        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:20,preco:18.00,desc:0,total:360.00},
+        {prodId:113,nome:'CAIPIROSKA MORANGO',cat:'Drinks',un:'dose',qtd:10,preco:24.00,desc:0,total:240.00},
+        {prodId:114,nome:'SOBREMESA TIRAMISU',cat:'Sobremesas',un:'un',qtd:8,preco:16.00,desc:0,total:128.00},
+      ]},
+    {id:Date.now()+3,comp:'2026-06-05',venc:'2026-06-30',desc:'Sábado — Salão Lotado',conta:'1.1',forma:'Cartão Crédito',val:6400,status:'Pendente',comanda:'CAIXA-SAB',cliente:'',
+      itens:[
+        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:52,preco:59.90,desc:0,total:3114.80},
+        {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:12,preco:34.90,desc:0,total:418.80},
+        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:35,preco:18.00,desc:0,total:630.00},
+        {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:18,preco:19.00,desc:0,total:342.00},
+        {prodId:109,nome:'COCA-COLA ZERO LATA 350ML',cat:'Bebidas',un:'un',qtd:20,preco:8.00,desc:0,total:160.00},
+        {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:25,preco:8.00,desc:0,total:200.00},
+        {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:40,preco:5.00,desc:0,total:200.00},
+        {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:15,preco:22.00,desc:0,total:330.00},
+        {prodId:115,nome:'SOBREMESA PETIT GATEAU',cat:'Sobremesas',un:'un',qtd:10,preco:18.00,desc:0,total:180.00},
+      ]},
+  ]);
+  renderReceber();
+  // Reseta datas para junho 2026
+  const elIni=document.getElementById('rv-dt-ini'); if(elIni) elIni.value='2026-06-01';
+  const elFim=document.getElementById('rv-dt-fim'); if(elFim) elFim.value='2026-06-30';
+  gerarRelVendas();
+  showToast('✓ Dados demo atualizados com itens discriminados!','var(--gr)');
+}
+
+function limparFiltrosVendas(){
+  ['rv-dt-ini','rv-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  const cat=document.getElementById('rv-cat'); if(cat)cat.value='';
+  const prod=document.getElementById('rv-prod'); if(prod)prod.value='';
+  const mr=document.getElementById('rv-min-rodizios'); if(mr)mr.value='';
+  gerarRelVendas();
+}
+
+function gerarRelVendas(){
+  const dtIni  = document.getElementById('rv-dt-ini')?.value||'';
+  const dtFim  = document.getElementById('rv-dt-fim')?.value||'';
+  const catF   = document.getElementById('rv-cat')?.value||'';
+  const prodF  = document.getElementById('rv-prod')?.value||'';
+  const minRod = parseInt(document.getElementById('rv-min-rodizios')?.value)||0;
+
+  const vendas    = S.g('receber')||[];
+  const prodVenda = S.g('prod-venda')||[];
+
+  const mapa = {};
+
+  const addProd = (prod, qtd, precoUnit) => {
+    if(catF && prod.cat !== catF) return;
+    if(prodF && String(prod.id) !== String(prodF)) return;
+    const key = String(prod.id);
+    if(!mapa[key]){
+      mapa[key] = {
+        id: prod.id, nome: prod.nome, cat: prod.cat,
+        un: prod.un||'un', preco: prod.preco||0, custo: prod.custo||0,
+        qtd: 0, fat: 0
+      };
+    }
+    mapa[key].qtd += qtd;
+    mapa[key].fat += parseFloat((qtd * precoUnit).toFixed(2));
+  };
+
+  // Filtra vendas pelo período
+  const vendasFiltradas = vendas.filter(v=>{
+    const dt = (v.comp || v.venc || '').slice(0,10);
+    if(dtIni && dt < dtIni) return false;
+    if(dtFim && dt > dtFim) return false;
+    return true;
+  });
+
+  // Verifica se há vendas com itens discriminados
+  const temItens = vendasFiltradas.some(v=>v.itens && v.itens.length);
+
+  if(temItens){
+    // ── Modo detalhado: processa apenas itens com prodId no cadastro ──
+    vendasFiltradas.forEach(v=>{
+      if(!v.itens || !v.itens.length) return;
+      v.itens.forEach(it=>{
+        if(!it.prodId) return;
+        const prod = prodVenda.find(p=>String(p.id)===String(it.prodId));
+        if(!prod) return;
+        addProd(prod, it.qtd||1, it.preco||prod.preco||0);
+      });
+    });
+  } else {
+    // ── Modo resumido: sem vendas com itens, exibe catálogo de produtos com qtd=0 ──
+    // Mostra todos os produtos cadastrados (útil para ver o cardápio e margens)
+    const prodsAtivos = prodVenda.filter(p=>p.st==='Ativo');
+    prodsAtivos.forEach(prod=>{
+      if(catF && prod.cat !== catF) return;
+      if(prodF && String(prod.id) !== String(prodF)) return;
+      mapa[String(prod.id)] = {
+        id: prod.id, nome: prod.nome, cat: prod.cat,
+        un: prod.un||'un', preco: prod.preco||0, custo: prod.custo||0,
+        qtd: 0, fat: 0
+      };
+    });
+  }
+
+  let arr = Object.values(mapa);
+
+  if(minRod > 0){
+    arr = arr.filter(x=> x.cat !== 'Rodízio' || x.qtd >= minRod);
+  }
+
+  arr.sort((a,b)=> b.fat !== a.fat ? b.fat - a.fat : b.preco - a.preco);
+  rvDados = arr;
+
+  // Avisa se está em modo resumido (sem vendas com itens)
+  const avisoEl = document.getElementById('rv-aviso-modo');
+  if(avisoEl){
+    if(!temItens && arr.length > 0){
+      avisoEl.style.display='block';
+    } else {
+      avisoEl.style.display='none';
+    }
+  }
+
+  renderRelVendas();
+  // Gráficos só fazem sentido com dados reais de qtd
+  if(temItens) buildChartsVendas();
+  else { dc('rv-bebidas'); dc('rv-margem'); dc('rv-evolucao'); }
+}
+
+function renderRelVendas(){
+  const arr = rvDados;
+  const totalFat  = arr.reduce((a,b)=>a+b.fat, 0);
+  const totalQtd  = arr.reduce((a,b)=>a+b.qtd, 0);
+  const totalLucro= arr.reduce((a,b)=>{ const l=(b.preco-b.custo)*b.qtd; return a+(l>0?l:0); },0);
+
+  const kpiEl     = document.getElementById('kpi-rv');
+  const banner    = document.getElementById('rv-rodizio-banner');
+  const grafWrap  = document.getElementById('rv-graficos-wrap');
+  const tabelaCard= document.getElementById('rv-tabela-card');
+  const vaziEl    = document.getElementById('rv-vazio');
+
+  // Sem dados → mostra apenas estado vazio
+  if(!arr.length){
+    if(kpiEl)     kpiEl.style.display='none';
+    if(banner)    banner.style.display='none';
+    if(grafWrap)  grafWrap.style.display='none';
+    if(tabelaCard)tabelaCard.style.display='none';
+    if(vaziEl)    vaziEl.style.display='block';
+    return;
+  }
+
+  // Com dados → esconde estado vazio, mostra tudo
+  if(vaziEl)    vaziEl.style.display='none';
+  if(kpiEl)     kpiEl.style.display='grid';
+  if(grafWrap)  grafWrap.style.display='block';
+  if(tabelaCard)tabelaCard.style.display='block';
+  // Rodízios
+  const rodArr   = arr.filter(x=>x.cat==='Rodízio');
+  const rodQtd   = rodArr.reduce((a,b)=>a+b.qtd, 0);
+  const rodFat   = rodArr.reduce((a,b)=>a+b.fat, 0);
+  const rodTicket= rodQtd>0 ? rodFat/rodQtd : 0;
+
+  if(banner){
+    if(rodQtd > 0){
+      banner.style.display='flex';
+      document.getElementById('rv-rodizio-total').textContent = rodQtd.toLocaleString('pt-BR');
+      document.getElementById('rv-rodizio-fat').textContent   = R(rodFat);
+      document.getElementById('rv-rodizio-ticket').textContent= R(rodTicket);
+    } else {
+      banner.style.display='none';
+    }
+  }
+
+  // KPIs
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="kc"><div class="kl"><i class="fa-solid fa-pizza-slice" style="color:var(--or)"></i> Rodízios (PAX)</div><div class="kv" style="color:var(--or)">${rodQtd.toLocaleString('pt-BR')}</div><div class="kd nt">Indicador Principal</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-boxes-stacked"></i> Total Itens Vendidos</div><div class="kv">${totalQtd.toLocaleString('pt-BR')}</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-coins"></i> Faturamento Total</div><div class="kv">${R(totalFat)}</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-chart-line"></i> Lucro Estimado</div><div class="kv" style="color:var(--gr)">${R(totalLucro)}</div></div>`;
+
+  document.getElementById('rv-total-label').textContent = arr.length+' produtos · Faturamento: '+R(totalFat);
+
+  const catCor = {'Rodízio':'tg-or','Bebidas':'tg-bl','Cervejas':'tg-am','Drinks':'tg-gy','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+
+  document.getElementById('rv-tbody').innerHTML = arr.map(p=>{
+    const custo = p.custo||0;
+    const margem = p.preco>0 ? ((p.preco-custo)/p.preco*100) : 0;
+    const lucroUnit = p.preco - custo;
+    const lucroTot  = lucroUnit * p.qtd;
+    const corMg = margem>=50?'var(--gr)':margem>=30?'var(--am)':'var(--rd)';
+    return `<tr>
+      <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+      <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+      <td style="text-align:center;font-size:14px;font-weight:700;color:var(--or)">${p.qtd.toLocaleString('pt-BR')}</td>
+      <td style="text-align:center;color:var(--tx2)">${p.un}</td>
+      <td style="text-align:right;color:var(--tx2)">${R(p.preco)}</td>
+      <td style="text-align:right;color:var(--tx2)">${custo>0?R(custo):'—'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.fat)}</td>
+      <td style="text-align:right;color:${corMg};font-weight:600">${margem>0?margem.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:right;font-weight:600;color:${lucroTot>0?'var(--gr)':'var(--rd)'}">${lucroTot!==0?R(lucroTot):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const totalLucroFinal = arr.reduce((a,b)=>{const l=(b.preco-b.custo)*b.qtd;return a+(l||0);},0);
+  document.getElementById('rv-tfoot').innerHTML=`
+    <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
+      <td colspan="2" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
+      <td style="text-align:center;font-weight:700;font-size:13px;color:var(--or)">${totalQtd.toLocaleString('pt-BR')}</td>
+      <td></td><td></td><td></td>
+      <td style="text-align:right;font-weight:700;font-size:14px;color:var(--gr)">${R(totalFat)}</td>
+      <td></td>
+      <td style="text-align:right;font-weight:700;font-size:14px;color:var(--gr)">${R(totalLucroFinal)}</td>
+    </tr>`;
+}
+
+function buildChartsVendas(){
+  const arr = rvDados;
+  const go  = {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}};
+  const tx  = {color:'#888', font:{size:10}};
+  const gx  = {color:'rgba(255,255,255,0.04)'};
+
+  // Quebra nome em múltiplas linhas para caber no gráfico sem cortar
+  const wrapLabel = (nome, maxLen=18) => {
+    if(nome.length <= maxLen) return nome;
+    const words = nome.split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach(w=>{
+      if((cur+' '+w).trim().length > maxLen){
+        if(cur) lines.push(cur.trim());
+        cur = w;
+      } else {
+        cur = (cur+' '+w).trim();
+      }
+    });
+    if(cur) lines.push(cur.trim());
+    return lines;
+  };
+
+  // Gráfico 1: Ranking de Bebidas + Cervejas + Drinks por quantidade
+  const bebCats = ['Bebidas','Cervejas','Drinks'];
+  const bebidas = arr
+    .filter(x=>bebCats.includes(x.cat))
+    .sort((a,b)=>b.qtd-a.qtd)
+    .slice(0,10);
+
+  const corBeb = {'Bebidas':'rgba(33,150,243,0.75)','Cervejas':'rgba(255,143,0,0.75)','Drinks':'rgba(76,175,80,0.75)'};
+
+  dc('rv-bebidas');
+  if(document.getElementById('c-rv-bebidas')){
+    if(bebidas.length){
+      CH['rv-bebidas'] = new Chart(document.getElementById('c-rv-bebidas'),{
+        type:'bar',
+        data:{
+          labels: bebidas.map(b=>wrapLabel(b.nome, 16)),
+          datasets:[{
+            data: bebidas.map(b=>b.qtd),
+            backgroundColor: bebidas.map(b=>corBeb[b.cat]||'rgba(242,100,25,0.75)'),
+            borderRadius:4
+          }]
+        },
+        options:{...go,
+          layout:{padding:{left:10,right:20}},
+          indexAxis:'y',
+          scales:{
+            x:{ticks:tx, grid:gx},
+            y:{ticks:{color:'#aaa', font:{size:10}}}
+          },
+          plugins:{...go.plugins,
+            tooltip:{callbacks:{
+              label:ctx=>`${ctx.raw} unid. vendidas`,
+              title:ctx=>bebidas[ctx[0].dataIndex]?.nome||''
+            }}
+          }
+        }
+      });
+    } else {
+      // Sem dados de bebidas — mostra mensagem
+      const ctx = document.getElementById('c-rv-bebidas').getContext('2d');
+      ctx.fillStyle='#555';
+      ctx.font='13px Outfit,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('Nenhuma venda de bebidas no período', ctx.canvas.width/2, ctx.canvas.height/2);
+    }
+  }
+
+  // Gráfico 2: Ranking por maior lucro total (margem × qtd)
+  const topMargem = arr
+    .filter(x=>x.preco>0 && x.custo>0)
+    .map(x=>({...x, lucroTotal:parseFloat(((x.preco-x.custo)*x.qtd).toFixed(2))}))
+    .sort((a,b)=>b.lucroTotal-a.lucroTotal)
+    .slice(0,8);
+
+  dc('rv-margem');
+  if(document.getElementById('c-rv-margem')){
+    if(topMargem.length){
+      CH['rv-margem'] = new Chart(document.getElementById('c-rv-margem'),{
+        type:'bar',
+        data:{
+          labels: topMargem.map(p=>wrapLabel(p.nome, 14)),
+          datasets:[{
+            data: topMargem.map(p=>p.lucroTotal),
+            backgroundColor: topMargem.map(p=>{
+              const mg=(p.preco-p.custo)/p.preco*100;
+              return mg>=50?'rgba(76,175,80,0.75)':mg>=30?'rgba(255,143,0,0.75)':'rgba(229,57,53,0.75)';
+            }),
+            borderRadius:4
+          }]
+        },
+        options:{...go,
+          scales:{
+            x:{ticks:{color:'#888', font:{size:9}, maxRotation:35, minRotation:20}},
+            y:{ticks:{...tx, callback:v=>'R$'+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0))}, grid:gx}
+          },
+          plugins:{...go.plugins,
+            tooltip:{callbacks:{
+              label:ctx=>`Lucro: R$ ${ctx.raw.toLocaleString('pt-BR',{minimumFractionDigits:2})}`,
+              title:ctx=>topMargem[ctx[0].dataIndex]?.nome||''
+            }}
+          }
+        }
+      });
+    }
+  }
+
+  // Gráfico 3: Evolução por produto (linha) — top 5 produtos por qtd
+  const top5   = [...arr].sort((a,b)=>b.qtd-a.qtd).slice(0,5);
+  const vendas = S.g('receber')||[];
+  const meses  = [...new Set(vendas
+    .filter(v=>v.itens && v.itens.length)
+    .map(v=>(v.comp||v.venc||'').slice(0,7))
+  )].filter(Boolean).sort().slice(-6);
+
+  dc('rv-evolucao');
+  if(document.getElementById('c-rv-evolucao') && top5.length && meses.length){
+    const cores = ['#F26419','#2196F3','#4CAF50','#FF8F00','#E53935'];
+    const datasets = top5.map((prod,i)=>{
+      const data = meses.map(mes=>{
+        let qtd=0;
+        vendas.forEach(v=>{
+          if(!v.itens) return;
+          if((v.comp||v.venc||'').slice(0,7)!==mes) return;
+          v.itens.forEach(it=>{
+            if(String(it.prodId)===String(prod.id)) qtd+=it.qtd||1;
+          });
+        });
+        return qtd;
+      });
+      return { label:prod.nome, data, borderColor:cores[i], tension:0.4,
+               pointRadius:4, pointBackgroundColor:cores[i], fill:false };
+    });
+    CH['rv-evolucao'] = new Chart(document.getElementById('c-rv-evolucao'),{
+      type:'line',
+      data:{ labels:meses.map(m=>fmtMes(m)), datasets },
+      options:{responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:true, position:'bottom',
+          labels:{color:'#888', font:{size:10}, boxWidth:10, padding:10}}},
+        scales:{x:{ticks:tx}, y:{ticks:{...tx,stepSize:1}, grid:gx}}}
+    });
+  }
+}
+
+function exportarRelVendas(){
+  if(!rvDados.length){ alert('Nenhum dado para exportar. Aplique um filtro primeiro.'); return; }
+  const cab=['Produto','Categoria','Unidade','Qtd Vendida','Preço Unit.','Custo Unit.','Faturamento','Margem%','Lucro Total'];
+  const linhas = rvDados.map(p=>{
+    const custo=p.custo||0;
+    const margem=p.preco>0?((p.preco-custo)/p.preco*100).toFixed(1):'0';
+    const lucroTot=(p.preco-custo)*p.qtd;
+    return [p.nome,p.cat,p.un,p.qtd,p.preco.toFixed(2).replace('.',','),custo.toFixed(2).replace('.',','),
+      p.fat.toFixed(2).replace('.',','),margem+'%',lucroTot.toFixed(2).replace('.',',')].join(';');
+  });
+  const csv=[cab.join(';'),...linhas].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+csv);
+  a.download='rel_vendas_'+(new Date().toISOString().slice(0,10))+'.csv';
+  a.click();
+}
+
+// ══════════════════════════════════════
+// ORDENAÇÃO DE CADASTROS — ENGINE UNIVERSAL
+// ══════════════════════════════════════
+const _cadSort = {}; // { tableKey: { col, dir } }
+
+function sortCad(tableKey, col, thEl){
+  // Alterna direção
+  const prev = _cadSort[tableKey];
+  const dir = (prev && prev.col===col && prev.dir==='asc') ? 'desc' : 'asc';
+  _cadSort[tableKey] = { col, dir };
+
+  // Atualiza visual dos <th> na mesma tabela
+  const table = thEl.closest('table');
+  table.querySelectorAll('th.sortable').forEach(th=>{
+    th.classList.remove('asc','desc');
+  });
+  thEl.classList.add(dir);
+
+  // Mapeia tableKey → store e renderFunction
+  const MAP = {
+    fn:      { store:'fornecedores',      render: ()=>renderFornSorted(col,dir) },
+    pr:      { store:'produtos',          render: ()=>renderProdSorted(col,dir) },
+    pv:      { store:'prod-venda',        render: ()=>renderProdVendaSorted(col,dir) },
+    cc:      { store:'cad-contas',        render: ()=>renderCadContasSorted(col,dir) },
+    ins:     { store:'insumos',           render: ()=>renderInsumosSorted(col,dir) },
+    serv:    { store:'servicos',          render: ()=>renderServicosSorted(col,dir) },
+    catprod: { store:'cat-produtos',      render: ()=>renderCategoriasProdSorted(col,dir) },
+    fp:      { store:'formas-pagamento',  render: ()=>renderFormasPagSorted(col,dir) },
+    fr:      { store:'formas-recebimento',render: ()=>renderFormasRecSorted(col,dir) },
+    bancos:  { store:'bancos',            render: ()=>renderBancosSorted(col,dir) },
+  };
+  if(MAP[tableKey]) MAP[tableKey].render();
+}
+
+function _sortArr(arr, col, dir){
+  return [...arr].sort((a,b)=>{
+    let va = a[col], vb = b[col];
+    // Numérico
+    if(typeof va === 'number' && typeof vb === 'number'){
+      return dir==='asc' ? va-vb : vb-va;
+    }
+    // String
+    va = String(va||'').toLowerCase();
+    vb = String(vb||'').toLowerCase();
+    if(va < vb) return dir==='asc' ? -1 : 1;
+    if(va > vb) return dir==='asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+// Sorted renders — cada um ordena o array e chama o render existente
+function renderFornSorted(col,dir){
+  const map={n:'n',doc:'doc',cidade:'cidade',vendedor:'vendedor',st:'st'};
+  const arr = _sortArr(S.g('fornecedores')||[], map[col]||col, dir);
+  const tbody = document.getElementById('tb-fn'); if(!tbody) return;
+  tbody.innerHTML = arr.map((f,i)=>`<tr>
+    <td style="width:36px;text-align:center;font-size:11px;color:var(--tx3);font-weight:400">${i+1}</td>
+    <td style="color:var(--tx);font-weight:500">${f.n}</td>
+    <td style="font-size:12px">${f.doc||'—'}</td>
+    <td style="font-size:12px">${f.cidade?f.cidade+(f.uf?' / '+f.uf:''):'—'}</td>
+    <td style="font-size:12px">${f.tel||'—'}</td>
+    <td style="font-size:12px;color:var(--tx2)">${f.vendedor||'—'}</td>
+    <td style="font-size:12px">${f.email||'—'}</td>
+    <td>${stTag(f.st||'Ativo')}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editForn(${f.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('fornecedores',${f.id},renderForn)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderProdSorted(col,dir){
+  const arr = _sortArr(S.g('produtos')||[], col, dir);
+  const tbody = document.getElementById('tb-pr'); if(!tbody) return;
+  tbody.innerHTML = arr.map(p=>{
+    const cat = getCatProds().find(c=>String(c.id)===String(p.cat));
+    const catNome = cat ? cat.nome : (p.cat||'—');
+    const catCor  = cat ? (cat.cor||'tg-gy') : 'tg-gy';
+    const contaNome = nomeContaByCod(p.conta)||p.conta||'—';
+    return `<tr>
+    <td style="color:var(--or);font-weight:500">${p.cod}</td>
+    <td style="color:var(--tx)">${p.n}</td>
+    <td><span class="tg ${catCor}" style="font-size:11px">${catNome}</span></td>
+    <td>${p.un}</td><td>${R(p.custo)}</td>
+    <td style="font-size:11px;color:var(--or)">${contaNome}</td>
+    <td>${stTag(p.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editProd(${p.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('produtos',${p.id},renderProd)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`;}).join('');
+}
+
+function renderProdVendaSorted(col,dir){
+  // col 'margem' calculado dinamicamente
+  const arr = S.g('prod-venda')||[];
+  const withMargem = arr.map(p=>({...p, margem: p.preco>0&&p.custo>0 ? ((p.preco-p.custo)/p.preco*100) : 0}));
+  const sorted = _sortArr(withMargem, col, dir);
+  const catCor = {'Rodízio':'tg-or','Bebidas':'tg-bl','Drinks':'tg-gy','Cervejas':'tg-am','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  const tbody = document.getElementById('tb-pv'); if(!tbody) return;
+  tbody.innerHTML = sorted.map(p=>{
+    const temCusto = p.preco>0 && p.custo>0;
+    const margem   = temCusto ? ((p.preco-p.custo)/p.preco*100) : null;
+    const lucro    = temCusto ? (p.preco-p.custo) : null;
+    const corMg    = margem!=null ? (margem>=50?'var(--gr)':margem>=30?'var(--am)':'var(--rd)') : 'var(--tx3)';
+    const contaNome= p.conta ? (p.conta+' — '+(nomeContaByCod?nomeContaByCod(p.conta):p.conta)) : '—';
+    return `<tr>
+      <td style="color:var(--or);font-size:11px;font-weight:600">${p.cod||'—'}</td>
+      <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+      <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+      <td style="color:var(--tx2);text-align:center">${p.un}</td>
+      <td style="text-align:right;color:var(--tx2)">${p.custo>0?R(p.custo):'—'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.preco)}</td>
+      <td style="text-align:right;font-size:11px;color:${corMg}">${margem!=null?margem.toFixed(1)+'%':'—'}</td>
+      <td style="text-align:right;font-size:11px;color:var(--gr)">${lucro!=null?R(lucro):'—'}</td>
+      <td style="font-size:11px;color:var(--tx3)" title="${contaNome}">${p.conta||'—'}</td>
+      <td>${stTag(p.st)}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-edit" onclick="editProdVenda(${p.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" onclick="del('prod-venda',${p.id},renderProdVenda)"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCadContasSorted(col,dir){
+  // Mistura plano padrão + custom, ordena
+  const allC = getPC().filter(x=>x.tipo==='conta');
+  const cad  = S.g('cad-contas')||[];
+  const combined = [...allC.map(c=>({...c,_src:'plano'})), ...cad.map(c=>({...c,_src:'custom'}))];
+  const sorted = _sortArr(combined, col, dir);
+  const tbody = document.getElementById('tb-cc'); if(!tbody) return;
+  const natTag = n=>{
+    const m={receita:'<span class="tg tg-gr">Receita</span>',despesa:'<span class="tg tg-rd">Despesa</span>',reducao:'<span class="tg tg-am">Redução</span>'};
+    return m[(n||'').toLowerCase()]||`<span class="tg tg-gy">${n||'—'}</span>`;
+  };
+  tbody.innerHTML = sorted.map(c=>{
+    const isCustom = c._src==='custom';
+    return `<tr>
+      <td style="color:var(--or);font-weight:500">${c.cod||'—'}</td>
+      <td style="color:var(--tx)">${c.nome}</td>
+      <td>${c.grupo||'—'}</td>
+      <td>${c.subgrupo||'—'}</td>
+      <td>${natTag(c.natureza||c.nat)}</td>
+      <td>${stTag(c.st||'Ativa')}</td>
+      <td><div class="ac-btns" style="opacity:1">${contaAcaoBtns(c,isCustom,'renderCadContas')}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderInsumosSorted(col,dir){
+  const arr = _sortArr(S.g('insumos')||[], col, dir);
+  const tbody = document.getElementById('tb-ins'); if(!tbody) return;
+  // reuse renderInsumos logic inline
+  if(!arr.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tx3)">Nenhum insumo cadastrado</td></tr>'; return; }
+  const catCor={'tg-or':'🟠','tg-bl':'🔵','tg-gr':'🟢','tg-rd':'🔴','tg-am':'🟡','tg-gy':'⚪'};
+  tbody.innerHTML = arr.map(ins=>{
+    const catObj = getCatProds().find(c=>String(c.id)===String(ins.cat));
+    const catNome= catObj?catObj.nome:(ins.cat||'—');
+    const catCorClass=catObj?(catObj.cor||'tg-gy'):'tg-gy';
+    const contaNome=nomeContaByCod(ins.conta)||ins.conta||'—';
+    return `<tr>
+      <td><span class="tg ${catCorClass}" style="font-size:11px">${catNome}</span></td>
+      <td style="color:var(--or);font-weight:500">${ins.cod||'—'}</td>
+      <td><span class="tg tg-gy">${ins.un||'—'}</span></td>
+      <td style="color:var(--tx);font-weight:500">${ins.nome}</td>
+      <td style="color:var(--gr);font-weight:500">${ins.valor>0?R(ins.valor):'—'}</td>
+      <td style="font-size:11px;color:var(--or)">${contaNome}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-edit" onclick="editInsumo(${ins.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" onclick="del('insumos',${ins.id},renderInsumos)"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderServicosSorted(col,dir){
+  const arr = _sortArr(S.g('servicos')||[], col, dir);
+  const tbody = document.getElementById('tb-serv'); if(!tbody) return;
+  if(!arr.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tx3)">Nenhum serviço cadastrado</td></tr>'; return; }
+  tbody.innerHTML = arr.map(s=>{
+    const catObj = getCatProds().find(c=>String(c.id)===String(s.cat));
+    const catNome= catObj?catObj.nome:(s.cat||'—');
+    const catCor = catObj?(catObj.cor||'tg-gy'):'tg-gy';
+    const contaNome = nomeContaByCod(s.conta)||s.conta||'—';
+    return `<tr>
+      <td style="color:var(--or);font-size:11px;font-weight:600">${s.cod||'—'}</td>
+      <td style="color:var(--tx);font-weight:500">${s.nome}</td>
+      <td><span class="tg ${catCor}" style="font-size:11px">${catNome}</span></td>
+      <td style="color:var(--gr)">${s.valor>0?R(s.valor):'—'}</td>
+      <td style="font-size:11px;color:var(--or)">${contaNome}</td>
+      <td>${stTag(s.st||'Ativo')}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-edit" onclick="editServico(${s.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" onclick="del('servicos',${s.id},renderServicos)"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCategoriasProdSorted(col,dir){
+  const arr = _sortArr(getCatProds(), col, dir);
+  const tbody = document.getElementById('tb-catprod'); if(!tbody) return;
+  tbody.innerHTML = arr.map(c=>`<tr>
+    <td style="color:var(--or);font-weight:600">${c.cod}</td>
+    <td style="color:var(--tx);font-weight:500"><span class="tg ${c.cor||'tg-gy'}">${c.nome}</span></td>
+    <td><span class="tg ${c.cor||'tg-gy'}" style="font-size:10px">${c.cor||'—'}</span></td>
+    <td>${stTag(c.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editCategoriaProd(${c.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('cat-produtos',${c.id},renderCategoriasProd)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderFormasPagSorted(col,dir){
+  const arr = _sortArr(S.g('formas-pagamento')||[], col, dir);
+  const tbody = document.getElementById('tb-formas-pag'); if(!tbody) return;
+  const tipoCor={'À Vista':'tg-gr','Parcelado':'tg-am','Crédito':'tg-bl','Débito':'tg-or','Transferência':'tg-gy','Recorrente':'tg-pu','Outros':'tg-gy'};
+  tbody.innerHTML = arr.map(f=>`<tr>
+    <td style="color:var(--tx);font-weight:500">${f.nome}</td>
+    <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
+    <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
+    <td>${stTag(f.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editFormaPag(${f.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('formas-pagamento',${f.id},renderFormasPag)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderFormasRecSorted(col,dir){
+  const arr = _sortArr(S.g('formas-recebimento')||[], col, dir);
+  const tbody = document.getElementById('tb-formas-rec'); if(!tbody) return;
+  const tipoCor={'À Vista':'tg-gr','Antecipado':'tg-pu','Parcelado':'tg-am','Crédito':'tg-bl','Débito':'tg-or','Transferência':'tg-gy','Recorrente':'tg-rd','Outros':'tg-gy'};
+  tbody.innerHTML = arr.map(f=>`<tr>
+    <td style="color:var(--tx);font-weight:500">${f.nome}</td>
+    <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
+    <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
+    <td>${stTag(f.st)}</td>
+    <td style="font-size:11px;color:var(--tx3)">${f.obs||'—'}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editFormaRec(${f.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('formas-recebimento',${f.id},renderFormasRec)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderBancosSorted(col,dir){
+  const arr = _sortArr(S.g('bancos')||[], col, dir);
+  const tbody = document.getElementById('tb-bancos'); if(!tbody) return;
+  tbody.innerHTML = arr.length===0
+    ? '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--tx3)">Nenhuma conta cadastrada</td></tr>'
+    : arr.map((b,i)=>`<tr>
+      <td style="text-align:center;font-size:11px;color:var(--tx3)">${i+1}</td>
+      <td style="color:var(--tx);font-weight:500">${b.nome}</td>
+      <td><span class="tg tg-bl" style="font-size:10px">${b.tipo||'Banco'}</span></td>
+      <td>${stTag(b.st||'Ativo')}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-edit" onclick="editBanco(${b.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="ac-btn ac-del" onclick="del('bancos',${b.id},renderBancos)"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
 // ══════════════════════════════════════
 // BACKUP & RESTAURAÇÃO
 // ══════════════════════════════════════
