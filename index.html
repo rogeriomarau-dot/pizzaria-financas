@@ -708,6 +708,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <th class="sortable" onclick="sortCad('cc','grupo',this)">Grupo <i class="fa-solid sort-icon"></i></th>
       <th class="sortable" onclick="sortCad('cc','subgrupo',this)">Subgrupo <i class="fa-solid sort-icon"></i></th>
       <th class="sortable" onclick="sortCad('cc','natureza',this)">Natureza <i class="fa-solid sort-icon"></i></th>
+      <th class="sortable" onclick="sortCad('cc','tipoCusto',this)" title="Fixo = PE; Variável = CMV/Margem">Tipo Custo <i class="fa-solid sort-icon"></i></th>
       <th class="sortable" onclick="sortCad('cc','st',this)">Status <i class="fa-solid sort-icon"></i></th>
       <th></th>
     </tr></thead><tbody id="tb-cc"></tbody></table></div>
@@ -2156,6 +2157,37 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
       <div class="fg"><label>Status</label><select id="mcc-st"><option>Ativa</option><option>Inativa</option></select></div>
     </div>
+    <!-- Tipo de custo: Fixo / Variável -->
+    <div class="fg" id="mcc-tipocusto-wrap">
+      <label>Tipo de Custo
+        <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:6px">
+          — usado no cálculo do Ponto de Equilíbrio
+        </span>
+      </label>
+      <div style="display:flex;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1;transition:.15s" id="mcc-tipo-fixo-lbl">
+          <input type="radio" name="mcc-tipocusto" id="mcc-tipo-fixo" value="fixo" style="accent-color:var(--or)">
+          <span>
+            <strong style="color:var(--tx);font-size:12px">Fixo</strong>
+            <span style="display:block;font-size:10px;color:var(--tx3)">Aluguel, salários, energia…</span>
+          </span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1;transition:.15s" id="mcc-tipo-var-lbl">
+          <input type="radio" name="mcc-tipocusto" id="mcc-tipo-variavel" value="variavel" style="accent-color:var(--or)">
+          <span>
+            <strong style="color:var(--tx);font-size:12px">Variável</strong>
+            <span style="display:block;font-size:10px;color:var(--tx3)">Insumos, embalagens, comissões…</span>
+          </span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1;transition:.15s" id="mcc-tipo-nc-lbl">
+          <input type="radio" name="mcc-tipocusto" id="mcc-tipo-nc" value="" checked style="accent-color:var(--or)">
+          <span>
+            <strong style="color:var(--tx);font-size:12px">Não classif.</strong>
+            <span style="display:block;font-size:10px;color:var(--tx3)">Receitas, impostos…</span>
+          </span>
+        </label>
+      </div>
+    </div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-cadconta')">Cancelar</button><button class="bs" onclick="saveCadConta()">Salvar Conta</button></div>
   </div>
 </div>
@@ -2311,6 +2343,26 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <input type="hidden" id="mec-nat">
       </div>
       <div class="fg"><label>Status</label><select id="mec-st"><option>Ativa</option><option>Inativa</option></select></div>
+    </div>
+    <!-- Tipo de custo -->
+    <div class="fg">
+      <label>Tipo de Custo
+        <span style="font-size:10px;color:var(--tx3);font-weight:400;margin-left:6px">— usado no cálculo do Ponto de Equilíbrio</span>
+      </label>
+      <div style="display:flex;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1">
+          <input type="radio" name="mec-tipocusto" id="mec-tipo-fixo" value="fixo" style="accent-color:var(--or)">
+          <span><strong style="color:var(--tx);font-size:12px">Fixo</strong><span style="display:block;font-size:10px;color:var(--tx3)">Aluguel, salários…</span></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1">
+          <input type="radio" name="mec-tipocusto" id="mec-tipo-variavel" value="variavel" style="accent-color:var(--or)">
+          <span><strong style="color:var(--tx);font-size:12px">Variável</strong><span style="display:block;font-size:10px;color:var(--tx3)">Insumos, embalagens…</span></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;flex:1">
+          <input type="radio" name="mec-tipocusto" id="mec-tipo-nc" value="" checked style="accent-color:var(--or)">
+          <span><strong style="color:var(--tx);font-size:12px">Não classif.</strong><span style="display:block;font-size:10px;color:var(--tx3)">Receitas, impostos…</span></span>
+        </label>
+      </div>
     </div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-editconta')">Cancelar</button><button class="bs" onclick="saveEditConta()"><i class="fa-solid fa-check"></i> Salvar Alterações</button></div>
   </div>
@@ -3985,12 +4037,18 @@ function calcTotalParcelas(){
   if(!elDif||!totalNF)return;
   const dif=Math.round((totalParcelas-totalNF)*100)/100;
   if(dif===0){
-    elDif.textContent='✓ Total das parcelas confere com o total da NF';
-    elDif.style.cssText='font-size:11px;color:#81C784;margin-top:6px;display:block';
+    elDif.textContent='OK - Total das parcelas confere com o total da NF';
+    elDif.style.cssText='font-size:11px;color:#81C784;margin-top:6px;display:block;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;padding:5px 10px';
+    // Restaura botão salvar
+    const btnSalvarOk = document.querySelector('#mod-pagar .bs, button[onclick="saveParcelado()"]');
+    if(btnSalvarOk){ btnSalvarOk.style.opacity=''; btnSalvarOk.style.cursor=''; }
   } else {
     const sinal=dif>0?'+':'';
-    elDif.textContent=`⚠ Diferença de ${sinal}${dif.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} em relação ao total da NF (${totalNF.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})})`;
-    elDif.style.cssText='font-size:11px;color:#EF9A9A;margin-top:6px;display:block';
+    elDif.textContent=`ATENCAO: Diferenca de ${sinal}${dif.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} — os valores precisam fechar para salvar.`;
+    elDif.style.cssText='font-size:12px;font-weight:600;color:#EF9A9A;margin-top:6px;display:block;background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);border-radius:6px;padding:7px 12px';
+    // Desabilita visualmente o botão salvar
+    const btnSalvar = document.querySelector('#mod-pagar .bs, button[onclick="saveParcelado()"]');
+    if(btnSalvar){ btnSalvar.style.opacity='0.4'; btnSalvar.style.cursor='not-allowed'; }
   }
 }
 
@@ -4044,8 +4102,30 @@ function saveParcelado(){
       }
     }
   }
-  const reg   =comp?'competencia':'caixa';
+  // ── BLOQUEIO: total das parcelas deve fechar com o total da NF ──
   const totalNF=mppItens.reduce((a,b)=>a+b.total,0);
+  if(totalNF > 0){
+    let totalParc = 0;
+    for(let i=1;i<=linhasQtd;i++){
+      const el=document.getElementById('mpp-val-'+i);
+      if(el) totalParc += parseFloat(el.value)||0;
+    }
+    totalParc = Math.round(totalParc*100)/100;
+    const difParc = Math.abs(Math.round((totalParc - totalNF)*100)/100);
+    if(difParc > 0.01){
+      const fmt = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+      alert(
+        'LANÇAMENTO BLOQUEADO\n\nOs valores não fecham:\n\n' +
+        'Total da NF:        ' + fmt(totalNF) + '\n' +
+        'Total das Parcelas: ' + fmt(totalParc) + '\n' +
+        'Diferença:          ' + fmt(difParc) + '\n\n' +
+        'Ajuste as parcelas para somar exatamente ' + fmt(totalNF) + ' antes de salvar.'
+      );
+      return;
+    }
+  }
+
+  const reg   =comp?'competencia':'caixa';
   let contaAuto='';
   if(mppItens.length){
     const cv={};
@@ -4592,8 +4672,9 @@ function saveCadConta(){
     alert(`⚠️ Código "${cod}" já existe no plano de contas.\nUtilize um código diferente.`);
     return;
   }
+  const tipoCusto = document.querySelector('input[name="mcc-tipocusto"]:checked')?.value || '';
   const arr=S.g('cad-contas')||[];
-  arr.push({id:Date.now(),cod,nome,grupo:grp,subgrupo:sub||undefined,nat,natureza:nat,st});
+  arr.push({id:Date.now(),cod,nome,grupo:grp,subgrupo:sub||undefined,nat,natureza:nat,st,tipoCusto:tipoCusto||undefined});
   S.s('cad-contas',arr);closeMod('mod-cadconta');
   renderPlano();renderCadContas();
   fillSelectContasPagar('mp-conta');fillSelectContas('mr-conta',c=>c.natureza==='receita');
@@ -4770,6 +4851,10 @@ function abrirEditConta(cod, src){
   const sub = c.subgrupo ? getPC().find(x => x.cod===c.subgrupo) : null;
   document.getElementById('mec-hierarquia').textContent =
     `${c.grupo}. ${grp?grp.nome:'?'} → ${sub?sub.cod+'. '+sub.nome:'(direto no grupo)'} → ${c.cod}. ${c.nome}`;
+  // Preenche tipoCusto
+  const tcVal = c.tipoCusto || '';
+  const tcRadios = document.querySelectorAll('input[name="mec-tipocusto"]');
+  tcRadios.forEach(r => { r.checked = r.value === tcVal; });
   openMod('mod-editconta');
 }
 
@@ -4806,14 +4891,16 @@ function saveEditConta(){
     const arr = S.g('cad-contas') || [];
     const idx = arr.findIndex(x => x.cod === codOriginal);
     if(idx === -1){ alert('Conta não encontrada.'); return; }
-    arr[idx] = {...arr[idx], cod, nome, grupo, subgrupo:sub||undefined, nat, natureza:nat, st};
+    const tcEdit = document.querySelector('input[name="mec-tipocusto"]:checked')?.value || '';
+    arr[idx] = {...arr[idx], cod, nome, grupo, subgrupo:sub||undefined, nat, natureza:nat, st, tipoCusto:tcEdit||undefined};
     S.s('cad-contas', arr);
   } else {
     // Conta padrão: salva override direto no plano
     const plano = S.g('plano') || PC_INIT;
     const idx = plano.findIndex(x => x.cod === codOriginal && x.tipo==='conta');
     if(idx !== -1){
-      plano[idx] = {...plano[idx], cod, nome, grupo, subgrupo:sub||undefined, natureza:nat, st};
+      const tcPlano = document.querySelector('input[name="mec-tipocusto"]:checked')?.value || '';
+      plano[idx] = {...plano[idx], cod, nome, grupo, subgrupo:sub||undefined, natureza:nat, st, tipoCusto:tcPlano||undefined};
       S.s('plano', plano);
     }
   }
@@ -4842,32 +4929,268 @@ function calcCMV(){
 // ══════════════════════════════════════
 // RENDERS
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// DASHBOARD — DADOS REAIS
+// ══════════════════════════════════════
+function dbCalcMes(ym){
+  // Retorna os KPIs calculados de um mês específico (YYYY-MM)
+  const pagar   = S.g('pagar')   || [];
+  const receber = S.g('receber') || [];
+  const pc      = getPC ? getPC() : [];
+
+  // Receita: soma val de receber no mês (competência)
+  const rec = receber.filter(x=>(x.comp||x.venc||'').slice(0,7)===ym);
+  const fat = rec.reduce((s,x)=>s+(x.val||0), 0);
+
+  // Despesas: filtra pagar pelo mês (competência)
+  const pag = pagar.filter(x=>(x.comp||x.venc||'').slice(0,7)===ym);
+
+  // Acumula por grupo de conta
+  const totC = {};
+  pag.forEach(l=>{ const c=l.conta||''; if(c) totC[c]=(totC[c]||0)+(l.val||0); });
+
+  const sg = grp => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totC[c.cod]||0),0);
+  const totImp = sg('2');
+  const totCMV = sg('4');
+  const totOp  = sg('5');
+  const totFin = sg('3');
+
+  const recLiq     = fat - totImp;
+  const lucroBruto = recLiq - totCMV;
+  const ebitda     = lucroBruto - totOp - totFin;
+  const cmvPct     = fat > 0 ? totCMV / fat * 100 : 0;
+  const ebitdaPct  = fat > 0 ? ebitda  / fat * 100 : 0;
+  const mcPct      = fat > 0 ? lucroBruto / fat * 100 : 0; // Margem de Contribuição (Lucro Bruto / Fat)
+
+  // Qtd Pizzas/Rodízios vendidos: soma itens com cat Rodízio
+  const vendasItens = rec.filter(v=>v.itens&&v.itens.length);
+  const qtdPizzas   = vendasItens.reduce((s,v)=>
+    s + v.itens.filter(i=>i.cat==='Rodízio'||i.cat==='Pizza').reduce((a,i)=>a+(i.qtd||0),0), 0);
+
+  // ── Despesas Fixas e Variáveis herdadas do Plano de Contas ──
+  // O tipoCusto está na conta do plano — cada lançamento herda pelo campo 'conta'
+  // Isso dispensa remarcar os lançamentos existentes
+  const mapTipo = {};
+  pc.filter(x=>x.tipo==='conta' && x.tipoCusto).forEach(c=>{ mapTipo[c.cod] = c.tipoCusto; });
+
+  let despFixas    = 0;
+  let despVariaveis = 0;
+  pag.forEach(l=>{
+    const tipo = mapTipo[l.conta||''];
+    if(tipo === 'fixo')     despFixas     += (l.val||0);
+    if(tipo === 'variavel') despVariaveis += (l.val||0);
+  });
+
+  const mcRatioPE = fat > 0 ? (fat - totCMV) / fat : 0;
+  const pe        = mcRatioPE > 0 && despFixas > 0 ? despFixas / mcRatioPE : 0;
+
+  return { fat, totImp, totCMV, totOp, totFin, recLiq, lucroBruto, ebitda,
+           cmvPct, ebitdaPct, mcPct, qtdPizzas,
+           despFixas, despVariaveis, pe, mcRatioPE };
+}
+
+function dbTendencia(atual, ant, inverso){
+  // inverso=true: menor é melhor (CMV, despesas)
+  if(!ant || ant === 0) return { cls:'nt', icon:'fa-minus', txt:'—' };
+  const diff = atual - ant;
+  const pct  = Math.abs(diff / ant * 100);
+  const subiu = diff > 0;
+  // Para métricas normais: subir é bom. Para métricas inversas: subir é ruim.
+  const bom = inverso ? !subiu : subiu;
+  const cls  = Math.abs(diff) < 0.01 ? 'nt' : bom ? 'up' : 'dn';
+  const icon = Math.abs(diff) < 0.01 ? 'fa-minus' : subiu ? 'fa-arrow-up' : 'fa-arrow-down';
+  const sinal = subiu ? '+' : '-';
+  return { cls, icon, txt: `${sinal}${pct.toFixed(1)}% vs mês ant.` };
+}
+
+function dbKpiCard(label, icon, corIcon, valAtual, valAnt, formato, inverso, subLabel){
+  const tend   = dbTendencia(valAtual, valAnt, inverso||false);
+  const valFmt = formato==='R$' ? R(valAtual)
+               : formato==='%'  ? P(valAtual)
+               : formato==='qtd'? valAtual.toLocaleString('pt-BR')
+               : R(valAtual);
+  const antFmt = formato==='R$' ? R(valAnt)
+               : formato==='%'  ? P(valAnt)
+               : formato==='qtd'? valAnt.toLocaleString('pt-BR')
+               : R(valAnt);
+  const semDados = valAtual === 0 && valAnt === 0;
+  return `
+    <div class="kc" style="border-color:${semDados?'var(--bd)':'rgba(242,100,25,0.2)'}">
+      <div class="kl"><i class="fa-solid ${icon}" style="color:${corIcon}"></i>${label}</div>
+      <div class="kv" style="color:${semDados?'var(--tx3)':'var(--tx)'}">${semDados?'—':valFmt}</div>
+      ${subLabel ? `<div style="font-size:10px;color:var(--tx3);margin-top:2px">${subLabel}</div>` : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)">
+        <span class="kd ${tend.cls}" style="font-size:10px">
+          <i class="fa-solid ${tend.icon}" style="font-size:9px"></i>${tend.txt}
+        </span>
+        <span style="font-size:10px;color:var(--tx3)">ant: ${semDados&&valAnt===0?'—':antFmt}</span>
+      </div>
+    </div>`;
+}
+
 function renderDashboard(){
-  const lucro=D.fat-D.cmv-D.despOp-D.ded;
-  const mg=lucro/D.fat*100,cmvP=D.cmv/D.fat*100;
-  document.getElementById('kpi-db').innerHTML=`
-    <div class="kc"><div class="kl"><i class="fa-solid fa-chart-line"></i>Faturamento</div><div class="kv">${R(D.fat)}</div><div class="kd up"><i class="fa-solid fa-arrow-up"></i>+12% vs mês ant.</div></div>
-    <div class="kc"><div class="kl"><i class="fa-solid fa-coins"></i>Lucro Líquido</div><div class="kv">${R(lucro)}</div><div class="kd up">Margem ${P(mg)}</div></div>
-    <div class="kc"><div class="kl"><i class="fa-solid fa-pizza-slice"></i>Pizzas Vendidas</div><div class="kv">${D.totalPz.toLocaleString()}</div><div class="kd up"><i class="fa-solid fa-arrow-up"></i>+8% vs mês ant.</div></div>
-    <div class="kc"><div class="kl"><i class="fa-solid fa-wallet"></i>Saldo em Caixa</div><div class="kv">${R(D.saldo)}</div><div class="kd dn"><i class="fa-solid fa-arrow-down"></i>-8% vs mês ant.</div></div>`;
-  document.getElementById('sf-db').innerHTML=`
-    <div class="si ${cmvP<=32?'sg':'sr'}"><div class="sv">${P(cmvP)}</div><div class="sl">CMV</div></div>
-    <div class="si ${mg>=15?'sg':'sa'}"><div class="sv">${P(mg)}</div><div class="sl">Margem</div></div>
-    <div class="si sa"><div class="sv">28%</div><div class="sl">Pessoal</div></div>
-    <div class="si sr"><div class="sv">4,2%</div><div class="sl">Inadimp.</div></div>`;
-  document.getElementById('pe-db').innerHTML=`
-    <div class="pg-row"><div class="pg-lbl"><span>Faturamento atual</span><span style="color:var(--tx)">${R(D.fat)}</span></div><div class="pg-bar"><div class="pg-fill" style="width:87%;background:var(--gr)"></div></div></div>
-    <div class="pg-row"><div class="pg-lbl"><span>Ponto de equilíbrio</span><span>${R(62000)}</span></div><div class="pg-bar"><div class="pg-fill" style="width:62%;background:var(--or)"></div></div></div>
-    <div class="al al-gr" style="margin-top:8px"><i class="fa-solid fa-check"></i> Acima do PE em ${R(25400)}</div>`;
-  document.getElementById('al-db').innerHTML=`
-    <div class="al al-am"><i class="fa-solid fa-triangle-exclamation"></i>3 contas vencem hoje</div>
-    <div class="al al-rd"><i class="fa-solid fa-box-open"></i>Mussarela abaixo do mínimo</div>
-    <div class="al al-bl"><i class="fa-solid fa-receipt"></i>${R(4200)} a receber hoje</div>
-    <div class="al al-gr"><i class="fa-solid fa-check"></i>CMV dentro da meta ≤32%</div>`;
-  const pC=D.cmv/D.fat*100,pP=D.pessoal/D.fat*100,pA=D.aluguel/D.fat*100,pO=(D.energia+D.mkt+D.outros)/D.fat*100,pL=100-pC-pP-pA-pO;
-  const cols=['#F26419','#2196F3','#FF8F00','#888','#4CAF50'];
-  const lbk=[`CMV ${P(pC)}`,`Pessoal ${P(pP)}`,`Aluguel ${P(pA)}`,`Outros ${P(pO)}`,`Lucro ${P(pL)}`];
-  document.getElementById('leg-dnut').innerHTML=lbk.map((l,i)=>`<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2)"><span style="width:8px;height:8px;border-radius:2px;background:${cols[i]};display:inline-block"></span>${l}</span>`).join('');
+  // Calcula mês atual e anterior
+  const hoje   = new Date();
+  const ymAtual = hoje.toISOString().slice(0,7);
+  const dAnt    = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+  const ymAnt   = dAnt.toISOString().slice(0,7);
+
+  const at = dbCalcMes(ymAtual);
+  const an = dbCalcMes(ymAnt);
+
+  const mesLabel  = new Date(ymAtual+'-01').toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  const antLabel  = new Date(ymAnt  +'-01').toLocaleString('pt-BR',{month:'long',year:'numeric'});
+
+  // ── KPIs principais (6 cards em 2 linhas de 3) ──
+  const kpiEl = document.getElementById('kpi-db');
+  if(kpiEl){
+    kpiEl.style.gridTemplateColumns = 'repeat(3,1fr)';
+    kpiEl.innerHTML =
+      dbKpiCard('Faturamento Bruto',    'fa-chart-line',       'var(--or)', at.fat,       an.fat,       'R$',  false) +
+      dbKpiCard('EBITDA',               'fa-sack-dollar',      'var(--gr)', at.ebitda,    an.ebitda,    'R$',  false,
+        `${P(at.ebitdaPct)} da receita`) +
+      dbKpiCard('CMV — Custo Mercadoria','fa-boxes-stacked',   'var(--am)', at.totCMV,    an.totCMV,    'R$',  true,
+        `${P(at.cmvPct)} da receita`) +
+      dbKpiCard('Margem de Contribuição','fa-percent',         'var(--bl)', at.lucroBruto,an.lucroBruto,'R$',  false,
+        `${P(at.mcPct)} da receita`) +
+      dbKpiCard('Desp. Operacionais',   'fa-file-invoice-dollar','var(--rd)',at.totOp,    an.totOp,     'R$',  true) +
+      dbKpiCard('Pizzas / Rodízios',    'fa-pizza-slice',      'var(--or)', at.qtdPizzas, an.qtdPizzas, 'qtd', false,
+        'PAX vendidos no mês');
+  }
+
+  // ── Label de período no semáforo ──
+  const sfEl = document.getElementById('sf-db');
+  if(sfEl){
+    const cmvOk  = at.fat>0 && at.cmvPct <= 35;
+    const mgOk   = at.fat>0 && at.ebitdaPct >= 10;
+    const opOk   = at.fat>0 && (at.totOp/at.fat*100) <= 40;
+    const semDados = at.fat === 0;
+    sfEl.innerHTML = semDados
+      ? `<div style="text-align:center;color:var(--tx3);font-size:12px;padding:20px">
+           <i class="fa-solid fa-chart-pie" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.3"></i>
+           Sem dados no mês atual.<br>Registre lançamentos para ver o semáforo.
+         </div>`
+      : `<div class="si ${cmvOk?'sg':'sr'}"><div class="sv">${P(at.cmvPct)}</div><div class="sl">CMV %</div></div>
+         <div class="si ${at.lucroBruto>0?'sg':'sr'}"><div class="sv">${P(at.mcPct)}</div><div class="sl">Mg. Contrib.</div></div>
+         <div class="si ${opOk?'sg':'sa'}"><div class="sv">${P(at.fat>0?at.totOp/at.fat*100:0)}</div><div class="sl">Desp. Op. %</div></div>
+         <div class="si ${mgOk?'sg':at.ebitdaPct>=0?'sa':'sr'}"><div class="sv">${P(at.ebitdaPct)}</div><div class="sl">EBITDA %</div></div>`;
+  }
+
+  // ── Ponto de equilíbrio (PE) ──
+  const peEl = document.getElementById('pe-db');
+  if(peEl){
+    if(at.fat === 0){
+      peEl.innerHTML = `<div style="color:var(--tx3);font-size:12px;padding:12px 0">Sem dados no mês atual.</div>`;
+    } else {
+      // PE real: já calculado em dbCalcMes usando herança do Plano de Contas
+      // at.despFixas = soma dos lançamentos cujas contas estão marcadas como 'fixo'
+      // at.pe        = despFixas ÷ mcRatioPE
+      const { despFixas, pe } = at;
+      const pePct   = pe > 0 ? Math.min(at.fat / pe * 100, 100) : 0;
+      const acimaPE = at.fat - pe;
+      const semClassif = despFixas === 0;
+
+      // Verifica se há contas classificadas no plano
+      const todasContas = getPC ? getPC() : [];
+      const temFixas = todasContas.some(c=>c.tipo==='conta' && c.tipoCusto==='fixo');
+
+      peEl.innerHTML = !temFixas
+        ? `<div style="color:var(--tx3);font-size:12px;line-height:1.6;padding:8px 0">
+             <i class="fa-solid fa-circle-info" style="color:var(--bl);margin-right:6px"></i>
+             Nenhuma conta marcada como <strong style="color:var(--bl)">Fixo</strong> no Plano de Contas.<br>
+             Acesse <strong style="color:var(--or)">Cadastro de Contas</strong> e classifique as despesas fixas.
+           </div>`
+        : semClassif
+        ? `<div style="color:var(--tx3);font-size:12px;line-height:1.6;padding:8px 0">
+             <i class="fa-solid fa-circle-info" style="color:var(--am);margin-right:6px"></i>
+             Contas fixas classificadas, mas sem lançamentos no mês de <strong style="color:var(--tx)">${mesLabel}</strong>.
+           </div>`
+        : `<div class="pg-row">
+             <div class="pg-lbl">
+               <span>Faturamento <span style="color:var(--tx3);font-size:10px">${mesLabel}</span></span>
+               <span style="color:var(--tx)">${R(at.fat)}</span>
+             </div>
+             <div class="pg-bar"><div class="pg-fill" style="width:${Math.min(pePct,100).toFixed(0)}%;background:${acimaPE>=0?'var(--gr)':'var(--rd)'}"></div></div>
+           </div>
+           <div class="pg-row">
+             <div class="pg-lbl"><span>Ponto de Equilíbrio</span><span style="color:var(--or)">${R(pe)}</span></div>
+             <div class="pg-bar"><div class="pg-fill" style="width:100%;background:var(--or);opacity:0.3"></div></div>
+           </div>
+           <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--tx3)">
+             <span><i class="fa-solid fa-lock" style="color:var(--bl);margin-right:3px"></i>Fixas: <strong style="color:var(--tx)">${R(despFixas)}</strong></span>
+             <span><i class="fa-solid fa-percent" style="color:var(--gr);margin-right:3px"></i>MC%: <strong style="color:var(--tx)">${P(at.mcRatioPE*100)}</strong></span>
+             <span><i class="fa-solid fa-equals" style="color:var(--or);margin-right:3px"></i>PE: <strong style="color:var(--or)">${R(pe)}</strong></span>
+           </div>
+           <div class="al ${acimaPE>=0?'al-gr':'al-rd'}" style="margin-top:6px">
+             <i class="fa-solid ${acimaPE>=0?'fa-check':'fa-triangle-exclamation'}"></i>
+             ${acimaPE>=0 ? 'Acima do PE em <strong>'+R(acimaPE)+'</strong>' : 'Abaixo do PE em <strong>'+R(Math.abs(acimaPE))+'</strong>'}
+           </div>`;
+    }
+  }
+
+  // ── Alertas dinâmicos ──
+  const alEl = document.getElementById('al-db');
+  if(alEl){
+    const pagar   = S.g('pagar')   || [];
+    const receber = S.g('receber') || [];
+    const hoje2   = new Date().toISOString().slice(0,10);
+    const em7dias = new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+
+    const alertas = [];
+    const vencHoje  = pagar.filter(x=>x.status==='Pendente'&&x.venc===hoje2);
+    const venc7dias = pagar.filter(x=>x.status==='Pendente'&&x.venc>hoje2&&x.venc<=em7dias);
+    const recHoje   = receber.filter(x=>x.status==='Pendente'&&(x.venc||'')===hoje2);
+    const estoque   = S.g('estoque')||[];
+    const criticos  = estoque.filter(x=>x.q<x.m);
+
+    if(vencHoje.length)  alertas.push(`<div class="al al-rd"><i class="fa-solid fa-exclamation-circle"></i>${vencHoje.length} conta(s) a pagar vencem hoje — ${R(vencHoje.reduce((s,x)=>s+(x.val||0),0))}</div>`);
+    if(venc7dias.length) alertas.push(`<div class="al al-am"><i class="fa-solid fa-triangle-exclamation"></i>${venc7dias.length} conta(s) vencem nos próximos 7 dias — ${R(venc7dias.reduce((s,x)=>s+(x.val||0),0))}</div>`);
+    if(recHoje.length)   alertas.push(`<div class="al al-bl"><i class="fa-solid fa-receipt"></i>${R(recHoje.reduce((s,x)=>s+(x.val||0),0))} a receber hoje</div>`);
+    if(criticos.length)  alertas.push(`<div class="al al-rd"><i class="fa-solid fa-box-open"></i>${criticos.length} insumo(s) abaixo do estoque mínimo</div>`);
+    if(at.cmvPct > 35)   alertas.push(`<div class="al al-am"><i class="fa-solid fa-chart-pie"></i>CMV em ${P(at.cmvPct)} — acima do limite recomendado (35%)</div>`);
+    if(at.ebitda < 0)    alertas.push(`<div class="al al-rd"><i class="fa-solid fa-arrow-trend-down"></i>EBITDA negativo no mês — revise despesas operacionais</div>`);
+    if(!alertas.length)  alertas.push(`<div class="al al-gr"><i class="fa-solid fa-check"></i>Nenhum alerta crítico no momento</div>`);
+
+    alEl.innerHTML = alertas.join('');
+  }
+
+  // ── Gráfico Faturamento × Despesas (6 meses) ──
+  const meses6 = [], fatS = [], despS = [];
+  for(let i=5; i>=0; i--){
+    const d  = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
+    const ym = d.toISOString().slice(0,7);
+    const m  = dbCalcMes(ym);
+    meses6.push(d.toLocaleString('pt-BR',{month:'short'}));
+    fatS.push(m.fat);
+    despS.push(m.totCMV + m.totOp + m.totImp + m.totFin);
+  }
+  const go={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#666',font:{size:10}}},y:{ticks:{color:'#666',font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}};
+  dc('fat');
+  CH.fat=new Chart(document.getElementById('c-fat'),{type:'bar',data:{
+    labels:meses6,
+    datasets:[
+      {label:'Faturamento',data:fatS, backgroundColor:'rgba(242,100,25,0.7)',borderRadius:4},
+      {label:'Despesas',   data:despS,backgroundColor:'rgba(33,150,243,0.35)',borderRadius:4}
+    ]},options:{...go,scales:{x:{ticks:{color:'#666',font:{size:10}}},y:{ticks:{...go.scales.y.ticks},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+
+  // ── Gráfico Composição de Custos (donut) ──
+  const pC=at.fat>0?at.totCMV/at.fat*100:0;
+  const pO=at.fat>0?at.totOp /at.fat*100:0;
+  const pF=at.fat>0?at.totFin/at.fat*100:0;
+  const pL=at.fat>0?Math.max(at.ebitda/at.fat*100,0):0;
+  const pR=Math.max(100-pC-pO-pF-pL,0);
+  const cols=['#F26419','#2196F3','#FF8F00','#E53935','#4CAF50'];
+  const lbk=[`CMV ${P(pC)}`,`Desp.Op. ${P(pO)}`,`Fin. ${P(pF)}`,`Outros ${P(pR)}`,`EBITDA ${P(pL)}`];
+  dc('dnut');
+  CH.dnut=new Chart(document.getElementById('c-dnut'),{type:'doughnut',data:{
+    labels:lbk,
+    datasets:[{data:[pC,pO,pF,pR,pL],backgroundColor:cols,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  document.getElementById('leg-dnut').innerHTML=lbk.map((l,i)=>
+    `<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2)">
+      <span style="width:8px;height:8px;border-radius:2px;background:${cols[i]};display:inline-block"></span>${l}
+    </span>`).join('');
 }
 
 function renderPizzas(){
@@ -5672,6 +5995,14 @@ function renderMetas(){
   }).join('');
 }
 
+
+function tipoCustoTag(c){
+  if(c.tipoCusto==='fixo')
+    return `<span style="background:rgba(33,150,243,0.15);color:var(--bl);border:1px solid rgba(33,150,243,0.2);padding:1px 7px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.5px">FIXO</span>`;
+  if(c.tipoCusto==='variavel')
+    return `<span style="background:rgba(76,175,80,0.15);color:var(--gr);border:1px solid rgba(76,175,80,0.2);padding:1px 7px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.5px">VARIÁVEL</span>`;
+  return '';
+}
 function renderPlano(){
   const pc=getPC();
   const grupos=pc.filter(x=>x.tipo==='grupo');
@@ -5692,6 +6023,7 @@ function renderPlano(){
         <span class="pc-c-cod">${c.cod}</span>
         <span class="pc-c-nome">${c.nome}</span>
         ${natTag(c.natureza)}
+        ${tipoCustoTag(c)}
         <div class="ac-btns always-vis" style="margin-left:8px">
           ${contaAcaoBtns(c, !!c.id, 'renderPlano')}
         </div>
@@ -5705,6 +6037,7 @@ function renderPlano(){
           <span class="pc-c-cod">${c.cod}</span>
           <span class="pc-c-nome">${c.nome}</span>
           ${natTag(c.natureza)}
+          ${tipoCustoTag(c)}
           <div class="ac-btns always-vis" style="margin-left:8px">
             ${contaAcaoBtns(c, !!c.id, 'renderPlano')}
           </div>
@@ -5722,12 +6055,18 @@ function renderCadContas(){
     const grp=getPC().find(x=>x.cod===c.grupo);
     const sub=c.subgrupo?getPC().find(x=>x.cod===c.subgrupo):null;
     const isCustom=!!c.id; // contas custom têm id (Date.now()); padrão não têm
+    const tipoTag = c.tipoCusto==='fixo'
+      ? `<span style="background:rgba(33,150,243,0.15);color:var(--bl);padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600">FIXO</span>`
+      : c.tipoCusto==='variavel'
+      ? `<span style="background:rgba(76,175,80,0.15);color:var(--gr);padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600">VARIÁVEL</span>`
+      : `<span style="color:var(--tx3);font-size:11px">—</span>`;
     return `<tr>
       <td style="color:var(--or);font-weight:500">${c.cod||'—'}</td>
       <td style="color:var(--tx)">${c.nome}</td>
       <td>${grp?grp.nome:'—'}</td>
       <td>${sub?sub.nome:'—'}</td>
       <td>${natTag(c.natureza||c.nat)}</td>
+      <td>${tipoTag}</td>
       <td>${stTag(c.st||'Ativa')}</td>
       <td><div class="ac-btns" style="opacity:1">${contaAcaoBtns(c, isCustom, 'renderCadContas')}</div></td>
     </tr>`;
