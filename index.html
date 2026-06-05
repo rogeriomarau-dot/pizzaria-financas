@@ -3118,7 +3118,7 @@ function go(pg,btn){
   else{btnTxt.textContent='Novo Lançamento';}
   // Oculta botão Novo Lançamento no relatório
   const btnNovo = document.getElementById('btn-novo');
-  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas') ? 'none' : '';
+  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' || pg === 'dre' || pg === 'dashboard') ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='dre')         { dreMesAtual(); dreSetRegime(_dreRegime); }
   if(pg==='rel-pagar')   initRelPagar();
