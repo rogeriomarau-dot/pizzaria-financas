@@ -341,7 +341,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('metas',this)"><i class="fa-solid fa-bullseye"></i>Metas</button>
     <div class="sb-sec">Cadastros</div>
     <button class="ni" onclick="go('plano',this)"><i class="fa-solid fa-sitemap"></i>Plano de Contas</button>
-    <button class="ni" onclick="go('cad-contas',this)"><i class="fa-solid fa-tags"></i>Cadastro de Contas</button>
     <button class="ni" onclick="go('cad-insumos',this)"><i class="fa-solid fa-wheat-awn"></i>Cadastro de Insumos</button>
     <button class="ni" onclick="go('cad-servicos',this)"><i class="fa-solid fa-screwdriver-wrench"></i>Cadastro de Serviços e Impostos</button>
     <button class="ni" onclick="go('cad-fornecedores',this)"><i class="fa-solid fa-truck"></i>Cadastro de Fornecedores</button>
@@ -1424,12 +1423,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div class="fg"><label>Código <span style="font-size:10px;color:var(--tx3)">(gerado automaticamente)</span></label>
         <input type="text" id="msrv-cod" placeholder="Gerado ao selecionar categoria" readonly style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default;">
       </div>
-      <div class="fg"><label>Nome / Descrição *</label>
+      <div class="fg"><label>Nome / Descrição <span style="color:var(--rd)">*</span></label>
         <input type="text" id="msrv-nome" placeholder="EX: CONTABILIDADE MENSAL, ISS, ALUGUEL..." oninput="this.value=this.value.toUpperCase()">
       </div>
     </div>
     <div class="fr">
-      <div class="fg"><label>Categoria</label>
+      <div class="fg"><label>Categoria <span style="color:var(--rd)">*</span></label>
         <select id="msrv-cat" onchange="gerarCodigoServico()">
           <option value="">— Selecione a categoria —</option>
         </select>
@@ -1439,8 +1438,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
     </div>
     <div class="fr">
-      <div class="fg"><label>Conta do Plano de Contas</label>
-        <select id="msrv-conta"><option value="">— Selecione a conta —</option></select>
+      <div class="fg"><label>Conta do Plano de Contas <span style="color:var(--rd)">*</span></label>
+        <select id="msrv-conta"><option value="">— Selecione obrigatoriamente —</option></select>
       </div>
       <div class="fg"><label>Status</label>
         <select id="msrv-st"><option>Ativo</option><option>Inativo</option></select>
@@ -2131,44 +2130,49 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <div class="mo" id="mod-insumo">
   <div class="mb">
     <div class="mt"><span><i class="fa-solid fa-wheat-awn" style="color:var(--or);margin-right:8px"></i>Novo Insumo</span><span class="mc" onclick="closeMod('mod-insumo');resetModalInsumo()">✕</span></div>
+
+    <!-- Categoria FIXA = Insumos — sem select, auto-preenchida -->
+    <div style="background:rgba(242,100,25,0.08);border:1px solid rgba(242,100,25,0.2);border-radius:6px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <i class="fa-solid fa-wheat-awn" style="color:var(--or);font-size:16px;flex-shrink:0"></i>
+      <div>
+        <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Categoria (definida automaticamente)</div>
+        <div style="font-size:14px;font-weight:600;color:var(--or)" id="mins-cat-label">Insumos</div>
+      </div>
+      <input type="hidden" id="mins-cat" value="">
+    </div>
+
     <div class="fr">
       <div class="fg">
-        <label>Categoria</label>
-        <select id="mins-cat" onchange="gerarCodigoInsumo()">
-          <option value="">— Selecione a categoria —</option>
-          <option value="CMV_INSUMOS">CMV Insumos</option>
-          <option value="CMV_BEBIDAS">CMV Bebidas</option>
-          <option value="CMV_SERVICOS">CMV Serviços</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label>Código do Produto</label>
+        <label>Código</label>
         <input type="text" id="mins-cod" placeholder="Gerado automaticamente" readonly
           style="background:var(--dk4);color:var(--or);font-weight:600;cursor:default;">
       </div>
-    </div>
-    <div class="fr">
       <div class="fg">
-        <label>Unidade de Medida</label>
+        <label>Unidade de Medida <span style="color:var(--rd)">*</span></label>
         <select id="mins-un">
           <option value="">— Selecione —</option>
           <option value="kg">kg</option>
+          <option value="g">g</option>
           <option value="Un.">Un.</option>
           <option value="Lt">Lt</option>
+          <option value="ml">ml</option>
+          <option value="cx">cx</option>
+          <option value="pct">pct</option>
+          <option value="fardo">fardo</option>
         </select>
       </div>
-      <div class="fg">
-        <label>Nome do Insumo</label>
-        <input type="text" id="mins-nome" placeholder="EX: MUSSARELA, CERVEJA LONG NECK..." oninput="this.value=this.value.toUpperCase()">
-      </div>
+    </div>
+    <div class="fg">
+      <label>Nome do Insumo <span style="color:var(--rd)">*</span></label>
+      <input type="text" id="mins-nome" placeholder="EX: MUSSARELA, CERVEJA LONG NECK..." oninput="this.value=this.value.toUpperCase()">
     </div>
     <div class="fg">
       <label>Preço de Custo (R$)</label>
       <input type="number" id="mins-custo" placeholder="0,00" step="0.01" min="0">
     </div>
     <div class="fg">
-      <label>Conta do Plano de Contas</label>
-      <select id="mins-conta"><option value="">— Selecione a conta —</option></select>
+      <label>Conta do Plano de Contas <span style="color:var(--rd)">*</span></label>
+      <select id="mins-conta"><option value="">— Selecione obrigatoriamente —</option></select>
     </div>
     <div class="mf">
       <button class="bc" onclick="closeMod('mod-insumo');resetModalInsumo()">Cancelar</button>
@@ -2958,7 +2962,7 @@ function go(pg,btn){
   document.getElementById('pgt').textContent=t[0];
   document.getElementById('pgs').textContent=t[1];
   // Altera label do botão principal conforme a página
-  const pgsCadastro=['plano','cad-contas','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
+  const pgsCadastro=['plano','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
   const btnTxt=document.getElementById('btn-novo-txt');
   if(pg==='plano'){btnTxt.textContent='Novo Cadastro';}
   else if(pgsCadastro.includes(pg)){btnTxt.textContent='Novo Cadastro';}
@@ -2984,7 +2988,6 @@ function openMod(id){
   if(id==='mod-prod') resetModalProd();
   if(id==='mod-insumo' && !document.getElementById('mod-insumo').dataset.editId){
     resetModalInsumo();
-    fillSelectGruposCustos('mins-conta');
   }
   if(id==='mod-servico' && !document.getElementById('mod-servico').dataset.editId){
     resetModalServico();
@@ -3005,8 +3008,7 @@ function novoLancamento(){
     'estoque':      'mod-estoque',
     'cmv':          'mod-ficha',
     'metas':        'mod-meta',
-    'plano':        'mod-cadconta',
-    'cad-contas':   'mod-cadconta',
+    'plano':        'mod-subconta',
     'cad-fornecedores': 'mod-forn',
     'cad-produtos': 'mod-prod',
     'cad-insumos': 'mod-insumo',
@@ -4547,16 +4549,23 @@ function saveForn(){
   }
 }
 function saveProd(){
+  const nome  = document.getElementById('mpr-nome').value.trim();
+  const cat   = document.getElementById('mpr-cat').value;
+  const conta = document.getElementById('mpr-conta').value;
+  if(!nome){ alert('⚠️ Campo obrigatório!\n\nInforme o Nome do Produto.'); document.getElementById('mpr-nome').focus(); return; }
+  if(!cat){  alert('⚠️ Campo obrigatório!\n\nSelecione a Categoria do Produto.'); document.getElementById('mpr-cat').focus(); return; }
+  if(!conta){ alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas.\n\nEste campo é necessário para o DRE e relatórios financeiros.'); document.getElementById('mpr-conta').focus(); return; }
   const arr=S.g('produtos')||[];
-  arr.push({id:Date.now(),cod:document.getElementById('mpr-cod').value,n:document.getElementById('mpr-nome').value,
-    cat:document.getElementById('mpr-cat').value,un:document.getElementById('mpr-un').value,
+  arr.push({id:Date.now(),cod:document.getElementById('mpr-cod').value,n:nome,
+    cat,un:document.getElementById('mpr-un').value,
     custo:parseFloat(document.getElementById('mpr-custo').value)||0,min:parseFloat(document.getElementById('mpr-min').value)||0,
-    conta:document.getElementById('mpr-conta').value,forn:document.getElementById('mpr-forn').value,
+    conta,forn:document.getElementById('mpr-forn').value,
     ncm:document.getElementById('mpr-ncm').value,st:document.getElementById('mpr-st').value});
   S.s('produtos',arr);
   closeMod('mod-prod');
   resetModalProd();
   renderProd();
+  showToast('✓ Produto salvo!','var(--gr)');
 }
 
 function resetModalProd(){
@@ -4565,7 +4574,10 @@ function resetModalProd(){
   const un=document.getElementById('mpr-un'); if(un)un.selectedIndex=0;
   const st=document.getElementById('mpr-st'); if(st)st.value='Ativo';
   const codEl=document.getElementById('mpr-cod'); if(codEl) codEl.value=gerarCodigoProd();
-  fillSelectCatProd('mpr-cat');
+  // Produtos (Compras): exclui insumos, serviços, impostos e despesas financeiras
+  fillSelectCatProdFiltrada('mpr-cat',
+    null,
+    ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
   const cat=document.getElementById('mpr-cat'); if(cat)cat.value='';
   fillSelectContasPlano('mpr-conta');
   const conta=document.getElementById('mpr-conta'); if(conta)conta.value='';
@@ -5496,8 +5508,8 @@ function saveCategoriaProd(){
   document.getElementById('mcp-obs').value='';
   renderCategoriasProd();
   // Atualiza selects de categoria nos modais de produto
-  fillSelectCatProd('mpr-cat');
-  fillSelectCatProd('mepr-cat');
+  fillSelectCatProdFiltrada('mpr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
+  fillSelectCatProdFiltrada('mepr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
 }
 
 function editCategoriaProd(id){
@@ -5526,24 +5538,39 @@ function renderCategoriasProd(){
     </div></td>
   </tr>`).join('');
   // Mantém selects de produto atualizados
-  fillSelectCatProd('mpr-cat');
-  fillSelectCatProd('mepr-cat');
+  fillSelectCatProdFiltrada('mpr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
+  fillSelectCatProdFiltrada('mepr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
 }
 
 // Preenche um select com as categorias de produtos ativas
 function fillSelectCatProd(selId){
-  const sel=document.getElementById(selId); if(!sel)return;
-  const prev=sel.value;
-  sel.innerHTML='<option value="">— Selecione a Categoria —</option>';
-  getCatProds().filter(c=>c.st==='Ativo').forEach(c=>{
-    const o=document.createElement('option');
-    o.value=String(c.id);
-    o.textContent=c.nome;
-    o.dataset.conta=c.conta||'';
-    o.dataset.cor=c.cor||'';
+  // Sem filtro — mostra todas as categorias ativas
+  fillSelectCatProdFiltrada(selId, null, null);
+}
+
+// Preenche select de categorias com filtro inclui/exclui por palavras-chave no nome
+// incluir: array de substrings — só mostra cats cujo nome contém alguma delas (null = todas)
+// excluir: array de substrings — remove cats cujo nome contém alguma delas (null = nenhuma)
+function fillSelectCatProdFiltrada(selId, incluir, excluir){
+  const sel = document.getElementById(selId); if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Selecione a Categoria —</option>';
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  getCatProds().filter(c=>{
+    if(c.st !== 'Ativo') return false;
+    const n = norm(c.nome);
+    if(incluir && !incluir.some(k => n.includes(norm(k)))) return false;
+    if(excluir &&  excluir.some(k => n.includes(norm(k)))) return false;
+    return true;
+  }).forEach(c=>{
+    const o = document.createElement('option');
+    o.value = String(c.id);
+    o.textContent = c.nome;
+    o.dataset.conta = c.conta||'';
+    o.dataset.cor   = c.cor||'';
     sel.appendChild(o);
   });
-  if(prev) sel.value=prev;
+  if(prev) sel.value = prev;
 }
 
 // Ao selecionar categoria no produto, preenche automaticamente a conta do plano
@@ -5591,33 +5618,20 @@ const INS_LABEL  = { CMV_INSUMOS:'CMV Insumos', CMV_BEBIDAS:'CMV Bebidas', CMV_S
 function gerarCodigoInsumo(){
   const cat = document.getElementById('mins-cat').value;
   if(!cat){ document.getElementById('mins-cod').value=''; return; }
-  const prefix = INS_PREFIX[cat]||'INS';
+  // Usa o nome da categoria cadastrada como prefixo (ex: "Insumos" → "INS")
+  const catObj = getCatProds().find(c=>String(c.id)===String(cat));
+  // Fallback para chaves antigas CMV_*
+  const legacyPrefix = INS_PREFIX[cat];
+  const prefix = legacyPrefix || (catObj ? catObj.nome.replace(/[^A-Z]/gi,'').toUpperCase().slice(0,3) : 'INS');
   const arr = S.g('insumos')||[];
-  const nums = arr.filter(x=>x.cat===cat).map(x=>parseInt((x.cod||'').replace(/\D/g,''))||0);
+  const nums = arr.filter(x=>String(x.cat)===String(cat)).map(x=>parseInt((x.cod||'').replace(/\D/g,''))||0);
   const prox = nums.length>0 ? Math.max(...nums)+1 : 1;
   document.getElementById('mins-cod').value = `${prefix}-${String(prox).padStart(3,'0')}`;
 }
 
-function calcTotalInsumo(){ /* removido */ }
-
 function fillSelectGruposCustos(selId){
-  const sel = document.getElementById(selId); if(!sel)return;
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">— Selecione a conta —</option>';
-  // Inclui os grupos de custo/despesa E as contas filhas do grupo 4 (4.1 e 4.2)
-  const pc = getPC();
-  const gruposCusto = pc.filter(x => x.tipo==='grupo' && !['1','6','7','8','10'].includes(x.cod));
-  const contasGrupo4 = pc.filter(x => x.tipo==='conta' && x.grupo==='4');
-  // Monta lista: grupos primeiro, depois contas do grupo 4 como subopções
-  gruposCusto.forEach(g => {
-    const o=document.createElement('option'); o.value=g.cod; o.textContent=`${g.cod} — ${g.nome}`; sel.appendChild(o);
-    if(g.cod==='4'){
-      contasGrupo4.forEach(c=>{
-        const oc=document.createElement('option'); oc.value=c.cod; oc.textContent=`   ${c.cod} — ${c.nome}`; sel.appendChild(oc);
-      });
-    }
-  });
-  sel.value=prev;
+  // Usa fillSelectContasPlano completo — mostra todas as contas de custo/despesa
+  fillSelectContasPlano(selId);
 }
 
 function saveInsumo(){
@@ -5627,7 +5641,27 @@ function saveInsumo(){
   const nome  = document.getElementById('mins-nome').value.trim();
   const custo = parseFloat(document.getElementById('mins-custo').value)||0;
   const conta = document.getElementById('mins-conta').value;
-  if(!cat||!un||!nome){ alert('Preencha: Categoria, Unidade de Medida e Nome do Insumo.'); return; }
+
+  // Categoria é auto-definida como "Insumos" — só valida se por algum motivo estiver vazia
+  if(!cat){
+    // Tenta recuperar automaticamente
+    const catInsumos = getCatProds().find(c=>c.st==='Ativo'&&c.nome.toLowerCase().includes('insumo'));
+    if(catInsumos){ document.getElementById('mins-cat').value=String(catInsumos.id); }
+    else { alert('⚠️ Categoria "Insumos" não encontrada no cadastro de categorias.\n\nCadastre a categoria "Insumos" primeiro.'); return; }
+  }
+  if(!un){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Unidade de Medida.');
+    document.getElementById('mins-un').focus(); return;
+  }
+  if(!nome){
+    alert('⚠️ Campo obrigatório!\n\nInforme o Nome do Insumo.');
+    document.getElementById('mins-nome').focus(); return;
+  }
+  if(!conta){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas.\n\nEste campo é necessário para o DRE e relatórios financeiros.');
+    document.getElementById('mins-conta').focus(); return;
+  }
+
   const arr = S.g('insumos')||[];
   const editId = Number(document.getElementById('mod-insumo').dataset.editId||0);
   if(editId){
@@ -5641,13 +5675,46 @@ function saveInsumo(){
   resetModalInsumo();
   renderInsumos();
   fillSelectProdutosNF('mpp-item-prod');
+  showToast('✓ Insumo salvo!','var(--gr)');
+}
+
+// Ao selecionar categoria no insumo, sugere conta automaticamente
+function insAutoContaPorCat(){
+  const catSel = document.getElementById('mins-cat');
+  const opt = catSel.options[catSel.selectedIndex];
+  if(!opt || !opt.value) return;
+  const catObj = getCatProds().find(c=>String(c.id)===String(opt.value));
+  if(catObj && catObj.conta){
+    const contaSel = document.getElementById('mins-conta');
+    if(contaSel && !contaSel.value) contaSel.value = catObj.conta;
+  }
+  gerarCodigoInsumo();
 }
 
 function resetModalInsumo(){
   document.getElementById('mod-insumo').dataset.editId='';
-  ['mins-cat','mins-un','mins-nome','mins-custo','mins-conta'].forEach(id=>{
+  // Auto-define categoria como "Insumos" (primeiro match no cadastro)
+  const catInsumos = getCatProds().find(c=>c.st==='Ativo' &&
+    c.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes('insumo'));
+  const catId = catInsumos ? String(catInsumos.id) : '1';
+  const catNome = catInsumos ? catInsumos.nome : 'Insumos';
+  const catInput = document.getElementById('mins-cat');
+  if(catInput){ catInput.value = catId; }
+  const catLabel = document.getElementById('mins-cat-label');
+  if(catLabel){ catLabel.textContent = catNome; }
+  // Gera código com a categoria definida
+  gerarCodigoInsumo();
+  // Popula conta do plano
+  fillSelectContasPlano('mins-conta');
+  // Sugere conta padrão da categoria
+  if(catInsumos && catInsumos.conta){
+    const contaSel = document.getElementById('mins-conta');
+    if(contaSel) setTimeout(()=>{ if(!contaSel.value) contaSel.value = catInsumos.conta; }, 50);
+  }
+  ['mins-un','mins-nome','mins-custo'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
+  document.getElementById('mins-conta').value='';
   document.getElementById('mins-cod').value='';
   document.querySelector('#mod-insumo .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-wheat-awn" style="color:var(--or);margin-right:8px"></i>Novo Insumo';
@@ -5656,17 +5723,21 @@ function resetModalInsumo(){
 function editInsumo(id){
   const arr=S.g('insumos')||[];
   const ins=arr.find(x=>x.id===id); if(!ins)return;
-  document.getElementById('mins-cat').value=ins.cat||'';
+  // Define categoria (pode ser ID numérico ou código legado CMV_*)
+  const catInput = document.getElementById('mins-cat');
+  if(catInput) catInput.value = ins.cat||'';
+  // Atualiza label com o nome da categoria
+  const catObj = getCatProds().find(c=>String(c.id)===String(ins.cat));
+  const catLabel = document.getElementById('mins-cat-label');
+  if(catLabel) catLabel.textContent = catObj ? catObj.nome : (ins.cat||'Insumos');
   gerarCodigoInsumo();
   document.getElementById('mins-cod').value=ins.cod||'';
   document.getElementById('mins-un').value=ins.un||'';
   document.getElementById('mins-nome').value=ins.nome||'';
   document.getElementById('mins-custo').value=ins.custo||'';
-  fillSelectGruposCustos('mins-conta');
+  fillSelectContasPlano('mins-conta');
   document.getElementById('mins-conta').value=ins.conta||'';
-  // Guarda id para o save saber que é edição
   document.getElementById('mod-insumo').dataset.editId=id;
-  // Troca título
   document.querySelector('#mod-insumo .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Insumo';
   openMod('mod-insumo');
 }
@@ -5962,10 +6033,28 @@ function gerarCodigoServico(){
 
 // Preenche o select de categorias do modal de serviço com as categorias cadastradas
 function fillSelectCatServico(selId){
+  // Serviços/Impostos: mostra SOMENTE categorias relacionadas a serviços, impostos e despesas financeiras
+  // Palavras-chave que identificam essas categorias
+  const PALAVRAS_SERVICO = ['servi','imposto','tributo','taxa','despesa financ','financ','aluguel',
+    'utilidade','manutencao','manutencão','honorar','contab','seguro','marketing','frete',
+    'energia','agua','gas','telefone','internet','limpeza ocupac'];
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  // Palavras que EXCLUEM (são de outros módulos)
+  const EXCLUIR = ['insumo','bebida','descartavel','embalagem','utensilio','expediente','imobilizado','ativo fixo'];
+
   const sel = document.getElementById(selId); if(!sel) return;
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Selecione a categoria —</option>';
-  const cats = getCatProds().filter(c=>(c.st||'Ativo')==='Ativo');
+
+  const cats = getCatProds().filter(c=>{
+    if(c.st !== 'Ativo') return false;
+    const n = norm(c.nome);
+    // Exclui categorias de outros módulos
+    if(EXCLUIR.some(k=>n.includes(norm(k)))) return false;
+    // Inclui se tiver alguma palavra-chave de serviço/imposto
+    return PALAVRAS_SERVICO.some(k=>n.includes(norm(k)));
+  });
+
   if(cats.length){
     cats.forEach(c=>{
       const o = document.createElement('option');
@@ -5974,11 +6063,13 @@ function fillSelectCatServico(selId){
       sel.appendChild(o);
     });
   } else {
-    // Fallback: categorias fixas caso ainda não haja nenhuma cadastrada
-    [['SRV_SERVICOS','Serviços'],['SRV_IMPOSTOS','Impostos e Taxas'],
-     ['SRV_ALUGUEL','Aluguel e Ocupação'],['SRV_UTILIDADES','Utilidades'],
-     ['SRV_MANUTENCAO','Manutenção e Reparos'],['SRV_OUTROS','Outros']
-    ].forEach(([v,l])=>{ const o=document.createElement('option'); o.value=v; o.textContent=l; sel.appendChild(o); });
+    // Fallback: mostra todas as categorias ativas (caso nenhuma seja identificada como serviço)
+    getCatProds().filter(c=>c.st==='Ativo').forEach(c=>{
+      const o = document.createElement('option');
+      o.value = String(c.id);
+      o.textContent = c.nome;
+      sel.appendChild(o);
+    });
   }
   if(prev) sel.value = prev;
 }
@@ -6061,8 +6152,9 @@ function saveServico(){
   const conta = document.getElementById('msrv-conta').value;
   const st    = document.getElementById('msrv-st').value;
   const obs   = document.getElementById('msrv-obs').value;
-  if(!nome){ alert('Informe o Nome / Descrição do serviço ou imposto.'); return; }
-  if(!cat){  alert('Selecione a Categoria.'); return; }
+  if(!nome){ alert('⚠️ Campo obrigatório!\n\nInforme o Nome / Descrição do serviço ou imposto.'); document.getElementById('msrv-nome').focus(); return; }
+  if(!cat){  alert('⚠️ Campo obrigatório!\n\nSelecione a Categoria.'); document.getElementById('msrv-cat').focus(); return; }
+  if(!conta){ alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas.\n\nEste campo é necessário para o DRE e relatórios financeiros.'); document.getElementById('msrv-conta').focus(); return; }
   const arr = S.g('servicos')||[];
   const editId = Number(document.getElementById('mod-servico').dataset.editId||0);
   if(editId){
@@ -6076,6 +6168,7 @@ function saveServico(){
   resetModalServico();
   renderServicos();
   fillSelectProdutosNF('mpp-item-prod');
+  showToast('✓ Serviço salvo!','var(--gr)');
 }
 
 function resetModalServico(){
@@ -6401,7 +6494,10 @@ function editProd(id){
   document.getElementById('mepr-un').value=p.un||'';
   document.getElementById('mepr-custo').value=p.custo||'';
   document.getElementById('mepr-min').value=p.min||'';
-  fillSelectCatProd('mepr-cat');
+  // Produtos (Compras): exclui insumos, serviços, impostos
+  fillSelectCatProdFiltrada('mepr-cat',
+    null,
+    ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
   document.getElementById('mepr-cat').value=String(p.cat||'');
   fillSelectContasPlano('mepr-conta');
   document.getElementById('mepr-conta').value=p.conta||'';
@@ -6410,19 +6506,22 @@ function editProd(id){
 }
 function saveEditProd(){
   const id=Number(document.getElementById('mepr-id').value);
+  const cat  = document.getElementById('mepr-cat').value;
+  const conta= document.getElementById('mepr-conta').value;
+  if(!cat){  alert('⚠️ Campo obrigatório!\n\nSelecione a Categoria do Produto.'); document.getElementById('mepr-cat').focus(); return; }
+  if(!conta){ alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas.'); document.getElementById('mepr-conta').focus(); return; }
   const arr=S.g('produtos')||[];
   const idx=arr.findIndex(x=>x.id===id); if(idx===-1)return;
   arr[idx]={...arr[idx],
     cod:document.getElementById('mepr-cod').value,
     n:document.getElementById('mepr-nome').value,
-    cat:document.getElementById('mepr-cat').value,
-    un:document.getElementById('mepr-un').value,
+    cat, un:document.getElementById('mepr-un').value,
     custo:parseFloat(document.getElementById('mepr-custo').value)||0,
     min:parseFloat(document.getElementById('mepr-min').value)||0,
-    conta:document.getElementById('mepr-conta').value,
-    st:document.getElementById('mepr-st').value,
+    conta, st:document.getElementById('mepr-st').value,
   };
   S.s('produtos',arr); closeMod('mod-editprod'); renderProd();
+  showToast('✓ Produto atualizado!','var(--gr)');
 }
 
 // Preenche select com apenas as CONTAS do plano (sem grupos/subgrupos), na ordem do plano
@@ -8698,8 +8797,8 @@ function initAll(){
   fillSelectGruposForn('mef-cat');
   // Categoria de produto: conta padrão no modal
   // Produto: popula categorias de produto
-  fillSelectCatProd('mpr-cat');
-  fillSelectCatProd('mepr-cat');
+  fillSelectCatProdFiltrada('mpr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
+  fillSelectCatProdFiltrada('mepr-cat', null, ['insumo','servi','imposto','tributo','taxa','despesa financ','financ','honorar','contab']);
   resetModalProd(); // inicializa modal Novo Produto limpo com selects preenchidos
   fillSelectContasPlano('mepr-cat');
   fillSelectGruposPlano('mepr-conta');
