@@ -187,7 +187,7 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--tx);}
 .rg-info{font-size:11px;color:var(--tx2);padding:8px 12px;background:var(--dk3);border-radius:6px;border-left:2px solid var(--or);margin-bottom:14px;}
 
 /* DRE */
-.dr{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:4px;font-size:13px;}
+.dr{padding:6px 10px;border-radius:4px;font-size:13px;}
 .dr:hover{background:rgba(255,255,255,0.03);}
 .dr.dh{background:rgba(255,255,255,0.04);font-weight:500;margin:6px 0 2px;}
 .dr.dsg{padding:6px 10px 6px 28px;color:var(--tx2);font-size:12px;}
@@ -5916,43 +5916,48 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
   const lGrp = (sinal, nome, val, cor, tipo) =>
     `<tr>
       <td style="padding:8px 6px;font-size:12px;font-weight:600;color:${cor}">${sinal} ${nome}</td>
-      <td style="padding:8px 8px;text-align:right;font-weight:700;font-size:13px;color:${cor};cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+      <td style="padding:8px 8px;text-align:right;font-weight:700;font-size:13px;color:${cor};white-space:nowrap;cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
           ${val>0?`onclick="dreDrillDown('${tipo}','${sinal} ${nome}','${cor}')" title="Clique para ver os lançamentos"`:''}>${R(val)}</td>
-      <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);font-weight:600">${AV(val,base)}</td>
+      <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);font-weight:600;white-space:nowrap">${AV(val,base)}</td>
     </tr>`;
 
   const lConta = (nome, cod, val, cor, indent, tipo) =>
     `<tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
       <td style="padding:5px 6px 5px ${indent||20}px;font-size:11px;color:var(--tx2)" title="${cod}">${nome}</td>
-      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${cor||'var(--tx2)'};cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${cor||'var(--tx2)'};white-space:nowrap;cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
           ${val>0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','${cor||'#64B5F6'}')" title="Clique para ver os lançamentos"`:''}>${R(val)}</td>
-      <td style="padding:5px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
+      <td style="padding:5px 6px;text-align:right;font-size:10px;color:var(--tx3);white-space:nowrap">${AV(val,base)}</td>
     </tr>`;
 
   const lSg = (nome, val, tipo) =>
     `<tr>
       <td style="padding:6px 6px 6px 14px;font-size:11px;font-weight:500;color:#EF9A9A">
         <i class="fa-solid fa-chevron-right" style="font-size:9px;color:#EF9A9A;margin-right:4px"></i>${nome}</td>
-      <td style="padding:6px 8px;text-align:right;font-size:12px;font-weight:600;color:#EF9A9A;cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+      <td style="padding:6px 8px;text-align:right;font-size:12px;font-weight:600;color:#EF9A9A;white-space:nowrap;cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
           ${val>0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','#EF9A9A')" title="Clique para ver os lançamentos"`:''}>${val>0?'– ':''}${R(val)}</td>
-      <td style="padding:6px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
+      <td style="padding:6px 6px;text-align:right;font-size:10px;color:var(--tx3);white-space:nowrap">${AV(val,base)}</td>
     </tr>`;
 
   const lRes = (nome, val, cls, tipo) => {
     const cor = cls==='dlp' ? (nome.includes('RECEITA BRUTA') ? '#64B5F6' : '#81C784') : '#EF9A9A';
     return `<tr class="dr ${cls}" style="border-top:1px solid rgba(255,255,255,0.06)">
       <td style="padding:10px 6px;font-size:13px;font-weight:700;color:${cor}">${nome}</td>
-      <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700;color:${cor};cursor:${val!==0&&tipo?'pointer':'default'};text-decoration:${val!==0&&tipo?'underline dotted':'none'}"
+      <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700;color:${cor};white-space:nowrap;cursor:${val!==0&&tipo?'pointer':'default'};text-decoration:${val!==0&&tipo?'underline dotted':'none'}"
           ${val!==0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','${cor}')" title="Clique para ver os lançamentos"`:''}>${R(Math.abs(val))}</td>
-      <td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;color:${cor}">${AV(Math.abs(val),base)}</td>
+      <td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;color:${cor};white-space:nowrap">${AV(Math.abs(val),base)}</td>
     </tr>`;
   };
 
-  let html = `<table style="width:100%;border-collapse:collapse">
+  let html = `<table style="width:100%;border-collapse:collapse;table-layout:fixed">
+    <colgroup>
+      <col style="width:auto">
+      <col style="width:160px">
+      <col style="width:80px">
+    </colgroup>
     <thead><tr style="border-bottom:2px solid var(--or)">
       <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Descrição</th>
-      <th style="padding:8px 8px;text-align:right;font-size:11px;color:var(--tx2);min-width:120px">Valor</th>
-      <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);min-width:60px">AV %</th>
+      <th style="padding:8px 8px;text-align:right;font-size:11px;color:var(--tx2);white-space:nowrap">Valor</th>
+      <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);white-space:nowrap">AV %</th>
     </tr></thead><tbody>`;
 
   // Receitas
@@ -9254,15 +9259,16 @@ function initRelVendas(){
 
   const hoje = new Date();
   const anoAtual = String(hoje.getFullYear());
-  const mesAtual = hoje.toISOString().slice(0,7); // ex: 2026-06
+  const mesAtual = hoje.toISOString().slice(0,7);
 
-  // Data padrão período (caixa): mês atual
+  // Data padrão período (caixa): mês atual — sempre inicializa se não tiver valor
   const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
   const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
   const elIni = document.getElementById('rv-dt-ini');
   const elFim = document.getElementById('rv-dt-fim');
+  // Garante que ini e fim nunca ficam com o mesmo valor (dia 1 = dia 1)
   if(elIni && !elIni.value) elIni.value = ini;
-  if(elFim && !elFim.value) elFim.value = fim;
+  if(elFim && (!elFim.value || elFim.value === elIni?.value)) elFim.value = fim;
 
   // Competência: mês atual e ano atual já preenchidos
   const elCompMes = document.getElementById('rv-comp-mes');
