@@ -24,6 +24,18 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color:var(--tx);font-size:14px;}
 .rc-tab-ativo   { background:var(--or)!important; color:#fff!important; font-weight:500!important; }
+.rv-ms-wrap{position:relative;width:100%}
+.rv-ms-trigger{background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:36px}
+.rv-ms-trigger:hover{border-color:var(--or)}
+.rv-ms-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd);border-radius:8px;z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.rv-ms-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:var(--tx2)}
+.rv-ms-item:hover{background:rgba(255,255,255,0.05);color:var(--tx)}
+.rv-ms-item input[type=checkbox]{accent-color:var(--or);width:13px;height:13px;cursor:pointer}
+.rv-ms-item.sel{color:var(--or)}
+.rv-ms-sep{height:1px;background:var(--bd);margin:4px 0}
+.rv-th{cursor:pointer;user-select:none;white-space:nowrap}
+.rv-th:hover{color:var(--or)}
+.rv-th .si{font-size:9px;margin-left:3px;color:var(--tx3)}
 .rc-tab-inativo { background:transparent!important; color:var(--tx2)!important; }
 .rc-atalho {
   background:var(--dk3); border:1px solid var(--bd); color:var(--tx2);
@@ -334,6 +346,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('pizzas',this)"><i class="fa-solid fa-pizza-slice"></i>Pizzas Vendidas</button>
     <button class="ni" onclick="go('dre',this)"><i class="fa-solid fa-file-chart-column"></i>DRE</button>
     <button class="ni" onclick="go('fluxo',this)"><i class="fa-solid fa-arrows-left-right"></i>Fluxo de Caixa</button>
+    <button class="ni" onclick="go('cad-fcx',this)"><i class="fa-solid fa-building-columns"></i>Contas FCX</button>
     <button class="ni" onclick="go('caixa',this)"><i class="fa-solid fa-cash-register"></i>Caixa Diário</button>
     <div class="sb-sec">Financeiro</div>
     <button class="ni" onclick="go('pagar',this)"><i class="fa-solid fa-file-invoice-dollar"></i>Contas a Pagar</button>
@@ -450,15 +463,15 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
   <!-- Abas Regime -->
   <div style="display:flex;gap:0;margin-bottom:12px;border-bottom:2px solid var(--bd)">
-    <button id="dre-tab-comp" onclick="dreSetRegime('comp')"
-      style="padding:10px 24px;background:rgba(242,100,25,0.15);border:none;border-bottom:2px solid var(--or);color:var(--or);
-      font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.5px;margin-bottom:-2px;border-radius:6px 6px 0 0">
-      <i class="fa-solid fa-calendar-check" style="margin-right:6px"></i>Regime de Competência
-    </button>
     <button id="dre-tab-caixa" onclick="dreSetRegime('caixa')"
       style="padding:10px 24px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--tx2);
       font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.5px;margin-bottom:-2px;border-radius:6px 6px 0 0">
       <i class="fa-solid fa-money-bill-wave" style="margin-right:6px"></i>Regime de Caixa
+    </button>
+    <button id="dre-tab-comp" onclick="dreSetRegime('comp')"
+      style="padding:10px 24px;background:rgba(242,100,25,0.15);border:none;border-bottom:2px solid var(--or);color:var(--or);
+      font-family:Outfit,sans-serif;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.5px;margin-bottom:-2px;border-radius:6px 6px 0 0">
+      <i class="fa-solid fa-calendar-check" style="margin-right:6px"></i>Regime de Competência
     </button>
     <div style="flex:1;display:flex;align-items:flex-end;padding-bottom:6px;padding-left:12px">
       <span id="dre-regime-badge" style="font-size:10px;color:var(--tx3);font-style:italic"></span>
@@ -490,11 +503,78 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 <!-- FLUXO -->
+<!-- FLUXO DE CAIXA -->
 <div class="page" id="page-fluxo">
-  <div class="kg" id="kpi-fx"></div>
-  <div class="g2">
-    <div class="cd"><div class="ct">Fluxo Semanal <span class="cs">Realizado</span></div><div class="cw" style="height:210px"><canvas id="c-flx" role="img" aria-label="fluxo"></canvas></div></div>
-    <div class="cd"><div class="ct">Movimentação Diária <span class="cs">7 dias</span></div><div id="fx-dias"></div></div>
+
+  <!-- Cabeçalho controles -->
+  <div class="cd" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+
+      <!-- Toggle Consolidado / Analítico -->
+      <div style="display:flex;gap:0;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+        <button id="fcx-tab-analitico" onclick="fcxSetModo('analitico')"
+          style="padding:6px 16px;border:none;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">
+          <i class="fa-solid fa-list-ul" style="margin-right:5px"></i>Analítico
+        </button>
+        <button id="fcx-tab-semanal" onclick="fcxSetModo('semanal')"
+          style="padding:6px 16px;border:none;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">
+          <i class="fa-solid fa-calendar-week" style="margin-right:5px"></i>Semanal
+        </button>
+        <button id="fcx-tab-consol" onclick="fcxSetModo('consolidado')"
+          style="padding:6px 16px;border:none;background:var(--or);color:#fff;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
+          <i class="fa-solid fa-layer-group" style="margin-right:5px"></i>Consolidado
+        </button>
+      </div>
+
+      <!-- Navegação de mês -->
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="fcxNavMes(-1)" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;width:30px;height:30px;color:var(--tx2);cursor:pointer;font-size:14px">‹</button>
+        <div id="fcx-mes-label" style="font-size:13px;font-weight:600;color:var(--tx);min-width:120px;text-align:center"></div>
+        <button onclick="fcxNavMes(1)" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;width:30px;height:30px;color:var(--tx2);cursor:pointer;font-size:14px">›</button>
+      </div>
+
+      <!-- KPIs rápidos -->
+      <div id="fcx-kpis" style="display:flex;gap:10px;flex:1;justify-content:flex-end"></div>
+    </div>
+  </div>
+
+  <!-- Tabela FCX -->
+  <div class="cd" style="padding:0">
+    <div style="overflow-x:auto;max-height:calc(100vh - 200px);overflow-y:auto" id="fcx-wrap">
+      <div id="fcx-blk" style="min-width:max-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CADASTRO CONTAS FCX -->
+<div class="page" id="page-cad-fcx">
+  <div class="cd">
+    <div class="ct">Contas — Fluxo de Caixa
+      <button class="btn btn-p btn-sm" onclick="openMod('mod-fcx-conta')"><i class="fa-solid fa-plus"></i> Nova Conta</button>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:12px;padding:8px 12px;background:rgba(33,150,243,0.06);border-radius:6px;border:1px solid rgba(33,150,243,0.15)">
+      <i class="fa-solid fa-circle-info" style="color:#64B5F6;margin-right:6px"></i>
+      Cadastre aqui as contas bancárias, caixa e aplicações que serão usadas no Fluxo de Caixa. Para cada mês, informe o saldo de abertura de cada conta.
+    </div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Código</th><th>Nome da Conta</th><th>Tipo</th><th>Banco</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody id="tb-fcx-contas"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Saldos Iniciais por Mês -->
+  <div class="cd" style="margin-top:12px">
+    <div class="ct">Saldos Iniciais por Mês
+      <button class="btn btn-p btn-sm" onclick="fcxAbrirSaldos()"><i class="fa-solid fa-plus"></i> Informar Saldos</button>
+    </div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Mês/Ano</th><th>Conta</th><th style="text-align:right">Saldo Inicial</th><th></th>
+      </tr></thead>
+      <tbody id="tb-fcx-saldos"></tbody>
+    </table></div>
   </div>
 </div>
 
@@ -1391,15 +1471,23 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
       <div class="fg">
         <label>Categoria</label>
-        <select id="rv-cat" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-          <option value="">Todas as categorias</option>
-        </select>
+        <div class="rv-ms-wrap" id="rv-cat-wrap">
+          <div class="rv-ms-trigger" onclick="rvToggleMs('rv-cat-dd')">
+            <span id="rv-cat-label">Todas as categorias</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+          </div>
+          <div class="rv-ms-dd" id="rv-cat-dd" style="display:none"></div>
+        </div>
       </div>
       <div class="fg">
         <label>Produto</label>
-        <select id="rv-prod" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-          <option value="">Todos os produtos</option>
-        </select>
+        <div class="rv-ms-wrap" id="rv-prod-wrap">
+          <div class="rv-ms-trigger" onclick="rvToggleMs('rv-prod-dd')">
+            <span id="rv-prod-label">Todos os produtos</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+          </div>
+          <div class="rv-ms-dd" id="rv-prod-dd" style="display:none"></div>
+        </div>
       </div>
     </div>
     <!-- Filtro qtd mínima de rodízios -->
@@ -1408,9 +1496,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <label>Qtd Mínima de Rodízios</label>
         <input type="number" id="rv-min-rodizios" min="0" placeholder="Ex: 50" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
       </div>
-      <div style="font-size:11px;color:var(--tx3);padding-bottom:10px">
-        <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
-        O <strong style="color:var(--tx)">indicador de Rodízios</strong> conta todas as vendas dos produtos com categoria "Rodízio" — KPI fundamental para pizzarias.
+      <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--tx3);padding-bottom:10px;line-height:1.5">
+        <i class="fa-solid fa-circle-info" style="color:var(--or);margin-top:2px;flex-shrink:0"></i>
+        <span>O <strong style="color:var(--tx);font-weight:600">Indicador de Rodízios</strong> conta todas as vendas dos produtos com categoria "Rodízio" — KPI fundamental para pizzarias.</span>
       </div>
     </div>
     </div><!-- fim rv-filtros-periodo -->
@@ -1434,20 +1522,28 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
         <div class="fg">
           <label>Categoria</label>
-          <select id="rv-cat-comp" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-            <option value="">Todas as categorias</option>
-          </select>
+          <div class="rv-ms-wrap" id="rv-cat-comp-wrap">
+            <div class="rv-ms-trigger" onclick="rvToggleMs('rv-cat-comp-dd')">
+              <span id="rv-cat-comp-label">Todas as categorias</span>
+              <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+            </div>
+            <div class="rv-ms-dd" id="rv-cat-comp-dd" style="display:none"></div>
+          </div>
         </div>
         <div class="fg">
           <label>Produto</label>
-          <select id="rv-prod-comp" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-            <option value="">Todos os produtos</option>
-          </select>
+          <div class="rv-ms-wrap" id="rv-prod-comp-wrap">
+            <div class="rv-ms-trigger" onclick="rvToggleMs('rv-prod-comp-dd')">
+              <span id="rv-prod-comp-label">Todos os produtos</span>
+              <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+            </div>
+            <div class="rv-ms-dd" id="rv-prod-comp-dd" style="display:none"></div>
+          </div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--tx3);padding:4px 0 8px 0">
-        <i class="fa-solid fa-circle-info" style="color:var(--bl);margin-right:4px"></i>
-        <strong style="color:var(--tx)">Consulta por competência:</strong> filtra as vendas pela data em que ocorreram (mês da venda), independente da data de recebimento.
+      <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--tx3);padding:6px 0 8px 0;line-height:1.5">
+        <i class="fa-solid fa-circle-info" style="color:var(--bl);margin-top:2px;flex-shrink:0"></i>
+        <span><strong style="color:var(--tx)">Consulta por competência:</strong> filtra as vendas pela data em que ocorreram (mês da venda), independente da data de recebimento.</span>
       </div>
     </div>
   </div><!-- fim card filtros -->
@@ -1506,15 +1602,15 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="tw" id="rv-tabela-wrap">
       <table>
         <thead><tr>
-          <th>Produto</th>
-          <th>Categoria</th>
-          <th style="text-align:center">Qtd Vendida</th>
+          <th class="rv-th" onclick="rvSortCol('nome',this)">Produto <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" onclick="rvSortCol('cat',this)">Categoria <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" style="text-align:center" onclick="rvSortCol('qtd',this)">Qtd Vendida <i class="fa-solid fa-sort si"></i></th>
           <th style="text-align:center">Und.</th>
-          <th style="text-align:right">Preço Unit.</th>
-          <th style="text-align:right">Custo Unit.</th>
-          <th style="text-align:right">Faturamento</th>
-          <th style="text-align:right">Margem %</th>
-          <th style="text-align:right">Lucro Total</th>
+          <th class="rv-th" style="text-align:right" onclick="rvSortCol('preco',this)">Preço Unit. <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" style="text-align:right" onclick="rvSortCol('custo',this)">Custo Unit. <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" style="text-align:right" onclick="rvSortCol('fat',this)">Faturamento <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" style="text-align:right" onclick="rvSortCol('margem',this)">Margem % <i class="fa-solid fa-sort si"></i></th>
+          <th class="rv-th" style="text-align:right" onclick="rvSortCol('lucro',this)">Lucro Total <i class="fa-solid fa-sort si"></i></th>
         </tr></thead>
         <tbody id="rv-tbody"></tbody>
         <tfoot><tr id="rv-tfoot"></tr></tfoot>
@@ -1601,6 +1697,58 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </thead>
         <tbody id="dre-drill-tbody"></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL CONTA FCX -->
+<div class="mo" id="mod-fcx-conta">
+  <div class="mb">
+    <div class="mt"><span><i class="fa-solid fa-building-columns" style="color:var(--or);margin-right:8px"></i>Conta — Fluxo de Caixa</span><span class="mc" onclick="closeMod('mod-fcx-conta')">✕</span></div>
+    <input type="hidden" id="fcx-c-id">
+    <div class="fr">
+      <div class="fg" style="max-width:100px"><label>Código</label><input type="text" id="fcx-c-cod" readonly style="background:var(--dk4);cursor:default"></div>
+      <div class="fg"><label>Nome da Conta *</label><input type="text" id="fcx-c-nome" placeholder="Ex: Banco Pagbank, Caixa Tesouraria..."></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Tipo</label>
+        <select id="fcx-c-tipo">
+          <option value="conta_corrente">Conta Corrente</option>
+          <option value="caixa">Caixa / Tesouraria</option>
+          <option value="aplicacao">Aplicação Financeira</option>
+          <option value="cofre">Cofre</option>
+        </select>
+      </div>
+      <div class="fg"><label>Banco / Instituição</label><input type="text" id="fcx-c-banco" placeholder="Ex: Pagbank, Caixa Econômica..."></div>
+    </div>
+    <div class="fr">
+      <div class="fg" style="max-width:120px"><label>Ordem</label><input type="number" id="fcx-c-ordem" min="1" value="1"></div>
+      <div class="fg"><label>Status</label><select id="fcx-c-st"><option>Ativo</option><option>Inativo</option></select></div>
+    </div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-fcx-conta')">Cancelar</button>
+      <button class="bs" onclick="saveFcxConta()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SALDOS INICIAIS FCX -->
+<div class="mo" id="mod-fcx-saldos">
+  <div class="mb wide" style="width:580px">
+    <div class="mt"><span><i class="fa-solid fa-wallet" style="color:var(--or);margin-right:8px"></i>Saldos Iniciais por Mês</span><span class="mc" onclick="closeMod('mod-fcx-saldos')">✕</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="fg" style="max-width:180px">
+        <label>Mês de Referência</label>
+        <input type="month" id="fcx-sal-mes" onchange="fcxRenderSaldoLinhas()"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none;width:100%">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:12px">Informe o saldo de abertura de cada conta no 1º dia do mês selecionado.</div>
+    <div id="fcx-sal-linhas"></div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-fcx-saldos')">Cancelar</button>
+      <button class="bs" onclick="saveFcxSaldos()"><i class="fa-solid fa-floppy-disk"></i> Salvar Saldos</button>
     </div>
   </div>
 </div>
@@ -3161,7 +3309,7 @@ const titles={
   'cad-produtos':['Produtos','Cadastro de produtos e insumos'],
   'cad-insumos':['Cadastro de Insumos','CMV Insumos · CMV Bebidas · CMV Serviços'],
   'cad-servicos':['Cadastro de Serviços e Impostos','Serviços · Impostos · Aluguel · Utilidades'],
-  'cad-catprod':['Categorias de Produtos (Compras)','Classificação de produtos por categoria'],
+  'cad-fcx':['Contas — Fluxo de Caixa','Cadastro de contas bancárias e caixa para o FCX'],
   'cad-catprod-venda':['Categorias de Produtos (Revenda)','Classificação de produtos vendidos ao cliente'],
   'cad-pagamentos':['Formas de Cobrança','Cadastro de formas de cobrança'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
@@ -3193,7 +3341,7 @@ function go(pg,btn){
   if(btnNovo) btnNovo.style.display = (
     pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' ||
     pg === 'dre' || pg === 'dashboard' ||
-    pg === 'cad-catprod' || pg === 'cad-catprod-venda' ||
+    pg === 'cad-catprod' || pg === 'cad-catprod-venda' || pg === 'cad-fcx' ||
     pg === 'plano' ||
     pg === 'cad-fornecedores' || pg === 'cad-produtos' || pg === 'cad-produtos-venda' ||
     pg === 'cad-insumos' || pg === 'cad-servicos' ||
@@ -3202,7 +3350,8 @@ function go(pg,btn){
     pg === 'pagar' || pg === 'receber'
   ) ? 'none' : '';
   // Inicializa relatórios ao navegar
-  if(pg==='dre')         { dreRestaurarEstado(); }
+  if(pg==='cad-fcx')       { renderFcxContas(); }
+  if(pg==='fluxo')          { renderFluxo(); }
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
   if(pg==='rel-vendas')  initRelVendas();
@@ -5636,36 +5785,52 @@ function dreFiltrar(pagar, regime, de, ate){
   });
 }
 
-// Categorias consideradas como "Rodízio / Alimentação" — tudo que não for bebida vai aqui
+// Categorias consideradas como bebida/mercadoria — lidas do cadastro de revenda
+// Tudo que não for classificado como bebida vai para alimentação
 function dreClassificarItem(cat){
-  const catNorm = (cat||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  if(['bebidas','cervejas','drinks','drinks / coqueteis','coqueteis'].some(k=>catNorm.includes(k)))
-    return 'mercadoria';
-  return 'alimentacao'; // Rodízio, Pizzas, Combos, Sobremesas, Outros → alimentação
+  if(!cat) return 'alimentacao';
+  const catLower = cat.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  // Palavras-chave que indicam bebida/mercadoria de revenda
+  const keysBebida = ['bebida','cerveja','drink','coquetel','suco','agua','refrigerante','vinho','chope','dose'];
+  if(keysBebida.some(k => catLower.includes(k))) return 'mercadoria';
+  return 'alimentacao';
 }
 
 // Calcula totR direto do CR, separando por categoria dos itens
 // Usa SEMPRE lanc.val como valor base (fonte de verdade do lançamento)
 // Os itens servem apenas para calcular a proporção alimentação × mercadoria
 function dreAcumularReceitas(filtR){
+  const prodVenda = S.g('prod-venda')||[];
   let totAlim = 0, totMerc = 0, totDesc = 0;
   filtR.forEach(lanc=>{
-    const val = lanc.val || 0;
-    if(!val) return;
-    totDesc += lanc.desconto || 0;
+    const val  = lanc.val  || 0;
+    const desc = lanc.desconto || 0;
+    const bruto = val + desc; // valor bruto antes do desconto
+    if(!bruto) return;
+    totDesc += desc;
     if(lanc.itens && lanc.itens.length){
-      const sumAlim = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='alimentacao').reduce((s,i)=>s+(i.total||0),0);
-      const sumMerc = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='mercadoria').reduce((s,i)=>s+(i.total||0),0);
-      const sumTot  = sumAlim + sumMerc;
+      // Proporção baseada nos itens brutos
+      const sumAlim = lanc.itens.reduce((s,i)=>{
+        const prod = prodVenda.find(p=>String(p.id)===String(i.prodId));
+        const cat  = prod ? prod.cat : i.cat;
+        return s + (dreClassificarItem(cat)==='alimentacao' ? (i.total||0) : 0);
+      }, 0);
+      const sumMerc = lanc.itens.reduce((s,i)=>{
+        const prod = prodVenda.find(p=>String(p.id)===String(i.prodId));
+        const cat  = prod ? prod.cat : i.cat;
+        return s + (dreClassificarItem(cat)==='mercadoria' ? (i.total||0) : 0);
+      }, 0);
+      const sumTot = sumAlim + sumMerc;
       if(sumTot > 0){
-        totAlim += val * (sumAlim / sumTot);
-        totMerc += val * (sumMerc / sumTot);
+        // Distribui o bruto proporcionalmente
+        totAlim += bruto * (sumAlim / sumTot);
+        totMerc += bruto * (sumMerc / sumTot);
       } else {
-        totAlim += val;
+        totAlim += bruto;
       }
     } else {
-      if((lanc.conta||'')==='1.2') totMerc += val;
-      else                          totAlim += val;
+      if((lanc.conta||'')==='1.2') totMerc += bruto;
+      else                          totAlim += bruto;
     }
   });
   return { totAlim, totMerc, totDesc, totRec: totAlim + totMerc };
@@ -5674,16 +5839,18 @@ function dreAcumularReceitas(filtR){
 function dreCalc(totConta, receitasObj, pc){
   const sg  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totConta[c.cod]||0),0);
   const ssg = (sub) => pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sub).reduce((s,c)=>s+(totConta[c.cod]||0),0);
-  const totRec     = receitasObj.totRec;
-  const totAlim    = receitasObj.totAlim;
-  const totMerc    = receitasObj.totMerc;
+  const totAlim    = receitasObj.totAlim;  // bruto por categoria
+  const totMerc    = receitasObj.totMerc;  // bruto por categoria
   const totDesc    = receitasObj.totDesc || 0;
+  // RECEITAS OPERACIONAIS = bruto − descontos concedidos
+  const totRec     = totAlim + totMerc - totDesc;
   const totImp     = sg('2');
   const totFin     = sg('3');
   const totCMV     = sg('4');
   const totOp      = sg('5');
   const totNaoOp   = sg('9');
-  const recLiq     = totRec - totDesc - totImp;
+  // RECEITA BRUTA = RECEITAS OPERACIONAIS (mesma base, sem impostos ainda)
+  const recLiq     = totRec - totImp;
   const lucroBruto = recLiq - totCMV;
   const ebitda     = lucroBruto - totFin - totOp;
   const lucroLiq   = ebitda - totNaoOp;
@@ -5772,7 +5939,7 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
     </tr>`;
 
   const lRes = (nome, val, cls, tipo) => {
-    const cor = cls==='dlp' ? (nome.includes('RECEITA LÍQUIDA') ? '#64B5F6' : '#81C784') : '#EF9A9A';
+    const cor = cls==='dlp' ? (nome.includes('RECEITA BRUTA') ? '#64B5F6' : '#81C784') : '#EF9A9A';
     return `<tr class="dr ${cls}" style="border-top:1px solid rgba(255,255,255,0.06)">
       <td style="padding:10px 6px;font-size:13px;font-weight:700;color:${cor}">${nome}</td>
       <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700;color:${cor};cursor:${val!==0&&tipo?'pointer':'default'};text-decoration:${val!==0&&tipo?'underline dotted':'none'}"
@@ -5790,12 +5957,12 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
 
   // Receitas
   html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, '#64B5F6', 'rec_total');
-  if(D.totAlim>0) html+=lConta('Venda de Alimentação / Rodízio','1.1',D.totAlim,'#64B5F6',20,'rec_alim');
-  if(D.totMerc>0) html+=lConta('Venda de Mercadoria de Terceiros','1.2',D.totMerc,'#64B5F6',20,'rec_merc');
+  if(D.totAlim>0) html+=lConta('Venda de Alimentação / Rodízio','1.1',D.totAlim,'var(--tx2)',20,'rec_alim');
+  if(D.totMerc>0) html+=lConta('Venda de Mercadoria de Terceiros','1.2',D.totMerc,'var(--tx2)',20,'rec_merc');
   if(!D.totRec) html+=`<tr><td colspan="3" style="padding:5px 20px;font-size:11px;color:var(--tx3);font-style:italic">Nenhuma receita no período</td></tr>`;
 
   // Descontos Concedidos
-  if(D.totDesc>0) html+=lConta('(–) Descontos Concedidos','1.4', D.totDesc,'#EF9A9A',20,'rec_desc');
+  if(D.totDesc>0) html+=lConta('(–) Descontos Concedidos','1.4', D.totDesc,'#F48FB1',20,'rec_desc');
 
   // Impostos
   if(D.totImp>0){
@@ -5803,7 +5970,7 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='2'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
   }
 
-  html += lRes('= RECEITA LÍQUIDA', D.recLiq, D.recLiq>=0?'dlp':'dlr', 'rec_total');
+  html += lRes('= RECEITA BRUTA', D.recLiq, D.recLiq>=0?'dlp':'dlr', 'rec_total');
 
   // CMV
   html += lGrp('(–)','CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, '#EF9A9A', 'grp_4');
@@ -5903,19 +6070,20 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
       : isSg  ? `font-weight:500;`
       : `color:var(--tx2);font-size:11px;`;
     let tr = `<tr><td style="padding:${isRes?'9':'5'}px 6px 5px ${indent||6}px;${tdStyle}position:sticky;left:0;z-index:1;color:${
-      isRes ? (label.includes('RECEITA LÍQUIDA') ? '#64B5F6' : '#81C784') :
+      isRes ? (label.includes('RECEITA BRUTA') ? '#64B5F6' : '#81C784') :
       isGrp ? (corGrp==='rec' ? '#64B5F6' : '#EF9A9A') :
-      isSg  ? '#EF9A9A' : 'var(--tx2)'
+      isSg  ? '#EF9A9A' :
+      corGrp==='desc' ? '#F48FB1' : 'var(--tx2)'
     }">${label}</td>`;
     dadosMes.forEach(({D,totC,receitasObj})=>{
       const val  = getVal(D, totC, receitasObj);
       const base = getBase(D);
       const av   = base>0 ? (Math.abs(val)/base*100).toFixed(1)+'%' : '—';
       let vCor;
-      if(isRes)      vCor = label.includes('RECEITA LÍQUIDA') ? '#64B5F6' : (val<0 ? '#EF9A9A' : '#81C784');
+      if(isRes)      vCor = label.includes('RECEITA BRUTA') ? '#64B5F6' : (val<0 ? '#EF9A9A' : '#81C784');
       else if(isGrp) vCor = corGrp==='rec' ? '#64B5F6' : '#EF9A9A';
       else if(isSg)  vCor = '#EF9A9A';
-      else           vCor = 'var(--tx2)';
+      else           vCor = corGrp==='desc' ? '#F48FB1' : corGrp==='rec' ? '#64B5F6' : 'var(--tx2)';
       tr+=`<td style="padding:5px 8px;text-align:right;font-weight:${isRes||isGrp||isSg?'600':'400'};color:${vCor}">${R(val)}</td>
            <td style="padding:5px 4px;text-align:right;font-size:10px;color:var(--tx3)">${av}</td>`;
     });
@@ -5925,10 +6093,10 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
 
   // Receitas
   html+=linha('(+) RECEITAS OPERACIONAIS', D=>D.totRec, D=>D.totRec, 'grp', 6, 'rec');
-  html+=linha('Venda de Alimentação / Rodízio', D=>D.totAlim, D=>D.totRec, 'conta', 20, 'rec');
-  html+=linha('Venda de Mercadoria de Terceiros', D=>D.totMerc, D=>D.totRec, 'conta', 20, 'rec');
+  html+=linha('Venda de Alimentação / Rodízio', D=>D.totAlim, D=>D.totRec, 'conta', 20, 'neu');
+  html+=linha('Venda de Mercadoria de Terceiros', D=>D.totMerc, D=>D.totRec, 'conta', 20, 'neu');
   if(dadosMes.some(({D})=>D.totDesc>0))
-    html+=linha('(–) Descontos Concedidos', D=>D.totDesc, D=>D.totRec, 'conta', 20, 'sai');
+    html+=linha('(–) Descontos Concedidos', D=>D.totDesc, D=>D.totRec, 'conta', 20, 'desc');
 
   // Impostos
   if(dadosMes.some(({D})=>D.totImp>0)){
@@ -5939,7 +6107,7 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
     });
   }
 
-  html+=linha('= RECEITA LÍQUIDA', D=>D.recLiq, D=>D.totRec, 'res');
+  html+=linha('= RECEITA BRUTA', D=>D.recLiq, D=>D.totRec, 'res');
 
   // CMV
   html+=linha('(–) CMV — CUSTO DA MERCADORIA VENDIDA', D=>D.totCMV, D=>D.totRec, 'grp', 6, 'sai');
@@ -6005,15 +6173,6 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
     <div class="si ${sf(mgL,15,5)}"><div class="sv">${P(mgL)}</div><div class="sl">Mg. Líquida</div></div>
     <div class="si ${sf(100-pC,70,60)}"><div class="sv">${P(pC)}</div><div class="sl">CMV %</div></div>
     <div class="si ${sf(100-pO,55,40)}"><div class="sv">${P(pO)}</div><div class="sl">Desp. Op. %</div></div>`;
-}
-
-function renderFluxo(){
-  document.getElementById('kpi-fx').innerHTML=`
-    <div class="kc"><div class="kl">Total Entradas</div><div class="kv" style="color:var(--gr)">${R(D.ent)}</div></div>
-    <div class="kc"><div class="kl">Total Saídas</div><div class="kv" style="color:var(--rd)">${R(D.sai)}</div></div>
-    <div class="kc"><div class="kl">Saldo Período</div><div class="kv">${R(D.saldo)}</div></div>
-    <div class="kc"><div class="kl">Projeção 30d</div><div class="kv" style="color:var(--bl)">${R(19800)}</div></div>`;
-  document.getElementById('fx-dias').innerHTML=D.fxD.map(d=>`<div class="fx"><div class="fx-d">${d.d}</div><div class="fx-b"><div class="fx-e" style="width:${d.e*100}%"></div><div class="fx-s" style="width:${d.s*100}%"></div></div><div class="fx-v" style="color:${d.p?'var(--gr)':'var(--rd)'}">${d.p?'+':'–'}${R(d.v)}</div></div>`).join('');
 }
 
 function renderCaixa(){
@@ -9087,30 +9246,207 @@ function renderProdVenda(){
 let rvDados = [];
 
 function initRelVendas(){
-  // Popula select de produtos
-  const prods = S.g('prod-venda')||[];
-  const sel = document.getElementById('rv-prod');
-  if(sel){
-    const cats = [...new Set(prods.map(p=>p.cat))].sort();
-    let opts = '<option value="">Todos os produtos</option>';
-    cats.forEach(cat=>{
-      opts += `<optgroup label="${cat}">`;
-      prods.filter(p=>p.cat===cat).forEach(p=>{
-        opts += `<option value="${p.id}">${p.nome}</option>`;
-      });
-      opts += '</optgroup>';
-    });
-    sel.innerHTML = opts;
-  }
-  // Data padrão: mês atual
+  // Inicializa multi-selects de categoria e produto
+  rvPreencherCats('rv-cat-dd', 'rv-cat-label');
+  rvPreencherCats('rv-cat-comp-dd', 'rv-cat-comp-label');
+  rvPreencherProds('rv-prod-dd', 'rv-prod-label');
+  rvPreencherProds('rv-prod-comp-dd', 'rv-prod-comp-label');
+
   const hoje = new Date();
-  const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-  const fim  = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
+  const anoAtual = String(hoje.getFullYear());
+  const mesAtual = hoje.toISOString().slice(0,7); // ex: 2026-06
+
+  // Data padrão período (caixa): mês atual
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
   const elIni = document.getElementById('rv-dt-ini');
   const elFim = document.getElementById('rv-dt-fim');
   if(elIni && !elIni.value) elIni.value = ini;
   if(elFim && !elFim.value) elFim.value = fim;
+
+  // Competência: mês atual e ano atual já preenchidos
+  const elCompMes = document.getElementById('rv-comp-mes');
+  const elCompAno = document.getElementById('rv-comp-ano');
+  if(elCompMes && !elCompMes.value) elCompMes.value = mesAtual;
+  if(elCompAno && !elCompAno.value) elCompAno.value = anoAtual;
+
   gerarRelVendas();
+}
+
+// ── MULTI-SELECT RELATÓRIO VENDAS ─────────────────────────────
+let _rvCatsSel  = []; // categorias selecionadas
+let _rvProdsSel = []; // produtos selecionados
+let _rvSortCol  = 'fat';
+let _rvSortDir  = 'desc';
+
+function rvToggleMs(ddId){
+  // Fecha todos os outros dropdowns
+  ['rv-cat-dd','rv-prod-dd','rv-cat-comp-dd','rv-prod-comp-dd'].forEach(id=>{
+    if(id !== ddId){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+  });
+  const dd = document.getElementById(ddId);
+  if(!dd) return;
+  const visible = dd.style.display !== 'none';
+  dd.style.display = visible ? 'none' : 'block';
+  if(!visible) rvFocusMs(ddId);
+}
+
+// Fecha dropdowns ao clicar fora
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.rv-ms-wrap')) {
+    ['rv-cat-dd','rv-prod-dd','rv-cat-comp-dd','rv-prod-comp-dd'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.style.display='none';
+    });
+  }
+});
+
+function rvFocusMs(ddId){ /* foco automático no campo de busca se houver */ }
+
+function rvPreencherCats(ddId, labelId){
+  const dd = document.getElementById(ddId); if(!dd) return;
+  const cats = getCatProdsVenda().filter(c=>c.st==='Ativo').map(c=>c.nome);
+  dd.innerHTML = `
+    <div class="rv-ms-item" onclick="rvToggleCat('__TODAS__','${ddId}','${labelId}')">
+      <input type="checkbox" id="rv-cat-all-${ddId}" checked> <span>Todas as categorias</span>
+    </div>
+    <div class="rv-ms-sep"></div>
+    ${cats.map(c=>`
+    <div class="rv-ms-item" onclick="rvToggleCat('${c}','${ddId}','${labelId}')">
+      <input type="checkbox" class="rv-cat-cb-${ddId}" value="${c}"> <span>${c}</span>
+    </div>`).join('')}
+  `;
+}
+
+function rvToggleCat(val, ddId, labelId){
+  if(val === '__TODAS__'){
+    _rvCatsSel = [];
+    // Desmarca todas
+    dd_checkAll(ddId, false, 'rv-cat-cb-'+ddId);
+    document.getElementById('rv-cat-all-'+ddId).checked = true;
+  } else {
+    document.getElementById('rv-cat-all-'+ddId).checked = false;
+    // Toggle no array
+    const idx = _rvCatsSel.indexOf(val);
+    if(idx > -1) _rvCatsSel.splice(idx,1);
+    else _rvCatsSel.push(val);
+    // Atualiza checkbox
+    const cbs = document.querySelectorAll('.rv-cat-cb-'+ddId);
+    cbs.forEach(cb=>{ cb.checked = _rvCatsSel.includes(cb.value); });
+    if(_rvCatsSel.length === 0) document.getElementById('rv-cat-all-'+ddId).checked = true;
+  }
+  // Atualiza label
+  const lbl = document.getElementById(labelId);
+  if(lbl) lbl.textContent = _rvCatsSel.length === 0 ? 'Todas as categorias' :
+    _rvCatsSel.length === 1 ? _rvCatsSel[0] : _rvCatsSel.length+' categorias';
+  // Atualiza lista de produtos disponíveis
+  rvPreencherProds('rv-prod-dd','rv-prod-label');
+  rvPreencherProds('rv-prod-comp-dd','rv-prod-comp-label');
+}
+
+function rvPreencherProds(ddId, labelId){
+  const dd = document.getElementById(ddId); if(!dd) return;
+  const prods = (S.g('prod-venda')||[]).filter(p=>p.st==='Ativo' &&
+    (_rvCatsSel.length === 0 || _rvCatsSel.includes(p.cat))
+  );
+  _rvProdsSel = _rvProdsSel.filter(id => prods.some(p=>String(p.id)===id));
+  dd.innerHTML = `
+    <div style="padding:6px 12px">
+      <input type="text" placeholder="Buscar produto..." oninput="rvFiltrarProds(this.value,'${ddId}','${labelId}')"
+        style="width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:4px;padding:5px 8px;color:var(--tx);font-family:Outfit,sans-serif;font-size:11px;outline:none">
+    </div>
+    <div class="rv-ms-sep"></div>
+    <div class="rv-ms-item" onclick="rvToggleProd('__TODOS__','${ddId}','${labelId}')">
+      <input type="checkbox" id="rv-prod-all-${ddId}" ${_rvProdsSel.length===0?'checked':''}> <span>Todos os produtos</span>
+    </div>
+    <div class="rv-ms-sep"></div>
+    <div id="rv-prod-list-${ddId}">
+    ${prods.map(p=>`
+    <div class="rv-ms-item" onclick="rvToggleProd('${p.id}','${ddId}','${labelId}')">
+      <input type="checkbox" class="rv-prod-cb-${ddId}" value="${p.id}" ${_rvProdsSel.includes(String(p.id))?'checked':''}> 
+      <span>${p.nome}</span>
+    </div>`).join('')}
+    </div>
+  `;
+  rvAtualizarLabelProd(labelId);
+}
+
+function rvFiltrarProds(q, ddId, labelId){
+  const list = document.getElementById('rv-prod-list-'+ddId); if(!list) return;
+  const items = list.querySelectorAll('.rv-ms-item');
+  items.forEach(item=>{
+    const txt = item.querySelector('span')?.textContent?.toLowerCase()||'';
+    item.style.display = txt.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function rvToggleProd(val, ddId, labelId){
+  if(val === '__TODOS__'){
+    _rvProdsSel = [];
+    const cbs = document.querySelectorAll('.rv-prod-cb-'+ddId);
+    cbs.forEach(cb=>cb.checked=false);
+    const allCb = document.getElementById('rv-prod-all-'+ddId);
+    if(allCb) allCb.checked = true;
+  } else {
+    const allCb = document.getElementById('rv-prod-all-'+ddId);
+    if(allCb) allCb.checked = false;
+    const id = String(val);
+    const idx = _rvProdsSel.indexOf(id);
+    if(idx > -1) _rvProdsSel.splice(idx,1);
+    else _rvProdsSel.push(id);
+    const cbs = document.querySelectorAll('.rv-prod-cb-'+ddId);
+    cbs.forEach(cb=>{ cb.checked = _rvProdsSel.includes(cb.value); });
+    if(_rvProdsSel.length === 0 && allCb) allCb.checked = true;
+  }
+  rvAtualizarLabelProd(labelId);
+}
+
+function rvAtualizarLabelProd(labelId){
+  const lbl = document.getElementById(labelId); if(!lbl) return;
+  lbl.textContent = _rvProdsSel.length === 0 ? 'Todos os produtos' :
+    _rvProdsSel.length === 1 ?
+      ((S.g('prod-venda')||[]).find(p=>String(p.id)===_rvProdsSel[0])?.nome || '1 produto') :
+      _rvProdsSel.length+' produtos';
+}
+
+function dd_checkAll(ddId, checked, cls){
+  document.querySelectorAll('.'+cls).forEach(cb=>cb.checked=checked);
+}
+
+function rvLimparFiltrosMs(){
+  _rvCatsSel = []; _rvProdsSel = [];
+  ['rv-cat-label','rv-prod-label','rv-cat-comp-label','rv-prod-comp-label'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent = id.includes('cat') ? 'Todas as categorias' : 'Todos os produtos';
+  });
+}
+
+// Ordenação das colunas
+function rvSortCol(col, th){
+  if(_rvSortCol === col){
+    _rvSortDir = _rvSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    _rvSortCol = col; _rvSortDir = col === 'nome' || col === 'cat' ? 'asc' : 'desc';
+  }
+  // Reseta ícones
+  document.querySelectorAll('.rv-th .si').forEach(i=>{ i.className='fa-solid fa-sort si'; });
+  if(th) th.querySelector('.si').className = `fa-solid fa-sort-${_rvSortDir==='asc'?'up':'down'} si`;
+  renderRelVendas();
+}
+
+function rvSortArr(arr){
+  const col = _rvSortCol, dir = _rvSortDir;
+  return [...arr].sort((a,b)=>{
+    let va, vb;
+    if(col==='nome')   { va=a.nome||''; vb=b.nome||''; return dir==='asc'?va.localeCompare(vb):vb.localeCompare(va); }
+    if(col==='cat')    { va=a.cat||'';  vb=b.cat||'';  return dir==='asc'?va.localeCompare(vb):vb.localeCompare(va); }
+    if(col==='qtd')    { va=a.qtd;   vb=b.qtd; }
+    if(col==='preco')  { va=a.preco; vb=b.preco; }
+    if(col==='custo')  { va=a.custo; vb=b.custo; }
+    if(col==='fat')    { va=a.fat;   vb=b.fat; }
+    if(col==='margem') { va=a.preco>0?(a.preco-a.custo)/a.preco*100:0; vb=b.preco>0?(b.preco-b.custo)/b.preco*100:0; }
+    if(col==='lucro')  { va=(a.preco-a.custo)*a.qtd; vb=(b.preco-b.custo)*b.qtd; }
+    return dir==='asc' ? va-vb : vb-va;
+  });
 }
 
 function rvSetTipoFiltro(tipo){
@@ -9119,31 +9455,27 @@ function rvSetTipoFiltro(tipo){
   document.getElementById('rv-filtros-comp').style.display    = isPeriodo ? 'none' : '';
   document.getElementById('rv-tab-periodo').className = isPeriodo ? 'rc-tab-ativo' : 'rc-tab-inativo';
   document.getElementById('rv-tab-comp').className    = isPeriodo ? 'rc-tab-inativo' : 'rc-tab-ativo';
-  // Popula select de produto no painel comp
-  const prods = S.g('prod-venda')||[];
-  const sel = document.getElementById('rv-prod-comp');
-  if(sel){
-    const cats = [...new Set(prods.map(p=>p.cat))].sort();
-    let opts = '<option value="">Todos os produtos</option>';
-    cats.forEach(cat=>{
-      opts += `<optgroup label="${cat}">`;
-      prods.filter(p=>p.cat===cat).forEach(p=>{ opts += `<option value="${p.id}">${p.nome}</option>`; });
-      opts += '</optgroup>';
-    });
-    sel.innerHTML = opts;
+  // Ao abrir competência, garante mês e ano preenchidos
+  if(!isPeriodo){
+    const hoje = new Date();
+    const elCompMes = document.getElementById('rv-comp-mes');
+    const elCompAno = document.getElementById('rv-comp-ano');
+    if(elCompMes && !elCompMes.value) elCompMes.value = hoje.toISOString().slice(0,7);
+    if(elCompAno && !elCompAno.value) elCompAno.value = String(hoje.getFullYear());
   }
   gerarRelVendas();
 }
 
 function limparFiltrosVendas(){
   ['rv-dt-ini','rv-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  const cat=document.getElementById('rv-cat'); if(cat)cat.value='';
-  const prod=document.getElementById('rv-prod'); if(prod)prod.value='';
   const mr=document.getElementById('rv-min-rodizios'); if(mr)mr.value='';
   const compMes=document.getElementById('rv-comp-mes'); if(compMes)compMes.value='';
   const compAno=document.getElementById('rv-comp-ano'); if(compAno)compAno.value='';
-  const catComp=document.getElementById('rv-cat-comp'); if(catComp)catComp.value='';
-  const prodComp=document.getElementById('rv-prod-comp'); if(prodComp)prodComp.value='';
+  rvLimparFiltrosMs();
+  rvPreencherCats('rv-cat-dd','rv-cat-label');
+  rvPreencherCats('rv-cat-comp-dd','rv-cat-comp-label');
+  rvPreencherProds('rv-prod-dd','rv-prod-label');
+  rvPreencherProds('rv-prod-comp-dd','rv-prod-comp-label');
   gerarRelVendas();
 }
 
@@ -9155,8 +9487,8 @@ function gerarRelVendas(){
   if(modoComp){
     const compMes = document.getElementById('rv-comp-mes')?.value||'';
     const compAno = document.getElementById('rv-comp-ano')?.value||'';
-    catF  = document.getElementById('rv-cat-comp')?.value||'';
-    prodF = document.getElementById('rv-prod-comp')?.value||'';
+    catF  = '';
+    prodF = '';
     if(compMes){
       dtIni = compMes+'-01';
       // último dia do mês
@@ -9169,17 +9501,19 @@ function gerarRelVendas(){
   } else {
     dtIni = document.getElementById('rv-dt-ini')?.value||'';
     dtFim = document.getElementById('rv-dt-fim')?.value||'';
-    catF  = document.getElementById('rv-cat')?.value||'';
-    prodF = document.getElementById('rv-prod')?.value||'';
   }
   const minRod = parseInt(document.getElementById('rv-min-rodizios')?.value)||0;
 
   const vendas    = S.g('receber')||[];
   const prodVenda = S.g('prod-venda')||[];
 
+  // Determina regime: caixa = vencimento, comp = competência
+  const tabComp2 = document.getElementById('rv-tab-comp');
+  const rvRegime = (tabComp2 && tabComp2.classList.contains('rc-tab-ativo')) ? 'comp' : 'caixa';
+
   const mapa = {};
 
-  const addProd = (prod, qtd, precoUnit) => {
+  const addProd = (prod, qtd, precoUnit, fatorProp) => {
     if(catF && prod.cat !== catF) return;
     if(prodF && String(prod.id) !== String(prodF)) return;
     const key = String(prod.id);
@@ -9191,12 +9525,13 @@ function gerarRelVendas(){
       };
     }
     mapa[key].qtd += qtd;
-    mapa[key].fat += parseFloat((qtd * precoUnit).toFixed(2));
+    // Faturamento proporcional ao val do lançamento (igual DRE)
+    mapa[key].fat += parseFloat((qtd * precoUnit * fatorProp).toFixed(2));
   };
 
-  // Filtra vendas pelo período (usa competência como referência principal)
+  // Filtra vendas pelo período respeitando o regime
   const vendasFiltradas = vendas.filter(v=>{
-    const dt = (v.comp || v.venc || '').slice(0,10);
+    const dt = (rvRegime==='caixa' ? (v.venc||v.comp||'') : (v.comp||v.venc||'')).slice(0,10);
     if(dtIni && dt < dtIni) return false;
     if(dtFim && dt > dtFim) return false;
     return true;
@@ -9205,15 +9540,35 @@ function gerarRelVendas(){
   // Verifica se há vendas com itens discriminados
   const temItens = vendasFiltradas.some(v=>v.itens && v.itens.length);
 
+  // Mapa de normalização: categoria do item → categoria do cadastro
+  const catVenda = getCatProdsVenda().filter(c=>c.st==='Ativo').map(c=>c.nome);
+  function normalizarCat(cat){
+    if(!cat) return cat;
+    // Busca exata primeiro
+    if(catVenda.includes(cat)) return cat;
+    // Busca parcial — ex: 'Drinks' bate em 'Drinks / Coquetéis'
+    const match = catVenda.find(c => c.toLowerCase().startsWith(cat.toLowerCase()) || cat.toLowerCase().startsWith(c.toLowerCase()));
+    return match || cat;
+  }
+
   if(temItens){
     // ── Modo detalhado: processa apenas itens com prodId no cadastro ──
     vendasFiltradas.forEach(v=>{
       if(!v.itens || !v.itens.length) return;
+      const somaItens = v.itens.reduce((s,i)=>s+(i.total||0),0);
+      const fator = (somaItens > 0 && v.val > 0) ? v.val / somaItens : 1;
       v.itens.forEach(it=>{
         if(!it.prodId) return;
         const prod = prodVenda.find(p=>String(p.id)===String(it.prodId));
         if(!prod) return;
-        addProd(prod, it.qtd||1, it.preco||prod.preco||0);
+        // Categoria SEMPRE do cadastro de produto (fonte de verdade)
+        const catOficial = prod.cat || it.cat || '';
+        const prodFinal = {...prod, cat: catOficial};
+        // Aplica filtro multi-select categoria
+        if(_rvCatsSel.length > 0 && !_rvCatsSel.includes(catOficial)) return;
+        // Aplica filtro multi-select produto
+        if(_rvProdsSel.length > 0 && !_rvProdsSel.includes(String(prod.id))) return;
+        addProd(prodFinal, it.qtd||1, it.preco||prod.preco||0, fator);
       });
     });
   } else {
@@ -9257,7 +9612,7 @@ function gerarRelVendas(){
 }
 
 function renderRelVendas(){
-  const arr = rvDados;
+  const arr = rvSortArr(rvDados); // aplica ordenação
   const totalFat  = arr.reduce((a,b)=>a+b.fat, 0);
   const totalQtd  = arr.reduce((a,b)=>a+b.qtd, 0);
   const totalLucro= arr.reduce((a,b)=>{ const l=(b.preco-b.custo)*b.qtd; return a+(l>0?l:0); },0);
@@ -10124,18 +10479,439 @@ function dreDrillDown(tipo, label, cor){
 
 function limparLancamentosDemo(){
   const COMANDAS_DEMO = ['IFOOD-001','MESA-12','CAIXA-SAB'];
+  const DESC_DEMO = [
+    'ifood — repasse semanal',
+    'evento aniversário — cliente joão',
+    'sábado — salão lotado',
+    'sábado lotado',
+    'repasse semanal',
+  ];
   const arr = S.g('receber')||[];
   const antes = arr.length;
-  const limpo = arr.filter(x => !COMANDAS_DEMO.includes(x.comanda||''));
+  const limpo = arr.filter(x => {
+    // Remove por comanda demo
+    if(COMANDAS_DEMO.includes(x.comanda||'')) return false;
+    // Remove por descrição demo (case insensitive)
+    const desc = (x.desc||'').toLowerCase().trim();
+    if(DESC_DEMO.some(d => desc.includes(d))) return false;
+    // Remove ids 1, 2, 3 que possuem itens com Água Mineral, Rodízio em massa (lançamentos demo originais)
+    if([1,2,3].includes(x.id) && x.itens && x.itens.length > 3) return false;
+    return true;
+  });
   const removidos = antes - limpo.length;
   if(removidos === 0){
-    showToast('Nenhum lançamento demo encontrado.', 'var(--bl)');
+    showToast('Nenhum lançamento demo encontrado no CAR.', 'var(--bl)');
     return;
   }
-  if(!confirm(`Foram encontrados ${removidos} lançamento(s) demo para remover:\n${COMANDAS_DEMO.join(', ')}\n\nConfirmar exclusão?`)) return;
+  if(!confirm(`Encontrados ${removidos} lançamento(s) demo para remover. Confirmar exclusão?`)) return;
   S.s('receber', limpo);
   renderReceber();
   showToast(`✓ ${removidos} lançamento(s) demo removidos. Recarregue a página para atualizar todos os módulos.`, 'var(--gr)');
+}
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO FLUXO DE CAIXA (FCX)
+// ══════════════════════════════════════════════════════════
+let _fcxModo = 'consolidado';
+let _fcxAno  = new Date().getFullYear();
+let _fcxMes  = new Date().getMonth() + 1;
+
+const FCX_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const FCX_TIPO_LABEL = { conta_corrente:'Conta Corrente', caixa:'Caixa', aplicacao:'Aplicação', cofre:'Cofre' };
+
+function getFcxContas(){ return (S.g('fcx-contas')||[]).filter(c=>c.st==='Ativo').sort((a,b)=>(a.ordem||99)-(b.ordem||99)); }
+
+function saveFcxConta(){
+  const id  = document.getElementById('fcx-c-id').value;
+  const nome= document.getElementById('fcx-c-nome').value.trim();
+  if(!nome){ alert('Informe o nome da conta.'); return; }
+  const arr = S.g('fcx-contas')||[];
+  if(id){
+    const idx = arr.findIndex(x=>x.id===Number(id));
+    if(idx>-1) arr[idx]={...arr[idx], nome, tipo:document.getElementById('fcx-c-tipo').value, banco:document.getElementById('fcx-c-banco').value, ordem:parseInt(document.getElementById('fcx-c-ordem').value)||1, st:document.getElementById('fcx-c-st').value};
+  } else {
+    const ids = arr.map(x=>x.id||0);
+    const nextId = ids.length ? Math.max(...ids)+1 : 1;
+    arr.push({ id:nextId, cod:'FCX-'+String(nextId).padStart(2,'0'), nome, tipo:document.getElementById('fcx-c-tipo').value, banco:document.getElementById('fcx-c-banco').value, ordem:parseInt(document.getElementById('fcx-c-ordem').value)||1, st:document.getElementById('fcx-c-st').value });
+  }
+  S.s('fcx-contas', arr);
+  closeMod('mod-fcx-conta');
+  document.getElementById('fcx-c-id').value='';
+  document.getElementById('fcx-c-nome').value='';
+  document.getElementById('fcx-c-banco').value='';
+  renderFcxContas();
+}
+
+function editFcxConta(id){
+  const c = (S.g('fcx-contas')||[]).find(x=>x.id===id); if(!c) return;
+  document.getElementById('fcx-c-id').value    = c.id;
+  document.getElementById('fcx-c-cod').value   = c.cod||'';
+  document.getElementById('fcx-c-nome').value  = c.nome||'';
+  document.getElementById('fcx-c-tipo').value  = c.tipo||'conta_corrente';
+  document.getElementById('fcx-c-banco').value = c.banco||'';
+  document.getElementById('fcx-c-ordem').value = c.ordem||1;
+  document.getElementById('fcx-c-st').value    = c.st||'Ativo';
+  openMod('mod-fcx-conta');
+}
+
+function renderFcxContas(){
+  const arr = S.g('fcx-contas')||[];
+  const tb  = document.getElementById('tb-fcx-contas'); if(!tb) return;
+  if(!arr.length){ tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">Nenhuma conta cadastrada.</td></tr>`; return; }
+  tb.innerHTML = arr.sort((a,b)=>(a.ordem||99)-(b.ordem||99)).map(c=>`<tr>
+    <td style="color:var(--or);font-weight:600">${c.cod}</td>
+    <td style="color:var(--tx);font-weight:500">${c.nome}</td>
+    <td><span class="tg tg-bl" style="font-size:10px">${FCX_TIPO_LABEL[c.tipo]||c.tipo}</span></td>
+    <td style="color:var(--tx2)">${c.banco||'—'}</td>
+    <td>${stTag(c.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editFcxConta(${c.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('fcx-contas',${c.id},renderFcxContas)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+  renderFcxSaldos();
+}
+
+function fcxAbrirSaldos(){
+  const ym = `${_fcxAno}-${String(_fcxMes).padStart(2,'0')}`;
+  document.getElementById('fcx-sal-mes').value = ym;
+  fcxRenderSaldoLinhas();
+  openMod('mod-fcx-saldos');
+}
+
+function fcxRenderSaldoLinhas(){
+  const ym     = document.getElementById('fcx-sal-mes').value;
+  const contas = getFcxContas();
+  const saldos = S.g('fcx-saldos')||{};
+  const div    = document.getElementById('fcx-sal-linhas'); if(!div) return;
+  if(!contas.length){ div.innerHTML=`<div style="color:var(--tx3);font-size:12px">Nenhuma conta FCX cadastrada.</div>`; return; }
+  div.innerHTML = `<div style="display:grid;grid-template-columns:1fr 180px;gap:8px;margin-bottom:8px">
+    <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Conta</div>
+    <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;text-align:right">Saldo Inicial (R$)</div>
+  </div>` +
+  contas.map(c=>{
+    const val = (saldos[ym]||{})[c.id]||'';
+    return `<div style="display:grid;grid-template-columns:1fr 180px;gap:8px;margin-bottom:8px;align-items:center">
+      <div style="font-size:12px;color:var(--tx)"><i class="fa-solid fa-building-columns" style="color:var(--or);margin-right:6px;font-size:10px"></i>${c.nome}</div>
+      <input type="text" id="fcx-sal-${c.id}" value="${val}" placeholder="0,00"
+        style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none;text-align:right;width:100%"
+        onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'">
+    </div>`;
+  }).join('');
+}
+
+function saveFcxSaldos(){
+  const ym     = document.getElementById('fcx-sal-mes').value;
+  if(!ym){ alert('Selecione o mês.'); return; }
+  const contas = getFcxContas();
+  const saldos = S.g('fcx-saldos')||{};
+  saldos[ym]   = {};
+  contas.forEach(c=>{
+    const el  = document.getElementById('fcx-sal-'+c.id);
+    const val = parseFloat((el?.value||'0').replace(',','.'))||0;
+    saldos[ym][c.id] = val;
+  });
+  S.s('fcx-saldos', saldos);
+  closeMod('mod-fcx-saldos');
+  renderFcxSaldos();
+  renderFluxo();
+  showToast('✓ Saldos iniciais salvos!', 'var(--gr)');
+}
+
+function renderFcxSaldos(){
+  const saldos = S.g('fcx-saldos')||{};
+  const contas = S.g('fcx-contas')||[];
+  const tb     = document.getElementById('tb-fcx-saldos'); if(!tb) return;
+  const linhas = [];
+  Object.keys(saldos).sort().reverse().forEach(ym=>{
+    const jaAdicionado = {};
+    Object.keys(saldos[ym]).forEach(cid=>{
+      const c   = contas.find(x=>x.id===Number(cid));
+      const val = saldos[ym][cid];
+      if(val) linhas.push({ ym, cid, nome: c?.nome||'Conta #'+cid, val });
+    });
+  });
+  if(!linhas.length){ tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--tx3)">Nenhum saldo informado ainda.</td></tr>`; return; }
+  tb.innerHTML = linhas.map(l=>`<tr>
+    <td style="color:var(--tx2)">${fmtMes(l.ym)}</td>
+    <td style="color:var(--tx)">${l.nome}</td>
+    <td style="text-align:right;color:var(--gr);font-weight:600">${R(l.val)}</td>
+    <td><button class="ac-btn ac-edit" onclick="fcxEditarSaldo('${l.ym}')" title="Editar saldos do mês"><i class="fa-solid fa-pen"></i></button></td>
+  </tr>`).join('');
+}
+
+function fcxEditarSaldo(ym){
+  document.getElementById('fcx-sal-mes').value = ym;
+  fcxRenderSaldoLinhas();
+  openMod('mod-fcx-saldos');
+}
+
+function fcxNavMes(delta){
+  _fcxMes += delta;
+  if(_fcxMes > 12){ _fcxMes=1; _fcxAno++; }
+  if(_fcxMes < 1) { _fcxMes=12; _fcxAno--; }
+  renderFluxo();
+}
+
+function fcxSetModo(modo){
+  _fcxModo = modo;
+  const bA = document.getElementById('fcx-tab-analitico');
+  const bS = document.getElementById('fcx-tab-semanal');
+  const bC = document.getElementById('fcx-tab-consol');
+  [bA,bS,bC].forEach(b=>{ if(b){ b.style.background='transparent'; b.style.color='var(--tx2)'; b.style.fontWeight='500'; }});
+  const ativo = modo==='analitico'?bA:modo==='semanal'?bS:bC;
+  if(ativo){ ativo.style.background='var(--or)'; ativo.style.color='#fff'; ativo.style.fontWeight='600'; }
+  renderFluxo();
+}
+
+function renderFluxo(){
+  try{
+  const lbl = document.getElementById('fcx-mes-label');
+  if(lbl) lbl.textContent = `${FCX_MESES[_fcxMes-1]} / ${_fcxAno}`;
+
+  const ym        = `${_fcxAno}-${String(_fcxMes).padStart(2,'0')}`;
+  const diasMes   = new Date(_fcxAno, _fcxMes, 0).getDate();
+  const dias      = Array.from({length:diasMes},(_,i)=>i+1);
+  const pagar     = S.g('pagar')  ||[];
+  const receber   = S.g('receber')||[];
+  const pc        = getPC();
+  const saldos    = S.g('fcx-saldos')||{};
+  const contas    = getFcxContas();
+  const prodVenda = S.g('prod-venda')||[];
+
+  // Entradas por dia — classificadas por alim/merc
+  const entDia = {};
+  dias.forEach(d=>{ entDia[d]={alim:0,merc:0,desc:0}; });
+  receber.filter(x=>(x.venc||x.comp||'').slice(0,7)===ym).forEach(lanc=>{
+    const dia  = parseInt((lanc.venc||lanc.comp||'').slice(8,10));
+    if(!dia||!entDia[dia]) return;
+    const val  = lanc.val||0;
+    const desc = lanc.desconto||0;
+    const bruto= val+desc;
+    if(!bruto) return;
+    entDia[dia].desc += desc;
+    if(lanc.itens&&lanc.itens.length){
+      const sumAlim = lanc.itens.reduce((s,i)=>{ const prod=prodVenda.find(p=>String(p.id)===String(i.prodId)); const cat=prod?prod.cat:i.cat; return s+(dreClassificarItem(cat)==='alimentacao'?(i.total||0):0); },0);
+      const sumMerc = lanc.itens.reduce((s,i)=>{ const prod=prodVenda.find(p=>String(p.id)===String(i.prodId)); const cat=prod?prod.cat:i.cat; return s+(dreClassificarItem(cat)==='mercadoria'?(i.total||0):0); },0);
+      const sumTot  = sumAlim+sumMerc;
+      entDia[dia].alim += sumTot>0?bruto*(sumAlim/sumTot):bruto;
+      entDia[dia].merc += sumTot>0?bruto*(sumMerc/sumTot):0;
+    } else {
+      if((lanc.conta||'')==='1.2') entDia[dia].merc+=bruto;
+      else entDia[dia].alim+=bruto;
+    }
+  });
+
+  // Saídas por dia — por grupo e por conta (analítico)
+  const saiDia         = {};
+  const saiDiaAnalitico= {};
+  const contasUsadas   = {};
+  dias.forEach(d=>{ saiDia[d]={}; saiDiaAnalitico[d]={}; });
+  const grpOrdem = ['4','5','3','2','9'];
+  const grpNomes = {'2':'Impostos e Taxas','3':'Despesas Financeiras','4':'CMV — Custo Mercadoria','5':'Despesas Operacionais','9':'Não Operacional'};
+
+  pagar.filter(x=>(x.venc||'').slice(0,7)===ym).forEach(lanc=>{
+    const dia = parseInt((lanc.venc||'').slice(8,10));
+    if(!dia) return;
+    const val = lanc.val||0;
+    const pcConta = pc.find(p=>p.cod===lanc.conta&&p.tipo==='conta');
+    const grp = pcConta?.grupo||'5';
+    saiDia[dia][grp]=(saiDia[dia][grp]||0)+val;
+    const cod = lanc.conta||'';
+    saiDiaAnalitico[dia][cod]=(saiDiaAnalitico[dia][cod]||0)+val;
+    if(cod&&!contasUsadas[cod]) contasUsadas[cod]={nome:pcConta?.nome||cod,grupo:grp,subgrupo:pcConta?.subgrupo||''};
+  });
+
+  // Totais
+  const saldoInicial = contas.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  const totEntAlim   = dias.reduce((s,d)=>s+entDia[d].alim,0);
+  const totEntMerc   = dias.reduce((s,d)=>s+entDia[d].merc,0);
+  const totEntDesc   = dias.reduce((s,d)=>s+entDia[d].desc,0);
+  const totEnt       = totEntAlim+totEntMerc-totEntDesc;
+  const totSaiGrp    = {};
+  grpOrdem.forEach(g=>{ totSaiGrp[g]=dias.reduce((s,d)=>s+(saiDia[d][g]||0),0); });
+  const totSai       = Object.values(totSaiGrp).reduce((s,v)=>s+v,0);
+  const saldoFinal   = saldoInicial+totEnt-totSai;
+
+  // KPIs
+  const kpiEl = document.getElementById('fcx-kpis');
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="kc" style="min-width:110px"><div class="kl">Saldo Inicial</div><div class="kv" style="color:var(--tx)">${R(saldoInicial)}</div></div>
+    <div class="kc" style="min-width:110px"><div class="kl">Entradas</div><div class="kv" style="color:#64B5F6">${R(totEnt)}</div></div>
+    <div class="kc" style="min-width:110px"><div class="kl">Saídas</div><div class="kv" style="color:#EF9A9A">${R(totSai)}</div></div>
+    <div class="kc" style="min-width:110px"><div class="kl">Saldo Final</div><div class="kv" style="color:${saldoFinal>=0?'#81C784':'#EF9A9A'}">${R(saldoFinal)}</div></div>`;
+
+  // ── Modo Semanal ──────────────────────────────────────────
+  const BG = 'var(--dk2)';
+  const totSalIni = contas.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  // trSec é definido por cada modo com seu próprio nCols
+  if(_fcxModo==='semanal'){
+    // Agrupa dias em semanas — semana começa no dia 1 e vai de 7 em 7
+    const semanas = [];
+    let d=1;
+    while(d<=diasMes){
+      const fim = Math.min(d+6, diasMes);
+      const diasSem = Array.from({length:fim-d+1},(_,i)=>d+i);
+      semanas.push({ label:`Semana ${semanas.length+1}`, dias:diasSem, de:d, ate:fim });
+      d=fim+1;
+    }
+    const nColsSem = semanas.length + 3; // desc + semanas + total + média
+
+    const thLS = (txt) => `<th style="padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--tx3);text-align:left;position:sticky;left:0;z-index:2;background:${BG};border-bottom:2px solid var(--or);min-width:240px">${txt}</th>`;
+    const thSem = (s) => `<th style="padding:6px 12px;font-size:11px;font-weight:600;text-align:center;border-bottom:2px solid var(--or);color:var(--tx);white-space:nowrap">
+      <div>${s.label}</div>
+      <div style="font-size:9px;color:var(--tx3);font-weight:400">Dias ${s.de}–${s.ate}</div>
+    </th>`;
+    const thTotS = (txt) => `<th style="padding:7px 10px;font-size:10px;text-align:right;border-bottom:2px solid var(--or);border-left:1px solid var(--bd);color:var(--tx3);white-space:nowrap">${txt}</th>`;
+
+    const sumSem = (fn) => semanas.map(s=>s.dias.reduce((t,d)=>t+fn(d),0));
+    const tdLS   = (txt,cor='var(--tx2)',bold=false,indent=0) =>
+      `<td style="padding:5px 10px 5px ${10+indent}px;font-size:${bold?'12':'11'}px;color:${cor};font-weight:${bold?'600':'400'};white-space:nowrap;position:sticky;left:0;z-index:1;background:${BG};border-bottom:1px solid rgba(255,255,255,0.03)">${txt}</td>`;
+    const tdVS   = (val,cor='var(--tx3)',bold=false) => {
+      const s=val===0?`<span style="color:rgba(255,255,255,0.15)">—</span>`:`<span style="color:${cor};font-weight:${bold?'600':'400'}">${R(val)}</span>`;
+      return `<td style="padding:5px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.03)">${s}</td>`;
+    };
+    const tdTotS = (val,cor,bold=true) => `<td style="padding:5px 10px;text-align:right;font-weight:${bold?'700':'400'};color:${cor};border-left:1px solid var(--bd);border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${R(val)}</td>`;
+    const tdMedS = (val,cor='var(--tx3)') => `<td style="padding:5px 10px;text-align:right;font-size:10px;color:${cor};border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${val>0?R(val):'—'}</td>`;
+    const trSecS = (txt,cor) => `<tr><td colspan="${nColsSem}" style="padding:7px 10px;font-size:11px;font-weight:700;color:${cor};background:transparent;position:sticky;left:0;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px">${txt}</td></tr>`;
+
+    let htmlS = `<table style="border-collapse:collapse;font-family:Outfit,sans-serif;width:100%"><thead><tr>
+      ${thLS('Descrição')}${semanas.map(thSem).join('')}${thTotS('Total')}${thTotS('Média/Sem')}
+    </tr></thead><tbody>`;
+
+    // Saldos iniciais
+    htmlS += trSecS('Saldos Iniciais','#90CAF9');
+    contas.forEach(c=>{
+      const sal=(saldos[ym]||{})[c.id]||0;
+      htmlS+=`<tr>${tdLS(c.nome,'var(--tx2)',false,12)}${semanas.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTotS(sal,'#90CAF9')}${tdMedS(0)}</tr>`;
+    });
+    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('TOTAL SALDOS INICIAIS','#90CAF9',true)}${semanas.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTotS(totSalIni,'#90CAF9')}${tdMedS(0)}</tr>`;
+
+    // Entradas por semana
+    const semAlim = sumSem(d=>entDia[d].alim);
+    const semMerc = sumSem(d=>entDia[d].merc);
+    const semDesc = sumSem(d=>entDia[d].desc);
+    const semEnt  = semanas.map((_,i)=>semAlim[i]+semMerc[i]-semDesc[i]);
+    const nSem    = semanas.length;
+
+    htmlS+=trSecS('(+) Receitas Operacionais','#64B5F6');
+    htmlS+=`<tr>${tdLS('Receita de Vendas — Alimentação / Rodízio','var(--tx2)',false,12)}${semAlim.map(v=>tdVS(v,'#64B5F6')).join('')}${tdTotS(totEntAlim,'#64B5F6')}${tdMedS(totEntAlim/nSem,'#64B5F6')}</tr>`;
+    htmlS+=`<tr>${tdLS('Receita de Vendas — Mercadoria / Bebidas','var(--tx2)',false,12)}${semMerc.map(v=>tdVS(v,'#64B5F6')).join('')}${tdTotS(totEntMerc,'#64B5F6')}${tdMedS(totEntMerc/nSem,'#64B5F6')}</tr>`;
+    if(totEntDesc>0) htmlS+=`<tr>${tdLS('(–) Descontos Concedidos','var(--tx2)',false,12)}${semDesc.map(v=>tdVS(v,'#F48FB1')).join('')}${tdTotS(totEntDesc,'#F48FB1',false)}${tdMedS(totEntDesc/nSem,'#F48FB1')}</tr>`;
+    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= TOTAL ENTRADAS','#64B5F6',true)}${semEnt.map(v=>tdVS(v,'#64B5F6',true)).join('')}${tdTotS(totEnt,'#64B5F6')}${tdMedS(totEnt/nSem,'#64B5F6')}</tr>`;
+
+    // Saídas por semana — grupos
+    htmlS+=trSecS('(–) Saídas','#EF9A9A');
+    const semSaiGrp = {};
+    grpOrdem.forEach(g=>{ semSaiGrp[g]=sumSem(d=>saiDia[d][g]||0); });
+    grpOrdem.forEach(g=>{
+      const tot=totSaiGrp[g]; if(!tot) return;
+      htmlS+=`<tr>${tdLS(grpNomes[g],'#EF9A9A',true)}${semSaiGrp[g].map(v=>tdVS(v,'#EF9A9A',true)).join('')}${tdTotS(tot,'#EF9A9A')}${tdMedS(tot/nSem,'#EF9A9A')}</tr>`;
+    });
+    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= TOTAL SAÍDAS','#EF9A9A',true)}${semanas.map((_,i)=>{ const v=grpOrdem.reduce((s,g)=>s+(semSaiGrp[g][i]||0),0); return tdVS(v,'#EF9A9A',true); }).join('')}${tdTotS(totSai,'#EF9A9A')}${tdMedS(totSai/nSem,'#EF9A9A')}</tr>`;
+
+    // Saldo semanal e acumulado
+    let acumSem = saldoInicial;
+    const sdSem = semanas.map((_,i)=>{ const s=semEnt[i]-grpOrdem.reduce((t,g)=>t+(semSaiGrp[g][i]||0),0); acumSem+=s; return {sd:s,acum:acumSem}; });
+    const totSD = totEnt-totSai;
+    htmlS+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdLS('= SALDO DA SEMANA',totSD>=0?'#81C784':'#EF9A9A',true)}${sdSem.map(d=>tdVS(d.sd,d.sd>=0?'#81C784':'#EF9A9A',true)).join('')}${tdTotS(totSD,totSD>=0?'#81C784':'#EF9A9A')}${tdMedS(totSD/nSem)}</tr>`;
+    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= SALDO ACUMULADO','#64B5F6',true)}${sdSem.map(d=>tdVS(d.acum,d.acum>=0?'#81C784':'#EF9A9A',true)).join('')}${tdTotS(saldoFinal,saldoFinal>=0?'#81C784':'#EF9A9A')}<td></td></tr>`;
+
+    htmlS+=`</tbody></table>`;
+    const blk=document.getElementById('fcx-blk');
+    if(blk) blk.innerHTML=htmlS;
+    return;
+  }
+
+  // ── Modos Diários (Consolidado / Analítico) ───────────────
+  const nCols  = diasMes + 3;
+  const thL    = (txt) => `<th style="padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--tx3);text-align:left;position:sticky;left:0;z-index:2;background:${BG};border-bottom:2px solid var(--or);min-width:240px">${txt}</th>`;
+  const thD    = (d) => { const dt=new Date(_fcxAno,_fcxMes-1,d); const fds=dt.getDay()===0||dt.getDay()===6; const dsem=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dt.getDay()]; return `<th style="padding:4px 8px;font-size:9px;text-align:center;border-bottom:2px solid var(--or);color:${fds?'var(--or)':'var(--tx3)'}"><div>${dsem}</div><div style="font-size:11px;font-weight:700;color:${fds?'var(--or)':'var(--tx)'}">${d}</div></th>`; };
+  const thTot  = (txt) => `<th style="padding:7px 8px;font-size:10px;text-align:right;border-bottom:2px solid var(--or);border-left:1px solid var(--bd);color:var(--tx3);white-space:nowrap">${txt}</th>`;
+  const tdL    = (txt,cor='var(--tx2)',negrito=false,indent=0) =>
+    `<td style="padding:5px 10px 5px ${10+indent}px;font-size:${negrito?'12':'11'}px;color:${cor};font-weight:${negrito?'600':'400'};white-space:nowrap;position:sticky;left:0;z-index:1;background:${BG};border-bottom:1px solid rgba(255,255,255,0.03)">${txt}</td>`;
+  const tdV    = (val,cor='var(--tx3)',bold=false) => {
+    const s = val===0?`<span style="color:rgba(255,255,255,0.15)">—</span>`:`<span style="color:${cor};font-weight:${bold?'600':'400'}">${R(val)}</span>`;
+    return `<td style="padding:5px 8px;text-align:right;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.03)">${s}</td>`;
+  };
+  const tdTot  = (val,cor='var(--tx)',bold=true) => `<td style="padding:5px 10px;text-align:right;font-size:11px;font-weight:${bold?'700':'400'};color:${cor};border-left:1px solid var(--bd);border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${R(val)}</td>`;
+  const tdMedia= (val,cor='var(--tx3)') => `<td style="padding:5px 10px;text-align:right;font-size:10px;color:${cor};border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${val>0?R(val):'—'}</td>`;
+  const trSec  = (txt,cor='#64B5F6') => `<tr><td colspan="${nCols}" style="padding:7px 10px;font-size:11px;font-weight:700;color:${cor};background:transparent;position:sticky;left:0;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px">${txt}</td></tr>`;
+
+  let html = `<table style="border-collapse:collapse;font-family:Outfit,sans-serif"><thead><tr>
+    ${thL('Descrição')}${dias.map(thD).join('')}${thTot('Total')}${thTot('Média')}
+  </tr></thead><tbody>`;
+
+  // SALDOS INICIAIS
+  html += trSec('Saldos Iniciais','#90CAF9');
+  contas.forEach(c=>{
+    const sal=(saldos[ym]||{})[c.id]||0;
+    html+=`<tr>${tdL(c.nome,'var(--tx2)',false,12)}${dias.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(sal,'#90CAF9')}${tdMedia(0)}</tr>`;
+  });
+  if(!contas.length) html+=`<tr>${tdL('Cadastre contas em Contas FCX','var(--tx3)')}<td colspan="${nCols-1}"></td></tr>`;
+  html+=`<tr>${tdL('TOTAL SALDOS INICIAIS','#90CAF9',true)}${dias.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(totSalIni,'#90CAF9')}${tdMedia(0)}</tr>`;
+
+  // ENTRADAS
+  html+=trSec('(+) Receitas Operacionais','#64B5F6');
+  html+=`<tr>${tdL('Receita de Vendas — Alimentação / Rodízio','var(--tx2)',false,12)}${dias.map(d=>tdV(entDia[d].alim,'#64B5F6')).join('')}${tdTot(totEntAlim,'#64B5F6')}${tdMedia(totEntAlim/diasMes,'#64B5F6')}</tr>`;
+  html+=`<tr>${tdL('Receita de Vendas — Mercadoria / Bebidas','var(--tx2)',false,12)}${dias.map(d=>tdV(entDia[d].merc,'#64B5F6')).join('')}${tdTot(totEntMerc,'#64B5F6')}${tdMedia(totEntMerc/diasMes,'#64B5F6')}</tr>`;
+  if(totEntDesc>0) html+=`<tr>${tdL('(–) Descontos Concedidos','var(--tx2)',false,12)}${dias.map(d=>tdV(entDia[d].desc,'#F48FB1')).join('')}${tdTot(totEntDesc,'#F48FB1',false)}${tdMedia(totEntDesc/diasMes,'#F48FB1')}</tr>`;
+  html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= TOTAL ENTRADAS','#64B5F6',true)}${dias.map(d=>{ const v=entDia[d].alim+entDia[d].merc-entDia[d].desc; return tdV(v,'#64B5F6','',true); }).join('')}${tdTot(totEnt,'#64B5F6')}${tdMedia(totEnt/diasMes,'#64B5F6')}</tr>`;
+
+  // SAÍDAS
+  html+=trSec('(–) Saídas','#EF9A9A');
+  if(_fcxModo==='consolidado'){
+    grpOrdem.forEach(g=>{
+      const tot=totSaiGrp[g]; if(!tot) return;
+      html+=`<tr>${tdL(grpNomes[g],'#EF9A9A',true)}${dias.map(d=>tdV(saiDia[d][g]||0,'#EF9A9A')).join('')}${tdTot(tot,'#EF9A9A')}${tdMedia(tot/diasMes,'#EF9A9A')}</tr>`;
+    });
+  } else {
+    grpOrdem.forEach(g=>{
+      const totGrp=totSaiGrp[g]; if(!totGrp) return;
+      html+=`<tr>${tdL(grpNomes[g],'#EF9A9A',true)}${dias.map(d=>tdV(saiDia[d][g]||0,'#EF9A9A','',true)).join('')}${tdTot(totGrp,'#EF9A9A')}${tdMedia(totGrp/diasMes,'#EF9A9A')}</tr>`;
+      const sgsGrp=pc.filter(x=>x.tipo==='subgrupo'&&x.grupo===g);
+      if(sgsGrp.length){
+        sgsGrp.forEach(sg=>{
+          const cSg=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod);
+          const totSg=dias.reduce((s,d)=>s+cSg.reduce((ss,c)=>ss+(saiDiaAnalitico[d][c.cod]||0),0),0);
+          if(!totSg) return;
+          html+=`<tr>${tdL('› '+sg.nome,'#EF9A9A',false,16)}${dias.map(d=>{ const v=cSg.reduce((s,c)=>s+(saiDiaAnalitico[d][c.cod]||0),0); return tdV(v,'#EF9A9A'); }).join('')}${tdTot(totSg,'#EF9A9A',false)}${tdMedia(totSg/diasMes,'#EF9A9A')}</tr>`;
+          cSg.forEach(c=>{ const totC=dias.reduce((s,d)=>s+(saiDiaAnalitico[d][c.cod]||0),0); if(!totC) return;
+            html+=`<tr>${tdL(c.nome,'var(--tx2)',false,28)}${dias.map(d=>tdV(saiDiaAnalitico[d][c.cod]||0,'var(--tx2)')).join('')}${tdTot(totC,'var(--tx2)',false)}${tdMedia(totC/diasMes)}</tr>`;
+          });
+        });
+      } else {
+        pc.filter(x=>x.tipo==='conta'&&x.grupo===g).forEach(c=>{ const totC=dias.reduce((s,d)=>s+(saiDiaAnalitico[d][c.cod]||0),0); if(!totC) return;
+          html+=`<tr>${tdL(c.nome,'var(--tx2)',false,16)}${dias.map(d=>tdV(saiDiaAnalitico[d][c.cod]||0,'var(--tx2)')).join('')}${tdTot(totC,'var(--tx2)',false)}${tdMedia(totC/diasMes)}</tr>`;
+        });
+      }
+    });
+  }
+  html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= TOTAL SAÍDAS','#EF9A9A',true)}${dias.map(d=>{ const v=grpOrdem.reduce((s,g)=>s+(saiDia[d][g]||0),0); return tdV(v,'#EF9A9A','',true); }).join('')}${tdTot(totSai,'#EF9A9A')}${tdMedia(totSai/diasMes,'#EF9A9A')}</tr>`;
+
+  // SALDO DO DIA E ACUMULADO
+  let acum=saldoInicial;
+  const sdArr=dias.map(d=>{
+    const ent=entDia[d].alim+entDia[d].merc-entDia[d].desc;
+    const sai=grpOrdem.reduce((s,g)=>s+(saiDia[d][g]||0),0);
+    const sd=ent-sai; acum+=sd;
+    return {ent,sai,sd,acum};
+  });
+
+  html+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdL('= SALDO DO DIA',(totEnt-totSai)>=0?'#81C784':'#EF9A9A',true)}${sdArr.map(d=>tdV(d.sd,d.sd>=0?'#81C784':'#EF9A9A','',true)).join('')}${tdTot(totEnt-totSai,(totEnt-totSai)>=0?'#81C784':'#EF9A9A')}${tdMedia((totEnt-totSai)/diasMes)}</tr>`;
+  html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= SALDO ACUMULADO','#64B5F6',true)}${sdArr.map(d=>tdV(d.acum,d.acum>=0?'#81C784':'#EF9A9A','',true)).join('')}${tdTot(saldoFinal,saldoFinal>=0?'#81C784':'#EF9A9A')}<td></td></tr>`;
+
+  html+=`</tbody></table>`;
+  const blk=document.getElementById('fcx-blk');
+  if(blk) blk.innerHTML=html;
+  } catch(e){
+    const blk=document.getElementById('fcx-blk');
+    if(blk) blk.innerHTML=`<div style="padding:24px;color:#EF9A9A;font-size:12px;font-family:monospace">
+      <strong>Erro ao renderizar FCX:</strong><br>${e.message}<br><br>
+      <small style="color:var(--tx3)">${e.stack||''}</small>
+    </div>`;
+    console.error('renderFluxo erro:', e);
+  }
 }
 
 function exportarBackup(){
