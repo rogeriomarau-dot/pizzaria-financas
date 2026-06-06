@@ -181,12 +181,15 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--tx);}
 .dr.dsg{padding:6px 10px 6px 28px;color:var(--tx2);font-size:12px;}
 .dr.dsg:hover{background:rgba(255,255,255,0.025);}
 .dr.dt{border-top:1px solid var(--bd);font-weight:500;padding-top:10px;margin-top:4px;}
-.dr.dlp{background:var(--gr-p);border:1px solid rgba(76,175,80,0.2);border-radius:6px;font-weight:500;margin-top:6px;}
+.dr.dlp{border-top:1px solid rgba(255,255,255,0.06);font-weight:500;margin-top:6px;}
 .dr.dlp .dv{color:var(--gr);}
-.dr.dlr{background:var(--rd-p);border:1px solid rgba(229,57,53,0.2);border-radius:6px;font-weight:500;margin-top:6px;}
+.dr.dlp td{color:#81C784!important;}
+.dr.dlr{border-top:1px solid rgba(255,255,255,0.06);font-weight:500;margin-top:6px;}
 .dr.dlr .dv{color:var(--rd);}
-.dr.deb{background:rgba(242,100,25,0.12);border:1px solid rgba(242,100,25,0.25);border-radius:6px;font-weight:600;margin-top:6px;}
-.dr.deb .dv{color:var(--or);}
+.dr.dlr td{color:#EF9A9A!important;}
+.dr.deb{border-top:1px solid rgba(255,255,255,0.06);font-weight:600;margin-top:6px;}
+.dr.deb .dv{color:var(--gr);}
+.dr.deb td{color:#A5D6A7!important;}
 .dv{font-variant-numeric:tabular-nums;}
 
 /* SEMÁFORO */
@@ -346,7 +349,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-fornecedores',this)"><i class="fa-solid fa-truck"></i>Cadastro de Fornecedores</button>
     <button class="ni" onclick="go('cad-produtos',this)"><i class="fa-solid fa-boxes-stacked"></i>Cadastro de Produtos (Compras)</button>
     <button class="ni" onclick="go('cad-produtos-venda',this)"><i class="fa-solid fa-tag"></i>Cadastro de Produtos (Vendas)</button>
-    <button class="ni" onclick="go('cad-catprod',this)"><i class="fa-solid fa-layer-group"></i>Cadastro de Categoria de Produtos</button>
+    <button class="ni" onclick="go('cad-catprod',this)"><i class="fa-solid fa-layer-group"></i>Categoria de Produtos (Compras)</button>
+    <button class="ni" onclick="go('cad-catprod-venda',this)"><i class="fa-solid fa-tags"></i>Categoria de Produtos (Revenda)</button>
     <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Cobrança</button>
     <button class="ni" onclick="go('cad-recebimentos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Cadastro de Formas de Recebimento</button>
     <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Cadastro de Conta Corrente / Banco</button>
@@ -360,6 +364,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn-out" style="flex:1;font-size:10px;padding:6px 4px" onclick="exportarBackup()" title="Exportar todos os dados"><i class="fa-solid fa-download"></i> Backup</button>
         <label class="btn-out" style="flex:1;font-size:10px;padding:6px 4px;text-align:center;cursor:pointer;margin:0" title="Restaurar dados de backup"><i class="fa-solid fa-upload"></i> Restaurar<input type="file" accept=".json" style="display:none" onchange="importarBackup(this)"></label>
       </div>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(229,57,53,0.3);color:var(--rd)" onclick="limparLancamentosDemo()" title="Remove lançamentos de demonstração do Contas a Receber">
+        <i class="fa-solid fa-broom"></i> Limpar demos do CAR
+      </button>
       <div id="sb-backup-info" style="font-size:10px;color:var(--tx3);text-align:center;margin-top:4px"><i class="fa-solid fa-database" style="color:var(--or)"></i> Firebase conectado</div>
       <button class="btn-out" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
     </div>
@@ -413,20 +420,20 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:6px">
           <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">De</label>
-          <input type="month" id="dre-de" onchange="renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+          <input type="month" id="dre-de" onchange="S.s('_dreDe',this.value);renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Até</label>
-          <input type="month" id="dre-ate" onchange="renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+          <input type="month" id="dre-ate" onchange="S.s('_dreAte',this.value);renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
         </div>
         <!-- Toggle: consolidado vs mensal -->
         <div style="display:flex;align-items:center;gap:0;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
           <button id="dre-modo-consol" onclick="dreSetModo('consolidado')"
-            style="padding:6px 14px;background:var(--or);border:none;color:#fff;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
+            style="padding:6px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer;white-space:nowrap;background:var(--or);color:#fff;font-weight:600;">
             <i class="fa-solid fa-layer-group" style="margin-right:4px"></i>Consolidado
           </button>
           <button id="dre-modo-mensal" onclick="dreSetModo('mensal')"
-            style="padding:6px 14px;background:transparent;border:none;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">
+            style="padding:6px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer;white-space:nowrap;background:transparent;color:var(--tx2);font-weight:500;">
             <i class="fa-solid fa-table-columns" style="margin-right:4px"></i>Mensal (lado a lado)
           </button>
         </div>
@@ -629,6 +636,18 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <!-- input hidden para compatibilidade com renderReceber -->
         <select id="rc-filtro-mes" style="display:none"></select>
 
+        <!-- Toggle regime -->
+        <div style="display:flex;align-items:center;gap:0;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+          <button id="rc-regime-caixa" onclick="rcSetRegime('caixa')"
+            style="padding:5px 12px;border:none;background:var(--or);color:#fff;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">
+            <i class="fa-solid fa-money-bill-wave" style="margin-right:4px"></i>Caixa
+          </button>
+          <button id="rc-regime-comp" onclick="rcSetRegime('comp')"
+            style="padding:5px 12px;border:none;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap">
+            <i class="fa-solid fa-calendar-check" style="margin-right:4px"></i>Competência
+          </button>
+        </div>
+
         <button class="btn btn-p btn-sm" onclick="delete document._mrEditId; _mrItens=[]; openMod('mod-receber');resetModalReceber()">
           <i class="fa-solid fa-plus"></i> Nova Venda
         </button>
@@ -828,7 +847,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 <div class="page" id="page-cad-catprod">
   <div class="cd">
-    <div class="ct">Categorias de Produtos
+    <div class="ct">Categorias de Produtos (Compras)
       <button class="btn btn-p btn-sm" onclick="openMod('mod-catprod')"><i class="fa-solid fa-plus"></i> Nova Categoria</button>
     </div>
     <div class="tw"><table>
@@ -840,6 +859,25 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <th></th>
       </tr></thead>
       <tbody id="tb-catprod"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- CATEGORIAS DE PRODUTOS (REVENDA) -->
+<div class="page" id="page-cad-catprod-venda">
+  <div class="cd">
+    <div class="ct">Categorias de Produtos (Revenda)
+      <button class="btn btn-p btn-sm" onclick="openMod('mod-catprod-venda')"><i class="fa-solid fa-plus"></i> Nova Categoria</button>
+    </div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th class="sortable" onclick="sortCad('catprodvenda','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortCad('catprodvenda','nome',this)">Nome da Categoria <i class="fa-solid sort-icon"></i></th>
+        <th>Cor / Ícone</th>
+        <th class="sortable" onclick="sortCad('catprodvenda','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tb-catprod-venda"></tbody>
     </table></div>
   </div>
 </div>
@@ -1355,13 +1393,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <label>Categoria</label>
         <select id="rv-cat" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
           <option value="">Todas as categorias</option>
-          <option value="Rodízio">🍕 Rodízio</option>
-          <option value="Bebidas">🥤 Bebidas</option>
-          <option value="Cervejas">🍺 Cervejas</option>
-          <option value="Drinks">🍹 Drinks / Coquetéis</option>
-          <option value="Combos">🎁 Combos / Promoções</option>
-          <option value="Sobremesas">🍮 Sobremesas</option>
-          <option value="Outros">📦 Outros</option>
         </select>
       </div>
       <div class="fg">
@@ -1405,13 +1436,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <label>Categoria</label>
           <select id="rv-cat-comp" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
             <option value="">Todas as categorias</option>
-            <option value="Rodízio">🍕 Rodízio</option>
-            <option value="Bebidas">🥤 Bebidas</option>
-            <option value="Cervejas">🍺 Cervejas</option>
-            <option value="Drinks">🍹 Drinks / Coquetéis</option>
-            <option value="Combos">🎁 Combos / Promoções</option>
-            <option value="Sobremesas">🍮 Sobremesas</option>
-            <option value="Outros">📦 Outros</option>
           </select>
         </div>
         <div class="fg">
@@ -1553,10 +1577,38 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 </div>
 
-<!-- CATEGORIA DE PRODUTO -->
+<!-- DRILL-DOWN DRE -->
+<div class="mo" id="mod-dre-drill">
+  <div class="mb wide" style="width:820px;max-height:88vh">
+    <div class="mt">
+      <span id="dre-drill-titulo"><i class="fa-solid fa-list-ul" style="color:var(--or);margin-right:8px"></i>Lançamentos</span>
+      <span class="mc" onclick="closeMod('mod-dre-drill')">✕</span>
+    </div>
+    <div id="dre-drill-resumo" style="margin-bottom:12px"></div>
+    <div style="overflow-x:auto;max-height:calc(88vh - 160px);overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:2px solid var(--or)">
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Código</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Descrição</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Fornecedor / Cliente</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Competência</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Vencimento</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Forma</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:left">Status</th>
+            <th style="padding:7px 8px;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.5px;text-align:right">Valor</th>
+          </tr>
+        </thead>
+        <tbody id="dre-drill-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DRILL-DOWN DRE -->
 <div class="mo" id="mod-catprod">
   <div class="mb">
-    <div class="mt"><span><i class="fa-solid fa-layer-group" style="color:var(--or);margin-right:8px"></i>Categoria de Produto</span><span class="mc" onclick="closeMod('mod-catprod')">✕</span></div>
+    <div class="mt"><span><i class="fa-solid fa-layer-group" style="color:var(--or);margin-right:8px"></i>Categoria de Produto (Compras)</span><span class="mc" onclick="closeMod('mod-catprod')">✕</span></div>
     <input type="hidden" id="mcp-id">
     <div class="fr">
       <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcp-cod" placeholder="Ex: CAT-01" readonly style="background:var(--dk4);cursor:default"></div>
@@ -1578,6 +1630,34 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="fg"><label>Descrição / Observação</label><input type="text" id="mcp-obs" placeholder="Descrição opcional da categoria…"></div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-catprod')">Cancelar</button><button class="bs" onclick="saveCategoriaProd()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button></div>
+  </div>
+</div>
+
+<!-- CATEGORIA DE PRODUTO (REVENDA) -->
+<div class="mo" id="mod-catprod-venda">
+  <div class="mb">
+    <div class="mt"><span><i class="fa-solid fa-tags" style="color:var(--or);margin-right:8px"></i>Categoria de Produto (Revenda)</span><span class="mc" onclick="closeMod('mod-catprod-venda')">✕</span></div>
+    <input type="hidden" id="mcpv-id">
+    <div class="fr">
+      <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcpv-cod" placeholder="Ex: RV-01" readonly style="background:var(--dk4);cursor:default"></div>
+      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcpv-nome" placeholder="Ex: Rodízio, Pizzas, Bebidas, Sobremesas…"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Cor de Identificação</label>
+        <select id="mcpv-cor">
+          <option value="tg-or">🟠 Laranja</option>
+          <option value="tg-bl">🔵 Azul</option>
+          <option value="tg-gr">🟢 Verde</option>
+          <option value="tg-rd">🔴 Vermelho</option>
+          <option value="tg-am">🟡 Amarelo</option>
+          <option value="tg-pu">🟣 Roxo</option>
+          <option value="tg-gy">⚪ Cinza</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label><select id="mcpv-st"><option>Ativo</option><option>Inativo</option></select></div>
+    </div>
+    <div class="fg"><label>Descrição / Observação</label><input type="text" id="mcpv-obs" placeholder="Descrição opcional da categoria…"></div>
+    <div class="mf"><button class="bc" onclick="closeMod('mod-catprod-venda')">Cancelar</button><button class="bs" onclick="saveCatProdVenda()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button></div>
   </div>
 </div>
 
@@ -1666,13 +1746,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <div class="fg">
           <label>Categoria *</label>
           <select id="mpv-cat" onchange="mpvSugerirConta()">
-            <option value="Rodízio">🍕 Rodízio</option>
-            <option value="Bebidas">🥤 Bebidas</option>
-            <option value="Drinks">🍹 Drinks / Coquetéis</option>
-            <option value="Cervejas">🍺 Cervejas</option>
-            <option value="Combos">🎁 Combos / Promoções</option>
-            <option value="Sobremesas">🍮 Sobremesas</option>
-            <option value="Outros">📦 Outros</option>
+            <option value="">— Selecione a Categoria —</option>
           </select>
         </div>
         <div class="fg">
@@ -2461,6 +2535,39 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 </div>
 <div class="mo" id="mod-editreceber">
+
+<!-- DIAGNÓSTICO DE CONSISTÊNCIA DRE × RECEBER -->
+<div class="mo" id="mod-diag-consistencia">
+  <div class="mb wide" style="width:860px;max-height:88vh">
+    <div class="mt">
+      <span><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--or);margin-right:8px"></i>Diagnóstico de Consistência — DRE × Contas a Receber</span>
+      <span class="mc" onclick="closeMod('mod-diag-consistencia')">✕</span>
+    </div>
+
+    <!-- Filtros -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;background:var(--dk3);padding:12px 14px;border-radius:8px;border:1px solid var(--bd)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Mês</label>
+        <input type="month" id="diag-mes" style="background:var(--dk4);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Regime DRE</label>
+        <select id="diag-regime" style="background:var(--dk4);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+          <option value="caixa">Caixa (vencimento)</option>
+          <option value="comp">Competência</option>
+        </select>
+      </div>
+      <button onclick="rodarDiagConsistencia()" style="background:var(--or);border:none;color:#fff;border-radius:6px;padding:7px 18px;font-family:Outfit,sans-serif;font-size:12px;font-weight:500;cursor:pointer">
+        <i class="fa-solid fa-magnifying-glass" style="margin-right:6px"></i>Analisar
+      </button>
+    </div>
+
+    <!-- Resultado -->
+    <div id="diag-resultado" style="font-size:12px;color:var(--tx2);text-align:center;padding:24px">
+      Selecione o mês e clique em Analisar.
+    </div>
+  </div>
+</div>
   <div class="mb">
     <div class="mt"><span><i class="fa-solid fa-pen-to-square" style="color:var(--bl);margin-right:8px"></i>Editar Conta a Receber</span><span class="mc" onclick="closeMod('mod-editreceber')">✕</span></div>
     <input type="hidden" id="mer-id">
@@ -2722,7 +2829,9 @@ function _saveToCloud(){
   clearTimeout(_saveTimeout);
   _saveTimeout = setTimeout(async ()=>{
     try {
-      await _db.collection('usuarios').doc(_USER_ID).set({..._cache});
+      // Remove undefined antes de salvar
+      const dados = JSON.parse(JSON.stringify({..._cache}, (k,v)=>v===undefined?null:v));
+      await _db.collection('usuarios').doc(_USER_ID).set(dados);
     } catch(e){ console.warn('Erro ao salvar Firebase:', e); }
   }, 800);
 }
@@ -2833,45 +2942,7 @@ function initData(){
       {id:8,cod:'PAG-00008',venc:'2026-06-20',comp:'2026-06-01',forn:'Limpeza Total',desc:'Material de Limpeza Junho',conta:'5.3.07',forma:'PIX',val:380,status:'Pendente',reg:'competencia',obs:''},
       {id:9,cod:'PAG-00009',venc:'2026-06-20',comp:'2026-06-01',forn:'Embalagens Express',desc:'Caixas Pizza e Descartáveis',conta:'5.3.08',forma:'Boleto',val:620,status:'Pendente',reg:'competencia',obs:''},
     ]);
-    S.s('receber',[
-      {id:1,comp:'2026-06-01',venc:'2026-06-26',desc:'iFood — repasse semanal',conta:'1.1',forma:'iFood / App',val:4200,status:'Pendente',
-        comanda:'IFOOD-001',cliente:'iFood',
-        itens:[
-          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:28,preco:59.90,desc:0,total:1677.20},
-          {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:8,preco:34.90,desc:0,total:279.20},
-          {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:22,preco:8.00,desc:0,total:176.00},
-          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:18,preco:18.00,desc:0,total:324.00},
-          {prodId:110,nome:'SUCO NATURAL 300ML',cat:'Bebidas',un:'un',qtd:14,preco:10.00,desc:0,total:140.00},
-          {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:12,preco:22.00,desc:0,total:264.00},
-          {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:30,preco:5.00,desc:0,total:150.00},
-          {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:10,preco:19.00,desc:0,total:190.00},
-        ]
-      },
-      {id:2,comp:'2026-06-03',venc:'2026-06-28',desc:'Evento Aniversário — Cliente João',conta:'1.1',forma:'PIX',val:2400,status:'Pendente',
-        comanda:'MESA-12',cliente:'João Silva',
-        itens:[
-          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:15,preco:59.90,desc:0,total:898.50},
-          {prodId:103,nome:'RODÍZIO ADULTO + BEBIDA',cat:'Combos',un:'combo',qtd:8,preco:74.90,desc:0,total:599.20},
-          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:20,preco:18.00,desc:0,total:360.00},
-          {prodId:113,nome:'CAIPIROSKA MORANGO',cat:'Drinks',un:'dose',qtd:10,preco:24.00,desc:0,total:240.00},
-          {prodId:114,nome:'SOBREMESA TIRAMISU',cat:'Sobremesas',un:'un',qtd:8,preco:16.00,desc:0,total:128.00},
-        ]
-      },
-      {id:3,comp:'2026-06-05',venc:'2026-06-30',desc:'Sábado — Salão Lotado',conta:'1.1',forma:'Cartão Crédito',val:6400,status:'Pendente',
-        comanda:'CAIXA-SAB',cliente:'',
-        itens:[
-          {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:52,preco:59.90,desc:0,total:3114.80},
-          {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:12,preco:34.90,desc:0,total:418.80},
-          {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:35,preco:18.00,desc:0,total:630.00},
-          {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:18,preco:19.00,desc:0,total:342.00},
-          {prodId:109,nome:'COCA-COLA ZERO LATA 350ML',cat:'Bebidas',un:'un',qtd:20,preco:8.00,desc:0,total:160.00},
-          {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:25,preco:8.00,desc:0,total:200.00},
-          {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:40,preco:5.00,desc:0,total:200.00},
-          {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:15,preco:22.00,desc:0,total:330.00},
-          {prodId:115,nome:'SOBREMESA PETIT GATEAU',cat:'Sobremesas',un:'un',qtd:10,preco:18.00,desc:0,total:180.00},
-        ]
-      },
-    ]);
+    S.s('receber',[]);
     S.s('estoque',[
       {id:1,n:'Mussarela',c:'Laticínios',q:8,m:15,u:'kg'},
       {id:2,n:'Farinha de Trigo',c:'Farináceos',q:22,m:20,u:'kg'},
@@ -3090,7 +3161,8 @@ const titles={
   'cad-produtos':['Produtos','Cadastro de produtos e insumos'],
   'cad-insumos':['Cadastro de Insumos','CMV Insumos · CMV Bebidas · CMV Serviços'],
   'cad-servicos':['Cadastro de Serviços e Impostos','Serviços · Impostos · Aluguel · Utilidades'],
-  'cad-catprod':['Categorias de Produtos','Classificação de produtos por categoria'],
+  'cad-catprod':['Categorias de Produtos (Compras)','Classificação de produtos por categoria'],
+  'cad-catprod-venda':['Categorias de Produtos (Revenda)','Classificação de produtos vendidos ao cliente'],
   'cad-pagamentos':['Formas de Cobrança','Cadastro de formas de cobrança'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
   'cad-produtos-venda':['Cadastro de Produtos (Vendas)','Tabela de preços e produtos vendidos no salão'],
@@ -3111,16 +3183,26 @@ function go(pg,btn){
   document.getElementById('pgt').textContent=t[0];
   document.getElementById('pgs').textContent=t[1];
   // Altera label do botão principal conforme a página
-  const pgsCadastro=['plano','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-insumos','cad-servicos','cad-catprod','cad-pagamentos','cad-recebimentos','cad-bancos'];
+  const pgsCadastro=['plano','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-insumos','cad-servicos','cad-catprod','cad-catprod-venda','cad-pagamentos','cad-recebimentos','cad-bancos'];
   const btnTxt=document.getElementById('btn-novo-txt');
   if(pg==='plano'){btnTxt.textContent='Novo Cadastro';}
   else if(pgsCadastro.includes(pg)){btnTxt.textContent='Novo Cadastro';}
   else{btnTxt.textContent='Novo Lançamento';}
   // Oculta botão Novo Lançamento no relatório
   const btnNovo = document.getElementById('btn-novo');
-  if(btnNovo) btnNovo.style.display = (pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' || pg === 'dre' || pg === 'dashboard') ? 'none' : '';
+  if(btnNovo) btnNovo.style.display = (
+    pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' ||
+    pg === 'dre' || pg === 'dashboard' ||
+    pg === 'cad-catprod' || pg === 'cad-catprod-venda' ||
+    pg === 'plano' ||
+    pg === 'cad-fornecedores' || pg === 'cad-produtos' || pg === 'cad-produtos-venda' ||
+    pg === 'cad-insumos' || pg === 'cad-servicos' ||
+    pg === 'cad-pagamentos' || pg === 'cad-recebimentos' || pg === 'cad-bancos' ||
+    pg === 'cmv' || pg === 'metas' || pg === 'estoque' ||
+    pg === 'pagar' || pg === 'receber'
+  ) ? 'none' : '';
   // Inicializa relatórios ao navegar
-  if(pg==='dre')         { dreMesAtual(); dreSetRegime(_dreRegime); }
+  if(pg==='dre')         { dreRestaurarEstado(); }
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
   if(pg==='rel-vendas')  initRelVendas();
@@ -3163,6 +3245,7 @@ function novoLancamento(){
     'cad-insumos': 'mod-insumo',
     'cad-servicos': 'mod-servico',
     'cad-catprod': 'mod-catprod',
+    'cad-catprod-venda': 'mod-catprod-venda',
     'cad-pagamentos': 'mod-forma-pag',
     'cad-recebimentos': 'mod-forma-rec',
     'cad-produtos-venda': 'mod-pvenda',
@@ -5208,10 +5291,83 @@ function renderPizzas(){
 let _dreRegime = 'comp';
 let _dreModo   = 'consolidado';
 
+function dreRestaurarEstado(){
+  const modo   = S.g('_dreModo')   || 'consolidado';
+  const regime = S.g('_dreRegime') || 'comp';
+  const ymAtual = new Date().toISOString().slice(0,7);
+  const anoAtual = new Date().getFullYear();
+  // Se não há período salvo, usa mês atual para consolidado e ano atual para mensal
+  const dePadrao  = modo==='mensal' ? anoAtual+'-01' : ymAtual;
+  const atePadrao = modo==='mensal' ? anoAtual+'-12' : ymAtual;
+  const de  = S.g('_dreDe')  || dePadrao;
+  const ate = S.g('_dreAte') || atePadrao;
+
+  // Seta variáveis globais
+  _dreModo   = modo;
+  _dreRegime = regime;
+
+  // Seta atributo DOM
+  const blk = document.getElementById('dre-blk');
+  if(blk) blk.setAttribute('data-modo', modo);
+
+  // Seta inputs
+  const elDe  = document.getElementById('dre-de');
+  const elAte = document.getElementById('dre-ate');
+  if(elDe)  elDe.value  = de;
+  if(elAte) elAte.value = ate;
+
+  // Botões modo
+  const bC = document.getElementById('dre-modo-consol');
+  const bM = document.getElementById('dre-modo-mensal');
+  if(bC && bM){
+    bC.style.background = modo==='consolidado' ? 'var(--or)' : 'transparent';
+    bC.style.color      = modo==='consolidado' ? '#fff'      : 'var(--tx2)';
+    bC.style.fontWeight = modo==='consolidado' ? '600'       : '500';
+    bM.style.background = modo==='mensal'      ? 'var(--or)' : 'transparent';
+    bM.style.color      = modo==='mensal'      ? '#fff'      : 'var(--tx2)';
+    bM.style.fontWeight = modo==='mensal'      ? '600'       : '500';
+  }
+
+  // Botões regime
+  const tC = document.getElementById('dre-tab-comp');
+  const tX = document.getElementById('dre-tab-caixa');
+  if(tC && tX){
+    [tC,tX].forEach(t=>{ t.style.color='var(--tx2)'; t.style.borderBottom='2px solid transparent'; t.style.background='transparent'; t.style.fontWeight='500'; });
+    const at = regime==='comp' ? tC : tX;
+    at.style.color='var(--or)'; at.style.borderBottom='2px solid var(--or)'; at.style.background='rgba(242,100,25,0.15)'; at.style.fontWeight='600';
+  }
+
+  // Renderiza diretamente com os valores já setados
+  const pagar   = S.g('pagar')   || [];
+  const receber = S.g('receber') || [];
+  const pc      = getPC();
+  const labelRegime = regime==='comp' ? 'Competência' : 'Caixa';
+
+  const elLbl = document.getElementById('dre-regime-label');
+  const elBdg = document.getElementById('dre-regime-badge');
+  if(elLbl) elLbl.textContent = labelRegime;
+  if(elBdg) elBdg.textContent = regime==='comp'
+    ? 'Lançamentos pelo mês em que a despesa ocorreu (independente do pagamento)'
+    : 'Lançamentos pelo mês em que o pagamento foi/será efetuado (vencimento)';
+
+  const perTxt = de===ate ? fmtMes(de) : fmtMes(de)+' a '+fmtMes(ate);
+  const elPer = document.getElementById('dre-per');
+  const elIndPer = document.getElementById('dre-ind-per');
+  if(elPer) elPer.textContent = perTxt;
+  if(elIndPer) elIndPer.textContent = perTxt;
+
+  if(modo === 'mensal'){
+    renderDRE_Mensal(pagar, receber, pc, regime, de, ate);
+  } else {
+    renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime);
+  }
+}
+
 const AV = (v, base) => base > 0 ? P(v / base * 100) : '—';
 
 function dreSetRegime(r){
   _dreRegime = r;
+  S.s('_dreRegime', r);
   const tC = document.getElementById('dre-tab-comp');
   const tX = document.getElementById('dre-tab-caixa');
   if(tC && tX){
@@ -5224,6 +5380,10 @@ function dreSetRegime(r){
 
 function dreSetModo(m){
   _dreModo = m;
+  S.s('_dreModo', m);
+  // Salva em atributo do DOM como fonte de verdade adicional
+  const blk = document.getElementById('dre-blk');
+  if(blk) blk.setAttribute('data-modo', m);
   const bC = document.getElementById('dre-modo-consol');
   const bM = document.getElementById('dre-modo-mensal');
   if(bC && bM){
@@ -5242,12 +5402,14 @@ function dreMesAtual(){
   const ym = new Date().toISOString().slice(0,7);
   document.getElementById('dre-de').value  = ym;
   document.getElementById('dre-ate').value = ym;
+  S.s('_dreDe', ym); S.s('_dreAte', ym);
   renderDRE();
 }
 function dreAnoAtual(){
   const y = new Date().getFullYear();
   document.getElementById('dre-de').value  = y+'-01';
   document.getElementById('dre-ate').value = y+'-12';
+  S.s('_dreDe', y+'-01'); S.s('_dreAte', y+'-12');
   renderDRE();
 }
 
@@ -5474,22 +5636,59 @@ function dreFiltrar(pagar, regime, de, ate){
   });
 }
 
-function dreCalc(totConta, totReceita, pc){
+// Categorias consideradas como "Rodízio / Alimentação" — tudo que não for bebida vai aqui
+function dreClassificarItem(cat){
+  const catNorm = (cat||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(['bebidas','cervejas','drinks','drinks / coqueteis','coqueteis'].some(k=>catNorm.includes(k)))
+    return 'mercadoria';
+  return 'alimentacao'; // Rodízio, Pizzas, Combos, Sobremesas, Outros → alimentação
+}
+
+// Calcula totR direto do CR, separando por categoria dos itens
+// Usa SEMPRE lanc.val como valor base (fonte de verdade do lançamento)
+// Os itens servem apenas para calcular a proporção alimentação × mercadoria
+function dreAcumularReceitas(filtR){
+  let totAlim = 0, totMerc = 0, totDesc = 0;
+  filtR.forEach(lanc=>{
+    const val = lanc.val || 0;
+    if(!val) return;
+    totDesc += lanc.desconto || 0;
+    if(lanc.itens && lanc.itens.length){
+      const sumAlim = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='alimentacao').reduce((s,i)=>s+(i.total||0),0);
+      const sumMerc = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='mercadoria').reduce((s,i)=>s+(i.total||0),0);
+      const sumTot  = sumAlim + sumMerc;
+      if(sumTot > 0){
+        totAlim += val * (sumAlim / sumTot);
+        totMerc += val * (sumMerc / sumTot);
+      } else {
+        totAlim += val;
+      }
+    } else {
+      if((lanc.conta||'')==='1.2') totMerc += val;
+      else                          totAlim += val;
+    }
+  });
+  return { totAlim, totMerc, totDesc, totRec: totAlim + totMerc };
+}
+
+function dreCalc(totConta, receitasObj, pc){
   const sg  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totConta[c.cod]||0),0);
   const ssg = (sub) => pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sub).reduce((s,c)=>s+(totConta[c.cod]||0),0);
-  const sr  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totReceita[c.cod]||0),0);
-  const totRec    = sr('1');
-  const totImp    = sg('2');
-  const totFin    = sg('3');
-  const totCMV    = sg('4');
-  const totOp     = sg('5');
-  const totNaoOp  = sg('9');
-  const recLiq    = totRec - totImp;
-  const lucroBruto= recLiq - totCMV;
-  const ebitda    = lucroBruto - totFin - totOp;
-  const lucroLiq  = ebitda - totNaoOp;
+  const totRec     = receitasObj.totRec;
+  const totAlim    = receitasObj.totAlim;
+  const totMerc    = receitasObj.totMerc;
+  const totDesc    = receitasObj.totDesc || 0;
+  const totImp     = sg('2');
+  const totFin     = sg('3');
+  const totCMV     = sg('4');
+  const totOp      = sg('5');
+  const totNaoOp   = sg('9');
+  const recLiq     = totRec - totDesc - totImp;
+  const lucroBruto = recLiq - totCMV;
+  const ebitda     = lucroBruto - totFin - totOp;
+  const lucroLiq   = ebitda - totNaoOp;
   const sgs5 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').map(s=>({...s, total: ssg(s.cod)}));
-  return { totRec, totImp, totFin, totCMV, totOp, totNaoOp, recLiq, lucroBruto, ebitda, lucroLiq, sgs5 };
+  return { totRec, totAlim, totMerc, totDesc, totImp, totFin, totCMV, totOp, totNaoOp, recLiq, lucroBruto, ebitda, lucroLiq, sgs5 };
 }
 
 function fmtMes(ym){
@@ -5502,7 +5701,10 @@ function renderDRE(){
   const de  = document.getElementById('dre-de')?.value  || '';
   const ate = document.getElementById('dre-ate')?.value || '';
   const regime = _dreRegime;
-  const modo   = _dreModo;
+  // Usa atributo do DOM como confirmação do modo
+  const blk = document.getElementById('dre-blk');
+  const modoDOM = blk ? blk.getAttribute('data-modo') : null;
+  const modo = modoDOM || _dreModo;
   const labelRegime = regime==='comp' ? 'Competência' : 'Caixa';
   const badgeInfo   = regime==='comp'
     ? 'Lançamentos pelo mês em que a despesa ocorreu (independente do pagamento)'
@@ -5530,44 +5732,54 @@ function renderDRE(){
 // ── DRE CONSOLIDADO ──
 function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime){
   const filtP = dreFiltrar(pagar, regime, de, ate);
-  const filtR = (de||ate) ? receber.filter(x=>{
-    const ym = (regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7);
-    return (!de||ym>=de)&&(!ate||ym<=ate);
-  }) : receber;
+  const filtR = receber.filter(x=>{
+    const dataRef = (regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7);
+    if(de  && dataRef < de) return false;
+    if(ate && dataRef > ate) return false;
+    return true;
+  });
   const totC  = dreAcumular(filtP);
-  const totR  = {};
-  filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
-  const D    = dreCalc(totC, totR, pc);
+  const receitasObj = dreAcumularReceitas(filtR);
+  const D    = dreCalc(totC, receitasObj, pc);
   const base = D.totRec;
 
-  const lGrp = (sinal, nome, val, cor) =>
-    `<tr style="background:rgba(255,255,255,0.04)">
-      <td style="padding:8px 6px;font-size:12px;font-weight:600;color:var(--tx)">${sinal} ${nome}</td>
-      <td style="padding:8px 8px;text-align:right;font-weight:700;font-size:13px;color:${cor}">${val>0?'– ':''} ${R(val)}</td>
+  const drillBtn = (tipo, val, cor) =>
+    val > 0 ? ` onclick="dreDrillDown('${tipo}','${tipo}','${cor}')" style="cursor:pointer;text-decoration:underline dotted" title="Clique para ver os lançamentos"` : '';
+
+  const lGrp = (sinal, nome, val, cor, tipo) =>
+    `<tr>
+      <td style="padding:8px 6px;font-size:12px;font-weight:600;color:${cor}">${sinal} ${nome}</td>
+      <td style="padding:8px 8px;text-align:right;font-weight:700;font-size:13px;color:${cor};cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+          ${val>0?`onclick="dreDrillDown('${tipo}','${sinal} ${nome}','${cor}')" title="Clique para ver os lançamentos"`:''}>${R(val)}</td>
       <td style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);font-weight:600">${AV(val,base)}</td>
     </tr>`;
 
-  const lConta = (nome, cod, val, cor, indent) =>
+  const lConta = (nome, cod, val, cor, indent, tipo) =>
     `<tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
-      <td style="padding:5px 6px 5px ${indent||20}px;font-size:11px;color:${cor||'var(--tx2)'}" title="${cod}">${nome}</td>
-      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${cor||'var(--tx2)'}">${R(val)}</td>
+      <td style="padding:5px 6px 5px ${indent||20}px;font-size:11px;color:var(--tx2)" title="${cod}">${nome}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${cor||'var(--tx2)'};cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+          ${val>0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','${cor||'#64B5F6'}')" title="Clique para ver os lançamentos"`:''}>${R(val)}</td>
       <td style="padding:5px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
     </tr>`;
 
-  const lSg = (nome, val) =>
-    `<tr style="background:rgba(242,100,25,0.04)">
-      <td style="padding:6px 6px 6px 14px;font-size:11px;font-weight:500;color:var(--tx)">
-        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--or);margin-right:4px"></i>${nome}</td>
-      <td style="padding:6px 8px;text-align:right;font-size:12px;font-weight:500;color:var(--rd)">– ${R(val)}</td>
+  const lSg = (nome, val, tipo) =>
+    `<tr>
+      <td style="padding:6px 6px 6px 14px;font-size:11px;font-weight:500;color:#EF9A9A">
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;color:#EF9A9A;margin-right:4px"></i>${nome}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:12px;font-weight:600;color:#EF9A9A;cursor:${val>0?'pointer':'default'};text-decoration:${val>0?'underline dotted':'none'}"
+          ${val>0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','#EF9A9A')" title="Clique para ver os lançamentos"`:''}>${val>0?'– ':''}${R(val)}</td>
       <td style="padding:6px 6px;text-align:right;font-size:10px;color:var(--tx3)">${AV(val,base)}</td>
     </tr>`;
 
-  const lRes = (nome, val, cls) =>
-    `<tr class="dr ${cls}" style="border-top:2px solid var(--bd)">
-      <td style="padding:10px 6px;font-size:13px;font-weight:700">${nome}</td>
-      <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700">${R(Math.abs(val))}</td>
-      <td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700">${AV(Math.abs(val),base)}</td>
+  const lRes = (nome, val, cls, tipo) => {
+    const cor = cls==='dlp' ? (nome.includes('RECEITA LÍQUIDA') ? '#64B5F6' : '#81C784') : '#EF9A9A';
+    return `<tr class="dr ${cls}" style="border-top:1px solid rgba(255,255,255,0.06)">
+      <td style="padding:10px 6px;font-size:13px;font-weight:700;color:${cor}">${nome}</td>
+      <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700;color:${cor};cursor:${val!==0&&tipo?'pointer':'default'};text-decoration:${val!==0&&tipo?'underline dotted':'none'}"
+          ${val!==0&&tipo?`onclick="dreDrillDown('${tipo}','${nome}','${cor}')" title="Clique para ver os lançamentos"`:''}>${R(Math.abs(val))}</td>
+      <td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;color:${cor}">${AV(Math.abs(val),base)}</td>
     </tr>`;
+  };
 
   let html = `<table style="width:100%;border-collapse:collapse">
     <thead><tr style="border-bottom:2px solid var(--or)">
@@ -5577,48 +5789,52 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
     </tr></thead><tbody>`;
 
   // Receitas
-  html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, 'var(--gr)');
-  pc.filter(x=>x.tipo==='conta'&&x.grupo==='1'&&(totR[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totR[c.cod],'var(--gr)'));
+  html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, '#64B5F6', 'rec_total');
+  if(D.totAlim>0) html+=lConta('Venda de Alimentação / Rodízio','1.1',D.totAlim,'#64B5F6',20,'rec_alim');
+  if(D.totMerc>0) html+=lConta('Venda de Mercadoria de Terceiros','1.2',D.totMerc,'#64B5F6',20,'rec_merc');
   if(!D.totRec) html+=`<tr><td colspan="3" style="padding:5px 20px;font-size:11px;color:var(--tx3);font-style:italic">Nenhuma receita no período</td></tr>`;
+
+  // Descontos Concedidos
+  if(D.totDesc>0) html+=lConta('(–) Descontos Concedidos','1.4', D.totDesc,'#EF9A9A',20,'rec_desc');
 
   // Impostos
   if(D.totImp>0){
-    html += lGrp('(–)','IMPOSTOS E TAXAS', D.totImp, 'var(--rd)');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='2'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
+    html += lGrp('(–)','IMPOSTOS E TAXAS', D.totImp, '#EF9A9A', 'grp_2');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='2'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
   }
 
-  html += lRes('= RECEITA LÍQUIDA', D.recLiq, D.recLiq>=0?'dlp':'dlr');
+  html += lRes('= RECEITA LÍQUIDA', D.recLiq, D.recLiq>=0?'dlp':'dlr', 'rec_total');
 
   // CMV
-  html += lGrp('(–)','CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, 'var(--rd)');
-  pc.filter(x=>x.tipo==='conta'&&x.grupo==='4'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
+  html += lGrp('(–)','CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, '#EF9A9A', 'grp_4');
+  pc.filter(x=>x.tipo==='conta'&&x.grupo==='4'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
 
-  html += lRes('= LUCRO BRUTO', D.lucroBruto, D.lucroBruto>=0?'dlp':'dlr');
+  html += lRes('= LUCRO BRUTO', D.lucroBruto, D.lucroBruto>=0?'dlp':'dlr', null);
 
   // Despesas Financeiras
   if(D.totFin>0){
-    html += lGrp('(–)','DESPESAS FINANCEIRAS', D.totFin, 'var(--rd)');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
+    html += lGrp('(–)','DESPESAS FINANCEIRAS', D.totFin, '#EF9A9A', 'grp_3');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
   }
 
   // Despesas Operacionais
-  html += lGrp('(–)','DESPESAS OPERACIONAIS', D.totOp, 'var(--rd)');
+  html += lGrp('(–)','DESPESAS OPERACIONAIS', D.totOp, '#EF9A9A', 'grp_5');
   D.sgs5.forEach(sg=>{
     if(sg.total>0){
-      html += lSg(sg.nome, sg.total);
-      pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'var(--tx2)',32));
+      html += lSg(sg.nome, sg.total, `sub_${sg.cod}`);
+      pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',32,`cod_${c.cod}`));
     }
   });
 
-  html += lRes('= EBITDA', D.ebitda, D.ebitda>=0?'deb':'dlr');
+  html += lRes('= EBITDA', D.ebitda, D.ebitda>=0?'deb':'dlr', null);
 
   // Não Operacionais
   if(D.totNaoOp>0){
-    html += lGrp('(–)','DESPESAS NÃO OPERACIONAIS', D.totNaoOp, 'var(--rd)');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod]));
+    html += lGrp('(–)','DESPESAS NÃO OPERACIONAIS', D.totNaoOp, '#EF9A9A', 'grp_9');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
   }
 
-  html += lRes(D.lucroLiq>=0?'= LUCRO LÍQUIDO DO EXERCÍCIO':'= PREJUÍZO LÍQUIDO DO EXERCÍCIO', D.lucroLiq, D.lucroLiq>=0?'dlp':'dlr');
+  html += lRes(D.lucroLiq>=0?'= LUCRO LÍQUIDO DO EXERCÍCIO':'= PREJUÍZO LÍQUIDO DO EXERCÍCIO', D.lucroLiq, D.lucroLiq>=0?'dlp':'dlr', null);
   html += `</tbody></table>`;
   html += `<div style="margin-top:10px;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
     <span style="font-size:10px;color:var(--tx3)"><i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
@@ -5626,8 +5842,12 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
     &nbsp;·&nbsp; Critério: <strong style="color:var(--tx)">${regime==='comp'?'data de competência':'data de vencimento'}</strong>
     &nbsp;·&nbsp; ${filtP.length} lançamento(s) incluídos
     &nbsp;·&nbsp; AV% = participação sobre Receita Operacional
+    &nbsp;·&nbsp; <span style="color:#64B5F6"><i class="fa-solid fa-hand-pointer" style="margin-right:3px"></i>Clique nos valores para ver os lançamentos</span>
     &nbsp;&nbsp;<button onclick="diagDuplicidade()" style="background:rgba(242,100,25,0.12);border:1px solid rgba(242,100,25,0.25);color:var(--or);border-radius:4px;padding:2px 8px;font-family:Outfit,sans-serif;font-size:10px;cursor:pointer;vertical-align:middle">
       <i class="fa-solid fa-stethoscope" style="margin-right:3px"></i>Auditar lançamentos
+    </button>
+    &nbsp;&nbsp;<button onclick="abrirDiagConsistencia()" style="background:rgba(33,150,243,0.12);border:1px solid rgba(33,150,243,0.25);color:#64B5F6;border-radius:4px;padding:2px 8px;font-family:Outfit,sans-serif;font-size:10px;cursor:pointer;vertical-align:middle">
+      <i class="fa-solid fa-magnifying-glass-chart" style="margin-right:3px"></i>Consistência DRE × Receber
     </button>
     </span></div>`;
 
@@ -5658,10 +5878,9 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
   const dadosMes = meses.map(ym=>{
     const filtP = dreFiltrar(pagar, regime, ym, ym);
     const filtR = receber.filter(x=>(regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7)===ym);
-    const totC  = dreAcumular(filtP);
-    const totR  = {};
-    filtR.forEach(x=>{ const c=x.conta||'1.1'; totR[c]=(totR[c]||0)+(x.val||0); });
-    return { ym, D: dreCalc(totC, totR, pc), totC, totR };
+    const totC        = dreAcumular(filtP);
+    const receitasObj = dreAcumularReceitas(filtR);
+    return { ym, D: dreCalc(totC, receitasObj, pc), totC, receitasObj };
   });
 
   // Cabeçalho
@@ -5676,20 +5895,28 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
   html+=`</tr></thead><tbody>`;
 
   // Linha genérica
-  const linha = (label, getVal, getBase, tipo, indent) => {
+  const linha = (label, getVal, getBase, tipo, indent, corGrp) => {
     const isGrp = tipo==='grp', isRes = tipo==='res', isSg = tipo==='sg';
     const tdStyle = isGrp
-      ? `background:rgba(255,255,255,0.04);font-weight:600;color:var(--tx);font-size:12px;`
-      : isRes ? `border-top:2px solid var(--bd);font-weight:700;font-size:12px;`
-      : isSg  ? `background:rgba(242,100,25,0.04);font-weight:500;color:var(--tx);`
+      ? `font-weight:600;font-size:12px;`
+      : isRes ? `border-top:1px solid rgba(255,255,255,0.06);font-weight:700;font-size:12px;`
+      : isSg  ? `font-weight:500;`
       : `color:var(--tx2);font-size:11px;`;
-    let tr = `<tr><td style="padding:${isRes?'9':'5'}px 6px 5px ${indent||6}px;${tdStyle}position:sticky;left:0;background:${isGrp?'var(--dk3)':isRes?'var(--dk2)':isSg?'rgba(30,30,30,0.95)':'var(--dk2)'};z-index:1">${label}</td>`;
-    dadosMes.forEach(({D,totC,totR})=>{
-      const val  = getVal(D, totC, totR);
+    let tr = `<tr><td style="padding:${isRes?'9':'5'}px 6px 5px ${indent||6}px;${tdStyle}position:sticky;left:0;z-index:1;color:${
+      isRes ? (label.includes('RECEITA LÍQUIDA') ? '#64B5F6' : '#81C784') :
+      isGrp ? (corGrp==='rec' ? '#64B5F6' : '#EF9A9A') :
+      isSg  ? '#EF9A9A' : 'var(--tx2)'
+    }">${label}</td>`;
+    dadosMes.forEach(({D,totC,receitasObj})=>{
+      const val  = getVal(D, totC, receitasObj);
       const base = getBase(D);
       const av   = base>0 ? (Math.abs(val)/base*100).toFixed(1)+'%' : '—';
-      const vCor = isRes && val<0 ? 'var(--rd)' : isRes && val>=0 ? 'var(--gr)' : 'inherit';
-      tr+=`<td style="padding:5px 8px;text-align:right;font-weight:${isRes?'700':'400'};color:${vCor};${tdStyle}">${R(val)}</td>
+      let vCor;
+      if(isRes)      vCor = label.includes('RECEITA LÍQUIDA') ? '#64B5F6' : (val<0 ? '#EF9A9A' : '#81C784');
+      else if(isGrp) vCor = corGrp==='rec' ? '#64B5F6' : '#EF9A9A';
+      else if(isSg)  vCor = '#EF9A9A';
+      else           vCor = 'var(--tx2)';
+      tr+=`<td style="padding:5px 8px;text-align:right;font-weight:${isRes||isGrp||isSg?'600':'400'};color:${vCor}">${R(val)}</td>
            <td style="padding:5px 4px;text-align:right;font-size:10px;color:var(--tx3)">${av}</td>`;
     });
     tr+=`</tr>`;
@@ -5697,49 +5924,49 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
   };
 
   // Receitas
-  html+=linha('(+) RECEITAS OPERACIONAIS', (D,tC,tR)=>D.totRec, D=>D.totRec, 'grp');
-  pc.filter(x=>x.tipo==='conta'&&x.grupo==='1').forEach(c=>{
-    if(dadosMes.some(({totR})=>(totR[c.cod]||0)>0))
-      html+=linha(c.nome, (D,tC,tR)=>tR[c.cod]||0, D=>D.totRec, 'conta', 20);
-  });
+  html+=linha('(+) RECEITAS OPERACIONAIS', D=>D.totRec, D=>D.totRec, 'grp', 6, 'rec');
+  html+=linha('Venda de Alimentação / Rodízio', D=>D.totAlim, D=>D.totRec, 'conta', 20, 'rec');
+  html+=linha('Venda de Mercadoria de Terceiros', D=>D.totMerc, D=>D.totRec, 'conta', 20, 'rec');
+  if(dadosMes.some(({D})=>D.totDesc>0))
+    html+=linha('(–) Descontos Concedidos', D=>D.totDesc, D=>D.totRec, 'conta', 20, 'sai');
 
   // Impostos
   if(dadosMes.some(({D})=>D.totImp>0)){
-    html+=linha('(–) IMPOSTOS E TAXAS', D=>D.totImp, D=>D.totRec, 'grp');
+    html+=linha('(–) IMPOSTOS E TAXAS', D=>D.totImp, D=>D.totRec, 'grp', 6, 'sai');
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='2').forEach(c=>{
       if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
-        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20, 'sai');
     });
   }
 
   html+=linha('= RECEITA LÍQUIDA', D=>D.recLiq, D=>D.totRec, 'res');
 
   // CMV
-  html+=linha('(–) CMV — CUSTO DA MERCADORIA VENDIDA', D=>D.totCMV, D=>D.totRec, 'grp');
+  html+=linha('(–) CMV — CUSTO DA MERCADORIA VENDIDA', D=>D.totCMV, D=>D.totRec, 'grp', 6, 'sai');
   pc.filter(x=>x.tipo==='conta'&&x.grupo==='4').forEach(c=>{
     if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
-      html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+      html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20, 'sai');
   });
 
   html+=linha('= LUCRO BRUTO', D=>D.lucroBruto, D=>D.totRec, 'res');
 
   // Fin
   if(dadosMes.some(({D})=>D.totFin>0)){
-    html+=linha('(–) DESPESAS FINANCEIRAS', D=>D.totFin, D=>D.totRec, 'grp');
+    html+=linha('(–) DESPESAS FINANCEIRAS', D=>D.totFin, D=>D.totRec, 'grp', 6, 'sai');
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='3').forEach(c=>{
       if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
-        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20, 'sai');
     });
   }
 
   // Despesas Operacionais
-  html+=linha('(–) DESPESAS OPERACIONAIS', D=>D.totOp, D=>D.totRec, 'grp');
+  html+=linha('(–) DESPESAS OPERACIONAIS', D=>D.totOp, D=>D.totRec, 'grp', 6, 'sai');
   pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').forEach(sg=>{
     if(dadosMes.some(({D})=>D.sgs5.find(s=>s.cod===sg.cod)?.total>0)){
-      html+=linha('› '+sg.nome, D=>D.sgs5.find(s=>s.cod===sg.cod)?.total||0, D=>D.totRec, 'sg', 14);
+      html+=linha('› '+sg.nome, D=>D.sgs5.find(s=>s.cod===sg.cod)?.total||0, D=>D.totRec, 'sg', 14, 'sai');
       pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg.cod).forEach(c=>{
         if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
-          html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 30);
+          html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 30, 'sai');
       });
     }
   });
@@ -5748,10 +5975,10 @@ function renderDRE_Mensal(pagar, receber, pc, regime, de, ate){
 
   // Não Operacionais
   if(dadosMes.some(({D})=>D.totNaoOp>0)){
-    html+=linha('(–) DESPESAS NÃO OPERACIONAIS', D=>D.totNaoOp, D=>D.totRec, 'grp');
+    html+=linha('(–) DESPESAS NÃO OPERACIONAIS', D=>D.totNaoOp, D=>D.totRec, 'grp', 6, 'sai');
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='9').forEach(c=>{
       if(dadosMes.some(({totC})=>(totC[c.cod]||0)>0))
-        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20);
+        html+=linha(c.nome, (D,tC)=>tC[c.cod]||0, D=>D.totRec, 'conta', 20, 'sai');
     });
   }
 
@@ -5852,19 +6079,23 @@ function renderReceber(){
   if(_rcFiltro.mes) _rcAnoNav = parseInt(_rcFiltro.mes.slice(0,4));
   else if(_rcFiltro.ano) _rcAnoNav = _rcFiltro.ano;
 
-  // ── Filtra por _rcFiltro ──
+  // ── Filtra por _rcFiltro respeitando o regime ──
+  // Regime Caixa  → usa data de vencimento (quando o dinheiro entra)
+  // Regime Comp   → usa data de competência (quando a venda ocorreu)
+  const rcDataRef = c => (_rcRegime==='caixa' ? (c.venc||c.comp||'') : (c.comp||c.venc||''));
+
   let filtrado;
   if(_rcFiltro.tipo==='mes' && _rcFiltro.mes){
-    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===_rcFiltro.mes);
+    filtrado = arr.filter(c=>rcDataRef(c).slice(0,7)===_rcFiltro.mes);
   } else if(_rcFiltro.tipo==='periodo' && _rcFiltro.ini && _rcFiltro.fim){
     filtrado = arr.filter(c=>{
-      const d = c.comp||c.venc||'';
+      const d = rcDataRef(c).slice(0,10);
       return d >= _rcFiltro.ini && d <= _rcFiltro.fim;
     });
   } else if(_rcFiltro.tipo==='ano' && _rcFiltro.ano){
-    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,4)===String(_rcFiltro.ano));
+    filtrado = arr.filter(c=>rcDataRef(c).slice(0,4)===String(_rcFiltro.ano));
   } else {
-    filtrado = arr.filter(c=>(c.comp||c.venc||'').slice(0,7)===hoje);
+    filtrado = arr.filter(c=>rcDataRef(c).slice(0,7)===hoje);
   }
 
   // ── Aplica filtros adicionais (status e forma) ──
@@ -5883,7 +6114,7 @@ function renderReceber(){
   // ── KPIs ──
   const kpiEl = document.getElementById('kpi-rc');
   if(kpiEl) kpiEl.innerHTML=`
-    <div class="kc"><div class="kl"><i class="fa-solid fa-arrow-trend-up" style="color:var(--or);margin-right:4px"></i>Faturamento Bruto</div><div class="kv" style="color:var(--tx)">${R(totalBruto)}</div><div class="kd nt">mês selecionado</div></div>
+    <div class="kc"><div class="kl"><i class="fa-solid fa-arrow-trend-up" style="color:var(--or);margin-right:4px"></i>Faturamento Bruto</div><div class="kv" style="color:var(--tx)">${R(totalBruto)}</div><div class="kd nt">mês selecionado · ${_rcRegime==='caixa'?'por vencimento':'por competência'}</div></div>
     <div class="kc"><div class="kl"><i class="fa-solid fa-circle-check" style="color:var(--gr);margin-right:4px"></i>Valor Líquido</div><div class="kv" style="color:var(--gr)">${R(totalLiq)}</div><div class="kd nt">após taxas</div></div>
     <div class="kc"><div class="kl"><i class="fa-solid fa-clock" style="color:var(--am);margin-right:4px"></i>A Receber</div><div class="kv" style="color:var(--am)">${R(totalPendente)}</div><div class="kd nt">pendente + vencido</div></div>
     <div class="kc"><div class="kl"><i class="fa-solid fa-tag" style="color:var(--bl);margin-right:4px"></i>Descontos</div><div class="kv" style="color:var(--rd)">${R(totalDesconto)}</div><div class="kd nt">mês selecionado</div></div>`;
@@ -6105,6 +6336,141 @@ const CAT_PROD_PADRAO = [
   {id:5, cod:'CAT-05', nome:'Material de Expediente',conta:'', cor:'tg-gy', st:'Ativo', obs:'Papelaria e material administrativo'},
   {id:6, cod:'CAT-06', nome:'Utensílios',            conta:'', cor:'tg-pu', st:'Ativo', obs:'Utensílios de cozinha e atendimento'},
 ];
+
+// ── CATEGORIAS DE REVENDA (padrão) ──────────────────────────────
+const CAT_PROD_VENDA_PADRAO = [
+  {id:1, cod:'RV-01', nome:'Rodízio',          cor:'tg-or', st:'Ativo', obs:'Rodízio adulto, infantil e similares'},
+  {id:2, cod:'RV-02', nome:'Pizzas',           cor:'tg-rd', st:'Ativo', obs:'Pizzas avulsas, meio a meio'},
+  {id:3, cod:'RV-03', nome:'Bebidas',          cor:'tg-bl', st:'Ativo', obs:'Refrigerantes, sucos, água'},
+  {id:4, cod:'RV-04', nome:'Cervejas',         cor:'tg-am', st:'Ativo', obs:'Cervejas em lata e long neck'},
+  {id:5, cod:'RV-05', nome:'Drinks / Coquetéis',cor:'tg-pu', st:'Ativo', obs:'Drinks e coquetéis artesanais'},
+  {id:6, cod:'RV-06', nome:'Combos / Promoções',cor:'tg-gr', st:'Ativo', obs:'Combos e promoções especiais'},
+  {id:7, cod:'RV-07', nome:'Sobremesas',       cor:'tg-rd', st:'Ativo', obs:'Sobremesas e doces'},
+  {id:8, cod:'RV-08', nome:'Outros',           cor:'tg-gy', st:'Ativo', obs:'Demais produtos de venda'},
+];
+
+function initCatProdVendaPadrao(){
+  if(!(S.g('cat-produtos-venda')||[]).length) S.s('cat-produtos-venda', CAT_PROD_VENDA_PADRAO);
+}
+
+function getCatProdsVenda(){ return S.g('cat-produtos-venda')||[]; }
+
+function gerarCodigoCatVenda(){
+  const arr=getCatProdsVenda();
+  const nums=arr.map(x=>parseInt((x.cod||'').replace(/\D/g,''))||0);
+  const prox=nums.length?Math.max(...nums)+1:1;
+  return 'RV-'+String(prox).padStart(2,'0');
+}
+
+function saveCatProdVenda(){
+  const idVal=document.getElementById('mcpv-id').value;
+  const nome=document.getElementById('mcpv-nome').value.trim();
+  if(!nome){alert('Informe o nome da categoria.');return;}
+  const arr=getCatProdsVenda();
+  if(idVal){
+    const idx=arr.findIndex(x=>x.id===Number(idVal));
+    if(idx>-1) arr[idx]={...arr[idx],
+      nome,
+      cor:document.getElementById('mcpv-cor').value,
+      st:document.getElementById('mcpv-st').value,
+      obs:document.getElementById('mcpv-obs').value,
+    };
+  } else {
+    const ids=arr.map(x=>x.id||0);
+    arr.push({
+      id:ids.length?Math.max(...ids)+1:1,
+      cod:gerarCodigoCatVenda(),
+      nome,
+      cor:document.getElementById('mcpv-cor').value,
+      st:document.getElementById('mcpv-st').value,
+      obs:document.getElementById('mcpv-obs').value,
+    });
+  }
+  S.s('cat-produtos-venda',arr);
+  closeMod('mod-catprod-venda');
+  document.getElementById('mcpv-id').value='';
+  document.getElementById('mcpv-nome').value='';
+  document.getElementById('mcpv-obs').value='';
+  renderCatProdVenda();
+  // Atualiza selects que dependem das categorias de revenda
+  fillSelectCatProdVenda('mpv-cat');
+  fillSelectCatVendaRel('rv-cat');
+  fillSelectCatVendaRel('rv-cat-comp');
+}
+
+function editCatProdVenda(id){
+  const arr=getCatProdsVenda();
+  const c=arr.find(x=>x.id===id); if(!c)return;
+  document.getElementById('mcpv-id').value=c.id;
+  document.getElementById('mcpv-cod').value=c.cod||'';
+  document.getElementById('mcpv-nome').value=c.nome||'';
+  document.getElementById('mcpv-cor').value=c.cor||'tg-gy';
+  document.getElementById('mcpv-st').value=c.st||'Ativo';
+  document.getElementById('mcpv-obs').value=c.obs||'';
+  openMod('mod-catprod-venda');
+}
+
+function renderCatProdVenda(){
+  const arr=getCatProdsVenda();
+  const el=document.getElementById('tb-catprod-venda'); if(!el)return;
+  el.innerHTML=arr.map(c=>`<tr>
+    <td style="color:var(--or);font-weight:600">${c.cod}</td>
+    <td style="color:var(--tx);font-weight:500"><span class="tg ${c.cor||'tg-gy'}">${c.nome}</span></td>
+    <td><span class="tg ${c.cor||'tg-gy'}" style="font-size:10px">${c.cor||'—'}</span></td>
+    <td>${stTag(c.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" title="Editar" onclick="editCatProdVenda(${c.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" title="Excluir" onclick="del('cat-produtos-venda',${c.id},renderCatProdVenda)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+  fillSelectCatProdVenda('mpv-cat');
+  fillSelectCatVendaRel('rv-cat');
+  fillSelectCatVendaRel('rv-cat-comp');
+}
+
+// Preenche select com as categorias de revenda ativas
+function fillSelectCatProdVenda(selId){
+  const sel=document.getElementById(selId); if(!sel)return;
+  const prev=sel.value;
+  sel.innerHTML='<option value="">— Selecione a Categoria —</option>';
+  getCatProdsVenda().filter(c=>c.st==='Ativo').forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.nome; // mantém valor = nome para compatibilidade com lançamentos existentes
+    o.textContent=c.nome;
+    o.dataset.cor=c.cor||'';
+    sel.appendChild(o);
+  });
+  if(prev) sel.value=prev;
+}
+
+// Preenche selects do Rel. Vendas dinamicamente
+function fillSelectCatVendaRel(selId){
+  const sel=document.getElementById(selId); if(!sel)return;
+  const prev=sel.value;
+  sel.innerHTML='<option value="">Todas as categorias</option>';
+  getCatProdsVenda().filter(c=>c.st==='Ativo').forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.nome;
+    o.textContent=c.nome;
+    sel.appendChild(o);
+  });
+  if(prev) sel.value=prev;
+}
+
+function renderCatProdVendaSorted(col,dir){
+  const arr=_sortArr(S.g('cat-produtos-venda')||[], col, dir);
+  const el=document.getElementById('tb-catprod-venda'); if(!el)return;
+  el.innerHTML=arr.map(c=>`<tr>
+    <td style="color:var(--or);font-weight:600">${c.cod}</td>
+    <td style="color:var(--tx);font-weight:500"><span class="tg ${c.cor||'tg-gy'}">${c.nome}</span></td>
+    <td><span class="tg ${c.cor||'tg-gy'}" style="font-size:10px">${c.cor||'—'}</span></td>
+    <td>${stTag(c.st)}</td>
+    <td><div class="ac-btns" style="opacity:1">
+      <button class="ac-btn ac-edit" onclick="editCatProdVenda(${c.id})"><i class="fa-solid fa-pen"></i></button>
+      <button class="ac-btn ac-del" onclick="del('cat-produtos-venda',${c.id},renderCatProdVenda)"><i class="fa-solid fa-trash-can"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
 
 function initCatProdPadrao(){
   if(!(S.g('cat-produtos')||[]).length) S.s('cat-produtos', CAT_PROD_PADRAO);
@@ -7248,21 +7614,22 @@ function fillSelectGruposPlano(selId){
 let CH={};
 function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
 function buildCharts(){
+  const vis = id => { const el = document.getElementById('c-'+id); return el && el.offsetParent !== null; };
   const M=D.months,go={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
   const gx={color:'rgba(255,255,255,0.04)'},tx={color:'#666',font:{size:11}};
-  dc('fat');CH.fat=new Chart(document.getElementById('c-fat'),{type:'bar',data:{labels:M,datasets:[{label:'Fat',data:D.fatS,backgroundColor:'#F26419',borderRadius:3},{label:'Desp',data:D.despS,backgroundColor:'rgba(33,150,243,0.4)',borderRadius:3}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:gx}}}});
-  const pC=D.cmv/D.fat*100,pP=D.pessoal/D.fat*100,pA=D.aluguel/D.fat*100,pO=(D.energia+D.mkt+D.outros)/D.fat*100,pL=100-pC-pP-pA-pO;
-  dc('dnut');CH.dnut=new Chart(document.getElementById('c-dnut'),{type:'doughnut',data:{labels:['CMV','Pessoal','Aluguel','Outros','Lucro'],datasets:[{data:[pC,pP,pA,pO,pL],backgroundColor:['#F26419','#2196F3','#FF8F00','#888','#4CAF50'],borderWidth:2,borderColor:'#1E1E1E'}]},options:{...go,cutout:'65%'}});
-  dc('dre');CH.dre=new Chart(document.getElementById('c-dre'),{type:'line',data:{labels:M,datasets:[{data:D.lucS,borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#4CAF50'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:gx}}}});
-  dc('flx');CH.flx=new Chart(document.getElementById('c-flx'),{type:'bar',data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4'],datasets:[{data:[22400,24100,21800,22940],backgroundColor:'rgba(76,175,80,0.6)',borderRadius:3},{data:[16800,17200,16400,17300],backgroundColor:'rgba(229,57,53,0.6)',borderRadius:3},{type:'line',data:[5600,12500,17900,23540],borderColor:'#2196F3',tension:0.4,yAxisID:'y2',pointRadius:4}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:gx},y2:{position:'right',ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{display:false}}}}});
-  dc('sem');CH.sem=new Chart(document.getElementById('c-sem'),{type:'bar',data:{labels:D.dias,datasets:[{data:D.vDia,backgroundColor:D.vDia.map((_,i)=>i>=4?'#F26419':'rgba(242,100,25,0.4)'),borderRadius:3}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});
-  dc('ped');CH.ped=new Chart(document.getElementById('c-ped'),{type:'line',data:{labels:M,datasets:[{data:D.pedM,borderColor:'#F26419',backgroundColor:'rgba(242,100,25,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#F26419'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});
-  dc('can');CH.can=new Chart(document.getElementById('c-can'),{type:'doughnut',data:{labels:D.canais.l,datasets:[{data:D.canais.v,backgroundColor:['#F26419','#2196F3','#FF8F00','#4CAF50'],borderWidth:2,borderColor:'#1E1E1E'}]},options:{...go,cutout:'55%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:11},boxWidth:10}}}}});
-  const eqArr=S.g('estoque')||[];
-  dc('eq');CH.eq=new Chart(document.getElementById('c-eq'),{type:'bar',data:{labels:['Laticínios','Carnes','Farináceos','Molhos','Embal.','Outros'],datasets:[{data:[4200,3100,2400,1200,1100,840],backgroundColor:['#E53935','#FF8F00','#4CAF50','#F26419','#888','#2196F3'],borderRadius:4}]},options:{...go,indexAxis:'y',scales:{x:{ticks:{...tx,callback:v=>'R$'+v},grid:gx},y:{ticks:tx}}}});
+  if(vis('fat'))  try{dc('fat');CH.fat=new Chart(document.getElementById('c-fat'),{type:'bar',data:{labels:M,datasets:[{label:'Fat',data:D.fatS,backgroundColor:'#F26419',borderRadius:3},{label:'Desp',data:D.despS,backgroundColor:'rgba(33,150,243,0.4)',borderRadius:3}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:gx}}}});}catch(e){}
+  const fat0=D.fat||1;
+  const pC=D.cmv/fat0*100,pP=D.pessoal/fat0*100,pA=D.aluguel/fat0*100,pO=(D.energia+D.mkt+D.outros)/fat0*100,pL=Math.max(0,100-pC-pP-pA-pO);
+  if(vis('dnut')) try{dc('dnut');CH.dnut=new Chart(document.getElementById('c-dnut'),{type:'doughnut',data:{labels:['CMV','Pessoal','Aluguel','Outros','Lucro'],datasets:[{data:[pC,pP,pA,pO,pL],backgroundColor:['#F26419','#2196F3','#FF8F00','#888','#4CAF50'],borderWidth:2,borderColor:'#1E1E1E'}]},options:{...go,cutout:'65%'}});}catch(e){}
+  if(vis('dre'))  try{dc('dre');CH.dre=new Chart(document.getElementById('c-dre'),{type:'line',data:{labels:M,datasets:[{data:D.lucS,borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#4CAF50'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:gx}}}});}catch(e){}
+  if(vis('flx'))  try{dc('flx');CH.flx=new Chart(document.getElementById('c-flx'),{type:'bar',data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4'],datasets:[{data:[22400,24100,21800,22940],backgroundColor:'rgba(76,175,80,0.6)',borderRadius:3},{data:[16800,17200,16400,17300],backgroundColor:'rgba(229,57,53,0.6)',borderRadius:3},{type:'line',data:[5600,12500,17900,23540],borderColor:'#2196F3',tension:0.4,yAxisID:'y2',pointRadius:4}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:gx},y2:{position:'right',ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{display:false}}}}});}catch(e){}
+  if(vis('sem'))  try{dc('sem');CH.sem=new Chart(document.getElementById('c-sem'),{type:'bar',data:{labels:D.dias,datasets:[{data:D.vDia,backgroundColor:D.vDia.map((_,i)=>i>=4?'#F26419':'rgba(242,100,25,0.4)'),borderRadius:3}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});}catch(e){}
+  if(vis('ped'))  try{dc('ped');CH.ped=new Chart(document.getElementById('c-ped'),{type:'line',data:{labels:M,datasets:[{data:D.pedM,borderColor:'#F26419',backgroundColor:'rgba(242,100,25,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#F26419'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});}catch(e){}
+  if(vis('can'))  try{dc('can');CH.can=new Chart(document.getElementById('c-can'),{type:'doughnut',data:{labels:D.canais.l,datasets:[{data:D.canais.v,backgroundColor:['#F26419','#2196F3','#FF8F00','#4CAF50'],borderWidth:2,borderColor:'#1E1E1E'}]},options:{...go,cutout:'55%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:11},boxWidth:10}}}}});}catch(e){}
+  if(vis('eq'))   try{dc('eq');CH.eq=new Chart(document.getElementById('c-eq'),{type:'bar',data:{labels:['Laticínios','Carnes','Farináceos','Molhos','Embal.','Outros'],datasets:[{data:[4200,3100,2400,1200,1100,840],backgroundColor:['#E53935','#FF8F00','#4CAF50','#F26419','#888','#2196F3'],borderRadius:4}]},options:{...go,indexAxis:'y',scales:{x:{ticks:{...tx,callback:v=>'R$'+v},grid:gx},y:{ticks:tx}}}});}catch(e){}
   const fichas=S.g('fichas')||[];
-  dc('cm');CH.cm=new Chart(document.getElementById('c-cm'),{type:'bar',data:{labels:fichas.map(f=>f.n),datasets:[{data:fichas.map(f=>f.v>0?+(f.c/f.v*100).toFixed(1):0),backgroundColor:fichas.map(f=>{const c=f.v>0?f.c/f.v*100:0;return c>35?'rgba(229,57,53,0.7)':c>30?'rgba(255,143,0,0.7)':'rgba(76,175,80,0.7)';}),borderRadius:4}]},options:{...go,scales:{x:{ticks:{...tx,maxRotation:30}},y:{max:50,ticks:{...tx,callback:v=>v+'%'},grid:gx}}}});
-  dc('mt');CH.mt=new Chart(document.getElementById('c-mt'),{type:'line',data:{labels:['Jan','Fev','Mar','Abr','Mai'],datasets:[{label:'Fat% meta',data:[71,74,79,82,87],borderColor:'#F26419',tension:0.4,pointRadius:4,fill:false},{label:'Margem%',data:[13.4,14.1,15.2,15.8,16.9],borderColor:'#4CAF50',tension:0.4,pointRadius:4,fill:false,yAxisID:'y2'},{label:'CMV%',data:[33,32,31,30.5,30],borderColor:'#2196F3',tension:0.4,pointRadius:4,fill:false,yAxisID:'y2'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:8,padding:8}}},scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+v+'k'},grid:gx},y2:{position:'right',ticks:{...tx,callback:v=>v+'%'},grid:{display:false}}}}});
+  if(vis('cm'))   try{dc('cm');CH.cm=new Chart(document.getElementById('c-cm'),{type:'bar',data:{labels:fichas.map(f=>f.n),datasets:[{data:fichas.map(f=>f.v>0?+(f.c/f.v*100).toFixed(1):0),backgroundColor:fichas.map(f=>{const c=f.v>0?f.c/f.v*100:0;return c>35?'rgba(229,57,53,0.7)':c>30?'rgba(255,143,0,0.7)':'rgba(76,175,80,0.7)';}),borderRadius:4}]},options:{...go,scales:{x:{ticks:{...tx,maxRotation:30}},y:{max:50,ticks:{...tx,callback:v=>v+'%'},grid:gx}}}});}catch(e){}
+  if(vis('mt'))   try{dc('mt');CH.mt=new Chart(document.getElementById('c-mt'),{type:'line',data:{labels:['Jan','Fev','Mar','Abr','Mai'],datasets:[{label:'Fat% meta',data:[71,74,79,82,87],borderColor:'#F26419',tension:0.4,pointRadius:4,fill:false},{label:'Margem%',data:[13.4,14.1,15.2,15.8,16.9],borderColor:'#4CAF50',tension:0.4,pointRadius:4,fill:false,yAxisID:'y2'},{label:'CMV%',data:[33,32,31,30.5,30],borderColor:'#2196F3',tension:0.4,pointRadius:4,fill:false,yAxisID:'y2'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:8,padding:8}}},scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+v+'k'},grid:gx},y2:{position:'right',ticks:{...tx,callback:v=>v+'%'},grid:{display:false}}}}});}catch(e){}
 }
 
 // ══════════════════════════════════════
@@ -8319,6 +8686,16 @@ function imprimirRelCompras(){ window.print(); }
 let _rcModo     = 'mes';    // 'mes' | 'periodo' | 'ano'
 let _rcAnoNav   = new Date().getFullYear();
 let _rcFiltro   = { tipo:'mes', mes: new Date().toISOString().slice(0,7), ini:null, fim:null, ano:null };
+let _rcRegime   = 'caixa'; // 'caixa' = filtra por vencimento | 'comp' = filtra por competência
+
+function rcSetRegime(r){
+  _rcRegime = r;
+  const btnCaixa = document.getElementById('rc-regime-caixa');
+  const btnComp  = document.getElementById('rc-regime-comp');
+  if(btnCaixa) { btnCaixa.style.background = r==='caixa' ? 'var(--or)' : 'transparent'; btnCaixa.style.color = r==='caixa' ? '#fff' : 'var(--tx2)'; }
+  if(btnComp)  { btnComp.style.background  = r==='comp'  ? 'var(--or)' : 'transparent'; btnComp.style.color  = r==='comp'  ? '#fff' : 'var(--tx2)'; }
+  renderReceber();
+}
 
 function rcTogglePicker(){
   const p = document.getElementById('rc-picker');
@@ -8614,7 +8991,9 @@ function resetModalProdVenda(){
   document.getElementById('mpv-id').value    = '';
   document.getElementById('mpv-cod').value   = gerarCodPV();
   document.getElementById('mpv-nome').value  = '';
-  document.getElementById('mpv-cat').value   = 'Rodízio';
+  fillSelectCatProdVenda('mpv-cat');
+  const firstCat = getCatProdsVenda().find(c=>c.st==='Ativo');
+  document.getElementById('mpv-cat').value   = firstCat ? firstCat.nome : '';
   document.getElementById('mpv-un').value    = 'pax';
   document.getElementById('mpv-preco').value = '';
   document.getElementById('mpv-custo').value = '';
@@ -8651,7 +9030,7 @@ function editProdVenda(id){
   document.getElementById('mpv-id').value    = p.id;
   document.getElementById('mpv-cod').value   = p.cod||'';
   document.getElementById('mpv-nome').value  = p.nome||'';
-  document.getElementById('mpv-cat').value   = p.cat||'Rodízio';
+  document.getElementById('mpv-cat').value   = p.cat||'';
   document.getElementById('mpv-un').value    = p.un||'pax';
   document.getElementById('mpv-preco').value = p.preco||'';
   document.getElementById('mpv-custo').value = p.custo||'';
@@ -8732,50 +9111,6 @@ function initRelVendas(){
   if(elIni && !elIni.value) elIni.value = ini;
   if(elFim && !elFim.value) elFim.value = fim;
   gerarRelVendas();
-}
-
-function rvAtualizarDadosDemo(){
-  // Força gravação das vendas demo com itens, sobrescrevendo dados antigos sem itens
-  if(!confirm('Isso vai substituir os lançamentos de demonstração do Contas a Receber por versões com itens discriminados para testar o relatório.\n\nContinuar?')) return;
-  S.s('receber',[
-    {id:Date.now()+1,comp:'2026-06-01',venc:'2026-06-26',desc:'iFood — repasse semanal',conta:'1.1',forma:'iFood / App',val:4200,status:'Pendente',comanda:'IFOOD-001',cliente:'iFood',
-      itens:[
-        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:28,preco:59.90,desc:0,total:1677.20},
-        {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:8,preco:34.90,desc:0,total:279.20},
-        {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:22,preco:8.00,desc:0,total:176.00},
-        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:18,preco:18.00,desc:0,total:324.00},
-        {prodId:110,nome:'SUCO NATURAL 300ML',cat:'Bebidas',un:'un',qtd:14,preco:10.00,desc:0,total:140.00},
-        {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:12,preco:22.00,desc:0,total:264.00},
-        {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:30,preco:5.00,desc:0,total:150.00},
-        {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:10,preco:19.00,desc:0,total:190.00},
-      ]},
-    {id:Date.now()+2,comp:'2026-06-03',venc:'2026-06-28',desc:'Evento Aniversário — Cliente João',conta:'1.1',forma:'PIX',val:2400,status:'Pendente',comanda:'MESA-12',cliente:'João Silva',
-      itens:[
-        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:15,preco:59.90,desc:0,total:898.50},
-        {prodId:103,nome:'RODÍZIO ADULTO + BEBIDA',cat:'Combos',un:'combo',qtd:8,preco:74.90,desc:0,total:599.20},
-        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:20,preco:18.00,desc:0,total:360.00},
-        {prodId:113,nome:'CAIPIROSKA MORANGO',cat:'Drinks',un:'dose',qtd:10,preco:24.00,desc:0,total:240.00},
-        {prodId:114,nome:'SOBREMESA TIRAMISU',cat:'Sobremesas',un:'un',qtd:8,preco:16.00,desc:0,total:128.00},
-      ]},
-    {id:Date.now()+3,comp:'2026-06-05',venc:'2026-06-30',desc:'Sábado — Salão Lotado',conta:'1.1',forma:'Cartão Crédito',val:6400,status:'Pendente',comanda:'CAIXA-SAB',cliente:'',
-      itens:[
-        {prodId:101,nome:'RODÍZIO ADULTO',cat:'Rodízio',un:'pax',qtd:52,preco:59.90,desc:0,total:3114.80},
-        {prodId:102,nome:'RODÍZIO INFANTIL',cat:'Rodízio',un:'pax',qtd:12,preco:34.90,desc:0,total:418.80},
-        {prodId:105,nome:'CERVEJA BUDWEISER 600ML',cat:'Cervejas',un:'un',qtd:35,preco:18.00,desc:0,total:630.00},
-        {prodId:106,nome:'CERVEJA HEINEKEN 600ML',cat:'Cervejas',un:'un',qtd:18,preco:19.00,desc:0,total:342.00},
-        {prodId:109,nome:'COCA-COLA ZERO LATA 350ML',cat:'Bebidas',un:'un',qtd:20,preco:8.00,desc:0,total:160.00},
-        {prodId:108,nome:'COCA-COLA LATA 350ML',cat:'Bebidas',un:'un',qtd:25,preco:8.00,desc:0,total:200.00},
-        {prodId:111,nome:'ÁGUA MINERAL 500ML',cat:'Bebidas',un:'un',qtd:40,preco:5.00,desc:0,total:200.00},
-        {prodId:112,nome:'CAIPIRINHA LIMÃO',cat:'Drinks',un:'dose',qtd:15,preco:22.00,desc:0,total:330.00},
-        {prodId:115,nome:'SOBREMESA PETIT GATEAU',cat:'Sobremesas',un:'un',qtd:10,preco:18.00,desc:0,total:180.00},
-      ]},
-  ]);
-  renderReceber();
-  // Reseta datas para junho 2026
-  const elIni=document.getElementById('rv-dt-ini'); if(elIni) elIni.value='2026-06-01';
-  const elFim=document.getElementById('rv-dt-fim'); if(elFim) elFim.value='2026-06-30';
-  gerarRelVendas();
-  showToast('✓ Dados demo atualizados com itens discriminados!','var(--gr)');
 }
 
 function rvSetTipoFiltro(tipo){
@@ -9235,6 +9570,7 @@ function sortCad(tableKey, col, thEl){
     ins:     { store:'insumos',           render: ()=>renderInsumosSorted(col,dir) },
     serv:    { store:'servicos',          render: ()=>renderServicosSorted(col,dir) },
     catprod: { store:'cat-produtos',      render: ()=>renderCategoriasProdSorted(col,dir) },
+    catprodvenda: { store:'cat-produtos-venda', render: ()=>renderCatProdVendaSorted(col,dir) },
     fp:      { store:'formas-pagamento',  render: ()=>renderFormasPagSorted(col,dir) },
     fr:      { store:'formas-recebimento',render: ()=>renderFormasRecSorted(col,dir) },
     bancos:  { store:'bancos',            render: ()=>renderBancosSorted(col,dir) },
@@ -9474,8 +9810,334 @@ function renderBancosSorted(col,dir){
 }
 
 // ══════════════════════════════════════
-// BACKUP & RESTAURAÇÃO
+// DIAGNÓSTICO DE CONSISTÊNCIA DRE × RECEBER
 // ══════════════════════════════════════
+function abrirDiagConsistencia(){
+  // Pré-preenche com o mês atual do DRE
+  const de = document.getElementById('dre-de')?.value || new Date().toISOString().slice(0,7);
+  const mesEl = document.getElementById('diag-mes');
+  if(mesEl && !mesEl.value) mesEl.value = de;
+  // Sincroniza regime
+  const regEl = document.getElementById('diag-regime');
+  if(regEl) regEl.value = _dreRegime || 'caixa';
+  openMod('mod-diag-consistencia');
+}
+
+function rodarDiagConsistencia(){
+  const mes    = document.getElementById('diag-mes').value;
+  const regime = document.getElementById('diag-regime').value;
+  const el     = document.getElementById('diag-resultado');
+  if(!mes){ el.innerHTML=`<span style="color:var(--am)">Selecione um mês para analisar.</span>`; return; }
+
+  const receber = S.g('receber')||[];
+  const pc      = getPC();
+
+  // Contas válidas do grupo 1
+  const contasRec  = pc.filter(x=>x.tipo==='conta'&&x.grupo==='1'&&x.natureza!=='reducao');
+  const codsGrupo1 = new Set(contasRec.map(x=>x.cod));
+
+  // ── LADO A: DRE ──────────────────────────────────────────────
+  // Filtra por venc (caixa) ou comp (competência)
+  const dreRecs = receber.filter(x => {
+    const data = regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'');
+    return data.slice(0,7) === mes;
+  });
+  const dreTot = dreRecs.reduce((s,x)=>s+(x.val||0), 0);
+
+  // ── LADO B: Contas a Receber ──────────────────────────────────
+  // Sempre filtra por comp (competência) — comportamento do módulo
+  const rcRecs = receber.filter(x => (x.comp||x.venc||'').slice(0,7) === mes);
+  const rcTot  = rcRecs.reduce((s,x)=>s+(x.val||0), 0);
+
+  // ── IDs em cada lado ─────────────────────────────────────────
+  const dreIds = new Set(dreRecs.map(x=>x.id));
+  const rcIds  = new Set(rcRecs.map(x=>x.id));
+  const soDRE  = dreRecs.filter(x=>!rcIds.has(x.id));
+  const soRC   = rcRecs.filter(x=>!dreIds.has(x.id));
+  const ambos  = dreRecs.filter(x=>rcIds.has(x.id));
+
+  // Lançamentos com conta inválida (não pertence ao grupo 1)
+  const contaInvalida = [...new Set([...dreRecs, ...rcRecs].map(x=>x.id))]
+    .map(id=>[...dreRecs,...rcRecs].find(x=>x.id===id))
+    .filter(x=> x.conta && !codsGrupo1.has(x.conta));
+
+  const diff   = Math.abs(dreTot - rcTot);
+  const ok     = diff < 0.01;
+
+  const fmtData = d => d ? d.split('-').reverse().join('/') : '—';
+  const corSt = s => s==='Recebido'?'#81C784':s==='Vencido'?'#EF9A9A':'#FFB74D';
+
+  const tabelaLanc = (arr, destaque) => {
+    if(!arr.length) return `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:10px;font-style:italic">Nenhum lançamento</td></tr>`;
+    return arr.map(x=>`<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${destaque?'background:rgba(255,143,0,0.06)':''}">
+      <td style="padding:5px 8px;color:var(--or);font-weight:500">${x.cod||x.id}</td>
+      <td style="padding:5px 8px;color:var(--tx)">${x.desc||x.cliente||'—'}</td>
+      <td style="padding:5px 8px;color:var(--tx2)">${fmtData(x.comp)}</td>
+      <td style="padding:5px 8px;color:var(--tx2)">${fmtData(x.venc)}</td>
+      <td style="padding:5px 8px;color:${corSt(x.status)}">${x.status||'—'}</td>
+      <td style="padding:5px 8px;text-align:right;font-weight:600;color:var(--tx)">${R(x.val)}</td>
+    </tr>`).join('');
+  };
+
+  const thStyle = `padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--tx3);border-bottom:1px solid var(--bd);text-align:left`;
+  const thR     = `${thStyle};text-align:right`;
+
+  el.innerHTML = `
+    <!-- Resumo -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:rgba(33,150,243,0.08);border:1px solid rgba(33,150,243,0.2);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#64B5F6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">DRE — Receita (${regime==='caixa'?'Vencimento':'Competência'})</div>
+        <div style="font-size:20px;font-weight:700;color:#64B5F6">${R(dreTot)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${dreRecs.length} lançamento(s)</div>
+      </div>
+      <div style="background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#81C784;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Contas a Receber (Competência)</div>
+        <div style="font-size:20px;font-weight:700;color:#81C784">${R(rcTot)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${rcRecs.length} lançamento(s)</div>
+      </div>
+      <div style="background:${ok?'rgba(76,175,80,0.08)':'rgba(229,57,53,0.08)'};border:1px solid ${ok?'rgba(76,175,80,0.2)':'rgba(229,57,53,0.2)'};border-radius:8px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:${ok?'#81C784':'#EF9A9A'};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Diferença</div>
+        <div style="font-size:20px;font-weight:700;color:${ok?'#81C784':'#EF9A9A'}">${ok?'✓ Zero':R(diff)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${ok?'Totalmente consistente':'Divergência identificada'}</div>
+      </div>
+    </div>
+
+    ${!ok ? `
+    <!-- Explicação da causa -->
+    <div style="background:rgba(255,143,0,0.08);border:1px solid rgba(255,143,0,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#FFB74D">
+      <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
+      <strong>Causa provável:</strong>
+      ${regime==='caixa' && soDRE.length===0 && soRC.length>0
+        ? `O DRE no regime de <strong>Caixa</strong> usa a data de <strong>vencimento</strong>, enquanto Contas a Receber usa a data de <strong>competência</strong>. Os lançamentos abaixo têm competência em <strong>${mes.split('-').reverse().join('/')}</strong> mas vencimento em outro mês — por isso entram no Contas a Receber mas não no DRE deste mês.`
+        : regime==='caixa' && soDRE.length>0 && soRC.length===0
+        ? `Os lançamentos abaixo têm <strong>vencimento</strong> em <strong>${mes.split('-').reverse().join('/')}</strong> mas competência em outro mês — entram no DRE (Caixa) mas não no Contas a Receber deste mês.`
+        : `Lançamentos divergem entre os dois módulos para o período selecionado. Verifique as datas de competência e vencimento dos lançamentos destacados abaixo.`
+      }
+    </div>` : ''}
+
+    ${contaInvalida.length ? `
+    <!-- Contas inválidas -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:#EF9A9A;margin-bottom:6px">
+        <i class="fa-solid fa-circle-exclamation" style="margin-right:6px"></i>Lançamentos com conta fora do grupo 1 — podem sumir do DRE (${contaInvalida.length}) — Total: ${R(contaInvalida.reduce((s,x)=>s+(x.val||0),0))}
+      </div>
+      <div style="background:rgba(229,57,53,0.06);border:1px solid rgba(229,57,53,0.2);border-radius:6px;padding:8px 12px;font-size:11px;color:#EF9A9A;margin-bottom:8px">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
+        Estes lançamentos têm o campo <strong>Conta do Plano</strong> apontando para uma conta que não é do <strong>Grupo 1 — Receitas</strong>.
+        O sistema os redirecionou para a conta padrão, mas verifique e corrija nos lançamentos abaixo.
+      </div>
+      <div style="overflow-x:auto;max-height:160px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="${thStyle}">Código</th><th style="${thStyle}">Descrição</th>
+            <th style="${thStyle}">Competência</th><th style="${thStyle}">Vencimento</th>
+            <th style="${thStyle}">Conta cadastrada</th><th style="${thR}">Valor</th>
+          </tr></thead>
+          <tbody>${contaInvalida.map(x=>`<tr style="border-bottom:1px solid rgba(255,255,255,0.04);background:rgba(229,57,53,0.05)">
+            <td style="padding:5px 8px;color:var(--or);font-weight:500">${x.cod||x.id}</td>
+            <td style="padding:5px 8px;color:var(--tx)">${x.desc||x.cliente||'—'}</td>
+            <td style="padding:5px 8px;color:var(--tx2)">${fmtData(x.comp)}</td>
+            <td style="padding:5px 8px;color:var(--tx2)">${fmtData(x.venc)}</td>
+            <td style="padding:5px 8px;color:#EF9A9A;font-weight:600">${x.conta||'(vazia)'}</td>
+            <td style="padding:5px 8px;text-align:right;font-weight:600;color:var(--tx)">${R(x.val)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <!-- Tabela comum aos dois -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--tx);margin-bottom:6px">
+        <i class="fa-solid fa-circle-check" style="color:#81C784;margin-right:6px"></i>Em ambos (${ambos.length}) — Total: ${R(ambos.reduce((s,x)=>s+(x.val||0),0))}
+      </div>
+      <div style="overflow-x:auto;max-height:180px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="${thStyle}">Código</th><th style="${thStyle}">Descrição</th>
+            <th style="${thStyle}">Competência</th><th style="${thStyle}">Vencimento</th>
+            <th style="${thStyle}">Status</th><th style="${thR}">Valor</th>
+          </tr></thead>
+          <tbody>${tabelaLanc(ambos, false)}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${soRC.length ? `
+    <!-- Só no Contas a Receber -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:#FFB74D;margin-bottom:6px">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>Só no Contas a Receber — NÃO entram no DRE (${soRC.length}) — Total: ${R(soRC.reduce((s,x)=>s+(x.val||0),0))}
+      </div>
+      <div style="overflow-x:auto;max-height:160px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="${thStyle}">Código</th><th style="${thStyle}">Descrição</th>
+            <th style="${thStyle}">Competência</th><th style="${thStyle}">Vencimento</th>
+            <th style="${thStyle}">Status</th><th style="${thR}">Valor</th>
+          </tr></thead>
+          <tbody>${tabelaLanc(soRC, true)}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    ${soDRE.length ? `
+    <!-- Só no DRE -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:#64B5F6;margin-bottom:6px">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>Só no DRE — NÃO aparecem no Contas a Receber deste mês (${soDRE.length}) — Total: ${R(soDRE.reduce((s,x)=>s+(x.val||0),0))}
+      </div>
+      <div style="overflow-x:auto;max-height:160px;overflow-y:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="${thStyle}">Código</th><th style="${thStyle}">Descrição</th>
+            <th style="${thStyle}">Competência</th><th style="${thStyle}">Vencimento</th>
+            <th style="${thStyle}">Status</th><th style="${thR}">Valor</th>
+          </tr></thead>
+          <tbody>${tabelaLanc(soDRE, true)}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;font-size:10px;color:var(--tx3)">
+      <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
+      <strong style="color:var(--tx)">Contas a Receber</strong> sempre filtra por <strong style="color:var(--tx)">data de competência</strong>.
+      O <strong style="color:var(--tx)">DRE Regime Caixa</strong> filtra por <strong style="color:var(--tx)">data de vencimento</strong> —
+      isso é tecnicamente correto, pois representa quando o dinheiro efetivamente entra no caixa.
+      Para comparar os mesmos lançamentos, use o <strong style="color:var(--or)">Regime de Competência</strong> no DRE.
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════
+// DRILL-DOWN DRE — clique no valor
+// ══════════════════════════════════════
+function dreDrillDown(tipo, label, cor){
+  const regime  = _dreRegime;
+  const de      = document.getElementById('dre-de')?.value  || '';
+  const ate     = document.getElementById('dre-ate')?.value || '';
+  const pagar   = S.g('pagar')  || [];
+  const receber = S.g('receber')|| [];
+  const pc      = getPC();
+
+  const filtP = dreFiltrar(pagar, regime, de, ate);
+  const filtR = receber.filter(x=>{
+    const dataRef = (regime==='comp' ? (x.comp||x.venc||'') : (x.venc||x.comp||'')).slice(0,7);
+    if(de  && dataRef < de) return false;
+    if(ate && dataRef > ate) return false;
+    return true;
+  });
+
+  let lancs = [];
+
+  if(tipo==='rec_alim'){
+    lancs = filtR.map(lanc=>{
+      const val = lanc.val||0; if(!val) return null;
+      if(lanc.itens && lanc.itens.length){
+        const det     = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='alimentacao');
+        const sumAlim = det.reduce((s,i)=>s+(i.total||0),0);
+        const sumTot  = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+        const valProp = sumTot>0 ? val*(sumAlim/sumTot) : (det.length?val:0);
+        return valProp>0 ? {...lanc, _valDRE:valProp, _detalhe:det} : null;
+      }
+      return (lanc.conta||'')==='1.2' ? null : {...lanc, _valDRE:val};
+    }).filter(Boolean);
+  } else if(tipo==='rec_merc'){
+    lancs = filtR.map(lanc=>{
+      const val = lanc.val||0; if(!val) return null;
+      if(lanc.itens && lanc.itens.length){
+        const det     = lanc.itens.filter(i=>dreClassificarItem(i.cat)==='mercadoria');
+        const sumMerc = det.reduce((s,i)=>s+(i.total||0),0);
+        const sumTot  = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+        const valProp = sumTot>0 ? val*(sumMerc/sumTot) : (det.length?val:0);
+        return valProp>0 ? {...lanc, _valDRE:valProp, _detalhe:det} : null;
+      }
+      return (lanc.conta||'')==='1.2' ? {...lanc, _valDRE:val} : null;
+    }).filter(Boolean);
+  } else if(tipo==='rec_total'){
+    lancs = filtR.map(l=>({...l, _valDRE:l.val||0}));
+  } else if(tipo==='rec_desc'){
+    lancs = filtR.filter(l=>(l.desconto||0)>0).map(l=>({...l, _valDRE:l.desconto}));
+  } else {
+    // Despesas por grupo, subgrupo ou conta específica
+    const codsDaLinha = pc.filter(x=>{
+      if(tipo.startsWith('grp_'))  return x.tipo==='conta' && x.grupo===tipo.slice(4);
+      if(tipo.startsWith('sub_'))  return x.tipo==='conta' && x.subgrupo===tipo.slice(4);
+      if(tipo.startsWith('cod_'))  return x.tipo==='conta' && x.cod===tipo.slice(4);
+      return false;
+    }).map(x=>x.cod);
+    lancs = filtP.filter(l=>codsDaLinha.includes(l.conta)).map(l=>({...l, _valDRE:l.val||0}));
+  }
+
+  const total = lancs.reduce((s,l)=>s+(l._valDRE||0),0);
+  const fd    = d => d ? d.slice(0,10).split('-').reverse().join('/') : '—';
+  const corSt = s => s==='Pago'||s==='Recebido'?'#81C784':s==='Vencido'?'#EF9A9A':'#FFB74D';
+
+  document.getElementById('dre-drill-titulo').innerHTML =
+    `<i class="fa-solid fa-list-ul" style="color:${cor||'var(--or)'};margin-right:8px"></i>${label}`;
+
+  document.getElementById('dre-drill-resumo').innerHTML =
+    `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--dk3);border-radius:8px;padding:10px 14px;border:1px solid var(--bd);margin-bottom:4px">
+      <div><div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Lançamentos</div>
+           <div style="font-size:18px;font-weight:700;color:var(--tx)">${lancs.length}</div></div>
+      <div style="width:1px;height:32px;background:var(--bd)"></div>
+      <div><div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px">Total do grupo</div>
+           <div style="font-size:18px;font-weight:700;color:${cor||'var(--or)'}">${R(total)}</div></div>
+      <div style="width:1px;height:32px;background:var(--bd)"></div>
+      <div style="font-size:11px;color:var(--tx3)">
+        <i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>
+        Regime: <strong style="color:var(--tx)">${regime==='comp'?'Competência':'Caixa'}</strong>
+        &nbsp;·&nbsp; Período: <strong style="color:var(--tx)">${de ? fmtMes(de) : 'início'} ${ate && ate!==de ? ' a '+fmtMes(ate) : ''}</strong>
+      </div>
+    </div>`;
+
+  const tbody = document.getElementById('dre-drill-tbody');
+  if(!lancs.length){
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--tx3)">
+      <i class="fa-solid fa-inbox" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
+      Nenhum lançamento neste grupo para o período selecionado.</td></tr>`;
+  } else {
+    tbody.innerHTML = lancs.map(l=>{
+      const det = l._detalhe && l._detalhe.length
+        ? `<div style="margin-top:3px">`+l._detalhe.map(i=>
+            `<span style="display:inline-block;background:rgba(255,255,255,0.05);border-radius:3px;padding:1px 6px;margin:1px 2px 1px 0;font-size:10px;color:var(--tx3)">${i.nome} ×${i.qtd} = ${R(i.total)}</span>`
+          ).join('')+`</div>` : '';
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)"
+        onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+        onmouseout="this.style.background=''">
+        <td style="padding:7px 8px;color:var(--or);font-weight:500;font-size:11px;white-space:nowrap">${l.cod||('#'+l.id)||'—'}</td>
+        <td style="padding:7px 8px;color:var(--tx);font-size:12px">${l.desc||l.forn||'—'}${det}</td>
+        <td style="padding:7px 8px;color:var(--tx2);font-size:11px">${l.forn||l.cliente||'—'}</td>
+        <td style="padding:7px 8px;color:var(--tx2);font-size:11px;white-space:nowrap">${fd(l.comp)}</td>
+        <td style="padding:7px 8px;color:var(--tx2);font-size:11px;white-space:nowrap">${fd(l.venc)}</td>
+        <td style="padding:7px 8px;color:var(--tx2);font-size:11px">${l.forma||'—'}</td>
+        <td style="padding:7px 8px;font-size:11px"><span style="color:${corSt(l.status)}">${l.status||'—'}</span></td>
+        <td style="padding:7px 8px;text-align:right;font-weight:600;font-size:12px;color:${cor||'var(--tx)'}">${R(l._valDRE)}</td>
+      </tr>`;
+    }).join('') +
+    `<tr style="border-top:2px solid var(--bd)">
+      <td colspan="7" style="padding:9px 8px;font-size:12px;font-weight:700;color:var(--tx)">TOTAL</td>
+      <td style="padding:9px 8px;text-align:right;font-size:14px;font-weight:700;color:${cor||'var(--or)'}">${R(total)}</td>
+    </tr>`;
+  }
+  openMod('mod-dre-drill');
+}
+
+function limparLancamentosDemo(){
+  const COMANDAS_DEMO = ['IFOOD-001','MESA-12','CAIXA-SAB'];
+  const arr = S.g('receber')||[];
+  const antes = arr.length;
+  const limpo = arr.filter(x => !COMANDAS_DEMO.includes(x.comanda||''));
+  const removidos = antes - limpo.length;
+  if(removidos === 0){
+    showToast('Nenhum lançamento demo encontrado.', 'var(--bl)');
+    return;
+  }
+  if(!confirm(`Foram encontrados ${removidos} lançamento(s) demo para remover:\n${COMANDAS_DEMO.join(', ')}\n\nConfirmar exclusão?`)) return;
+  S.s('receber', limpo);
+  renderReceber();
+  showToast(`✓ ${removidos} lançamento(s) demo removidos. Recarregue a página para atualizar todos os módulos.`, 'var(--gr)');
+}
+
 function exportarBackup(){
   const backup = { versao:'fpg2_v12_cloud', exportadoEm: new Date().toISOString(), dados:{} };
   // Exporta a partir do cache em memória (já sincronizado com a nuvem)
@@ -9525,15 +10187,23 @@ setInterval(()=>{
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+let _initAllRunning = false;
 function initAll(){
+  if(_initAllRunning) return;
+  _initAllRunning = true;
+  try{
   initData();
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
-  renderDashboard();renderPizzas();renderDRE();renderFluxo();renderCaixa();
+  renderDashboard();renderPizzas();renderFluxo();renderCaixa();
   renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
   initCatProdPadrao(); renderCategoriasProd();
+  initCatProdVendaPadrao(); renderCatProdVenda();
+  fillSelectCatProdVenda('mpv-cat');
+  fillSelectCatVendaRel('rv-cat');
+  fillSelectCatVendaRel('rv-cat-comp');
   initProdVendaPadrao(); renderProdVenda(); resetModalProdVenda(); mpvPopularContas();
   initFormasPadrao();
   initFormasRecPadrao(); renderFormasPag();
@@ -9556,7 +10226,9 @@ function initAll(){
   fillSelectProdutosNF('mpp-item-prod');
   fillSelectGrupos('msc-grupo');fillSelectGrupos('mcc-grupo');fillSelectGrupos('mg-pai');fillSelectGrupos('mec-grupo');
   fillSelectGruposCustos('mins-conta');
-  setTimeout(buildCharts,100);
+  setTimeout(()=>{
+    try{ buildCharts(); }catch(e){ console.warn('buildCharts:', e); }
+  }, 100);
   // Mostra info do último auto-backup
   try{
     const ab=S.g('autobackup_ultimo');
@@ -9570,6 +10242,8 @@ function initAll(){
       }
     }
   }catch{}
+  } catch(e){ console.error('initAll error:', e); }
+  finally{ setTimeout(()=>{ _initAllRunning = false; }, 500); }
 }
 </script>
 </body>
