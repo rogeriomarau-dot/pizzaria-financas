@@ -4491,14 +4491,15 @@ function getCatalogItens(){
 function buscarItensNFP(q){
   const drop = document.getElementById('mpp-item-drop');
   if(!drop) return;
-  if(!q || q.length < 1){ drop.style.display='none'; return; }
-  const termo = q.toLowerCase();
+  const termo = (q||'').toLowerCase();
   const todos = getCatalogItens();
-  const filtrados = todos.filter(i=>
-    i.nome.toLowerCase().includes(termo) ||
-    (i.cod||'').toLowerCase().includes(termo) ||
-    (i.cat||'').toLowerCase().includes(termo)
-  ).slice(0, 30);
+  const filtrados = termo.length > 0
+    ? todos.filter(i=>
+        i.nome.toLowerCase().includes(termo) ||
+        (i.cod||'').toLowerCase().includes(termo) ||
+        (i.cat||'').toLowerCase().includes(termo)
+      ).slice(0, 30)
+    : todos.slice(0, 50);
 
   if(!filtrados.length){
     drop.style.display='block';
@@ -4508,7 +4509,10 @@ function buscarItensNFP(q){
 
   const tipoIcon = {Insumo:'fa-wheat-awn', Produto:'fa-boxes-stacked', 'Serviço/Imposto':'fa-screwdriver-wrench'};
   drop.style.display='block';
-  drop.innerHTML = filtrados.map(i=>`
+  const headerNFP = termo.length===0
+    ? `<div style="padding:8px 12px;font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--bd);background:rgba(242,100,25,0.06)"><i class="fa-solid fa-list" style="margin-right:5px"></i>${filtrados.length} itens cadastrados — clique para selecionar</div>`
+    : '';
+  drop.innerHTML = headerNFP+filtrados.map(i=>`
     <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.12s"
       onmouseover="this.style.background='rgba(242,100,25,0.1)'" onmouseout="this.style.background=''"
       onclick="selecionarItemNFP('${i.id}')">
@@ -4526,7 +4530,7 @@ function buscarItensNFP(q){
 
 function mostrarDropItens(){
   const q = document.getElementById('mpp-item-busca')?.value||'';
-  if(q.length >= 1) buscarItensNFP(q);
+  buscarItensNFP(q);
 }
 
 function ocultarDropItens(){
@@ -6739,6 +6743,8 @@ function cxSetData(iso){
   _cxData=iso;
   const el=document.getElementById('cx-data-sel');
   if(el) el.value=iso;
+  // Se navegou para o dia 01, verifica carry-forward do mês
+  if(iso.slice(8,10)==='01') cxCarryForwardMensal(iso.slice(0,7));
   renderCaixa();
 }
 function cxNavData(delta){
@@ -6748,6 +6754,7 @@ function cxNavData(delta){
 }
 function cxSetMes(ym){
   _cxMes=ym;
+  cxCarryForwardMensal(ym);
   renderCaixa();
 }
 function cxNavMes(delta){
@@ -6756,12 +6763,14 @@ function cxNavMes(delta){
   _cxMes=d.toISOString().slice(0,7);
   const el=document.getElementById('cx-mes-sel');
   if(el) el.value=_cxMes;
+  cxCarryForwardMensal(_cxMes);
   renderCaixa();
 }
 function cxMesAtual(){
   _cxMes=new Date().toISOString().slice(0,7);
   const el=document.getElementById('cx-mes-sel');
   if(el) el.value=_cxMes;
+  cxCarryForwardMensal(_cxMes);
   renderCaixa();
 }
 function cxAplicarPeriodo(){
@@ -6779,6 +6788,60 @@ function cxGetMovimentos(){
   if(_cxModo==='periodo'&&_cxPerIni&&_cxPerFim)
     return todos.filter(x=>x.data>=_cxPerIni&&x.data<=_cxPerFim);
   return todos.filter(x=>x.data===_cxData);
+}
+
+// ── Carry-forward automático: garante Saldo Inicial no dia 01 de cada mês ──
+function cxCarryForwardMensal(ym){
+  // ym = 'YYYY-MM'
+  let arr = S.g('caixa-mov')||[];
+  const dia01 = ym+'-01';
+
+  // Se já existe saldo inicial MANUAL (não autoCarry), respeita e não mexe
+  const siManual = arr.find(x=>x.data===dia01 && x.tipo==='Saldo Inicial' && !x.autoCarry);
+  if(siManual) return;
+
+  // Remove carry-forward automático anterior (pode estar desatualizado)
+  arr = arr.filter(x=>!(x.data===dia01 && x.tipo==='Saldo Inicial' && x.autoCarry));
+
+  // Calcula o mês anterior
+  const [y,m] = ym.split('-').map(Number);
+  const mesAntD = new Date(y, m-2, 1); // m-2 porque mês é 0-based
+  const mesAnt = mesAntD.toISOString().slice(0,7);
+
+  // Verifica se existe algum lançamento no mês anterior
+  const movsMesAnt = arr.filter(x=>(x.data||'').slice(0,7)===mesAnt);
+  if(!movsMesAnt.length) return; // Não há dados anteriores, não cria automático
+
+  // Calcula saldo final do mês anterior — acumulado total do mês
+  const siMesAnt = movsMesAnt.filter(x=>x.tipo==='Saldo Inicial').reduce((a,b)=>a+(b.valor||0),0);
+  const entMesAnt = movsMesAnt.filter(x=>x.tipo==='Entrada').reduce((a,b)=>a+(b.valor||0),0);
+  const saiMesAnt = movsMesAnt.filter(x=>x.tipo==='Saída').reduce((a,b)=>a+(b.valor||0),0);
+  const saldoIniMesAnt = siMesAnt > 0 ? siMesAnt : cxGetSaldoInicialDia(mesAnt+'-01');
+  const saldoFinal = saldoIniMesAnt + entMesAnt - saiMesAnt;
+
+  if(saldoFinal <= 0) return; // Saldo zerado ou negativo, não cria automático
+
+  // Cria o lançamento automático de Saldo Inicial
+  const novoArr = [...arr];
+  const mesNomeAnt = new Date(mesAntD.getFullYear(), mesAntD.getMonth(), 1)
+    .toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+
+  novoArr.push({
+    id: cxNextId(novoArr),
+    data: dia01,
+    hora: '00:01',
+    cat: 'Saldo Inicial',
+    desc: `Saldo Inicial do Mês — Transferido de ${mesNomeAnt}`,
+    valor: saldoFinal,
+    forma: 'Dinheiro',
+    resp: 'Sistema',
+    obs: `Carry-forward automático. Saldo final de ${mesNomeAnt}: R$ ${saldoFinal.toFixed(2).replace('.',',')}`,
+    tipo: 'Saldo Inicial',
+    autoCarry: true
+  });
+
+  S.s('caixa-mov', novoArr);
+  console.log(`[CarryForward] Saldo inicial de ${ym} criado: R$ ${saldoFinal.toFixed(2)}`);
 }
 
 // ── Calcula saldo inicial do dia (carry-forward) ──
@@ -6977,14 +7040,15 @@ let cxSaiItens = [];
 function cxBuscarItens(q){
   const drop = document.getElementById('cx-sai-item-drop');
   if(!drop) return;
-  if(!q||q.length<1){drop.style.display='none';return;}
-  const termo = q.toLowerCase();
+  const termo = (q||'').toLowerCase();
   const todos = getCatalogItens();
-  const filtrados = todos.filter(i=>
-    i.nome.toLowerCase().includes(termo)||
-    (i.cod||'').toLowerCase().includes(termo)||
-    (i.cat||'').toLowerCase().includes(termo)
-  ).slice(0,30);
+  const filtrados = termo.length > 0
+    ? todos.filter(i=>
+        i.nome.toLowerCase().includes(termo)||
+        (i.cod||'').toLowerCase().includes(termo)||
+        (i.cat||'').toLowerCase().includes(termo)
+      ).slice(0,30)
+    : todos.slice(0,50);
   if(!filtrados.length){
     drop.style.display='block';
     drop.innerHTML='<div style="padding:14px 12px;font-size:12px;color:var(--tx3);text-align:center"><i class="fa-solid fa-magnifying-glass" style="margin-right:6px"></i>Nenhum item encontrado</div>';
@@ -6992,7 +7056,10 @@ function cxBuscarItens(q){
   }
   const tipoIcon={Insumo:'fa-wheat-awn',Produto:'fa-boxes-stacked','Serviço/Imposto':'fa-screwdriver-wrench'};
   drop.style.display='block';
-  drop.innerHTML=filtrados.map(i=>`
+  const headerCx = termo.length===0
+    ? `<div style="padding:8px 12px;font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--bd);background:rgba(242,100,25,0.06)"><i class="fa-solid fa-list" style="margin-right:5px"></i>${filtrados.length} itens cadastrados — clique para selecionar</div>`
+    : '';
+  drop.innerHTML=headerCx+filtrados.map(i=>`
     <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.12s"
       onmouseover="this.style.background='rgba(242,100,25,0.1)'" onmouseout="this.style.background=''"
       onclick="cxSelecionarItem('${i.id}')">
@@ -7010,7 +7077,7 @@ function cxBuscarItens(q){
 
 function cxMostrarDrop(){
   const q=document.getElementById('cx-sai-item-busca')?.value||'';
-  if(q.length>=1) cxBuscarItens(q);
+  cxBuscarItens(q);
 }
 function cxOcultarDrop(){
   const drop=document.getElementById('cx-sai-item-drop');
@@ -7513,10 +7580,12 @@ function renderCaixa(){
   let saldoCorrente = saldoInicial;
 
   tbEl.innerHTML=sorted.map(mov=>{
-    const isEnt = mov.tipo==='Entrada'||mov.tipo==='Saldo Inicial';
+    const isEnt = mov.tipo==='Entrada';
     const isSai = mov.tipo==='Saída';
+    const isSI  = mov.tipo==='Saldo Inicial';
     const valEnt = isEnt ? (mov.valor||0) : 0;
     const valSai = isSai ? (mov.valor||0) : 0;
+    // Saldo Inicial NÃO soma no loop — já está em saldoCorrente
     saldoCorrente += valEnt - valSai;
 
     const catIcon = CX_CAT_ICON[mov.cat]||'fa-circle-dot';
@@ -7544,7 +7613,7 @@ function renderCaixa(){
         ${contaLabel}
       </td>
       <td style="text-align:right;font-weight:600;color:#81C784;font-size:13px">
-        ${valEnt>0?R(valEnt):'—'}
+        ${isSI ? `<span style="color:var(--or);font-size:11px">${R(mov.valor||0)}</span>` : valEnt>0?R(valEnt):'—'}
       </td>
       <td style="text-align:right;font-weight:600;color:#EF9A9A;font-size:13px">
         ${valSai>0?R(valSai):'—'}
@@ -7565,7 +7634,7 @@ function renderCaixa(){
 
   // Linha de total ao final da tabela
   if(sorted.length){
-    const totEnt = sorted.filter(m=>m.tipo==='Entrada'||m.tipo==='Saldo Inicial').reduce((a,b)=>a+(b.valor||0),0);
+    const totEnt = sorted.filter(m=>m.tipo==='Entrada').reduce((a,b)=>a+(b.valor||0),0);
     const totSai = sorted.filter(m=>m.tipo==='Saída').reduce((a,b)=>a+(b.valor||0),0);
     tbEl.innerHTML += `<tr style="border-top:2px solid rgba(255,255,255,0.1);background:rgba(242,100,25,0.06)">
       <td colspan="4" style="font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;padding:10px">
@@ -12634,6 +12703,11 @@ function initAll(){
   try{
   initData();
   cxCorrigirDatasCAP(); // corrige datas de lançamentos caixa→CAP
+  // Carry-forward automático: garante saldo inicial do mês atual
+  try{
+    const mesAtualYM = new Date().toISOString().slice(0,7);
+    cxCarryForwardMensal(mesAtualYM);
+  }catch(e){ console.warn('carry-forward init:', e); }
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
