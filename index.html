@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finance Gestão Pro — Pizzaria & Delivery</title>
+<title>Finance Gestão Pro — Pizzaria | Sushi | Massa</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -327,7 +327,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="lg-logo">
       <div class="lg-brand">FINANCE</div>
       <div class="lg-sub">Gestão Pro</div>
-      <div class="lg-nicho">🍕 Pizzaria & Delivery</div>
+      <div class="lg-nicho">🍕 Pizzaria | Sushi | Massa</div>
     </div>
     <div class="fg"><label>Usuário</label><input id="iu" type="text" value="demo@pizzaria.com"></div>
     <div class="fg"><label>Senha</label><input id="ip" type="password" value="123456"></div>
@@ -372,7 +372,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
     <button class="ni" onclick="go('rel-vendas',this)"><i class="fa-solid fa-chart-bar"></i>Rel. Vendas de Produtos</button>
     <div class="sb-ft">
-      <div class="cl-info"><div class="cl-name" id="cn">Pizzaria Bella Napoli</div><div class="cl-seg">Delivery • Porto Alegre/RS</div></div>
+      <div class="cl-info"><div class="cl-name" id="cn">Pizzaria Bella Napoli</div><div class="cl-seg">Pizzaria | Sushi | Massa</div></div>
       <div style="display:flex;gap:6px;margin-top:8px">
         <button class="btn-out" style="flex:1;font-size:10px;padding:6px 4px" onclick="exportarBackup()" title="Exportar todos os dados"><i class="fa-solid fa-download"></i> Backup</button>
         <label class="btn-out" style="flex:1;font-size:10px;padding:6px 4px;text-align:center;cursor:pointer;margin:0" title="Restaurar dados de backup"><i class="fa-solid fa-upload"></i> Restaurar<input type="file" accept=".json" style="display:none" onchange="importarBackup(this)"></label>
@@ -397,12 +397,62 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- DASHBOARD -->
 <div class="page act" id="page-dashboard">
+
+  <!-- Barra de período — 4 modos -->
+  <div class="cd" style="margin-bottom:12px;padding:12px 16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <!-- 4 Botões de modo -->
+        <div style="display:flex;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+          <button id="db-tab-mensal"       onclick="dbSetModo('mensal')"       style="padding:7px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;background:var(--or);color:#fff;white-space:nowrap"><i class="fa-solid fa-calendar-day" style="margin-right:4px"></i>Mensal</button>
+          <button id="db-tab-trimestral"   onclick="dbSetModo('trimestral')"   style="padding:7px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--tx2);white-space:nowrap"><i class="fa-solid fa-calendar-week" style="margin-right:4px"></i>Trimestral</button>
+          <button id="db-tab-quadrimestral" onclick="dbSetModo('quadrimestral')" style="padding:7px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--tx2);white-space:nowrap"><i class="fa-solid fa-calendar-days" style="margin-right:4px"></i>Quadrimestral</button>
+          <button id="db-tab-anual"        onclick="dbSetModo('anual')"        style="padding:7px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--tx2);white-space:nowrap"><i class="fa-solid fa-calendar" style="margin-right:4px"></i>Anual</button>
+        </div>
+        <!-- Navegação mensal -->
+        <div id="db-nav-mensal" style="display:flex;align-items:center;gap:6px">
+          <button onclick="dbNavMes(-1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
+          <input type="month" id="db-mes-sel" onchange="dbSetMes(this.value)" style="background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;padding:6px 12px;color:var(--or);font-family:Outfit,sans-serif;font-size:13px;font-weight:500;outline:none;cursor:pointer">
+          <button onclick="dbNavMes(1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">›</button>
+          <button onclick="dbMesAtual()" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Atual</button>
+        </div>
+        <!-- Navegação multi-período (trim/quadri/anual) -->
+        <div id="db-nav-periodo" style="display:none;align-items:center;gap:6px">
+          <button onclick="dbNavPeriodo(-1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
+          <select id="db-periodo-sel" onchange="dbSetPeriodo(this.value)" style="background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;padding:6px 12px;color:var(--or);font-family:Outfit,sans-serif;font-size:12px;font-weight:500;outline:none;cursor:pointer;min-width:200px"></select>
+          <button onclick="dbNavPeriodo(1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">›</button>
+          <button onclick="dbPeriodoAtual()" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Atual</button>
+        </div>
+      </div>
+      <div id="db-periodo-label" style="font-size:12px;color:var(--tx2)"></div>
+    </div>
+  </div>
+
+  <!-- Painel consolidado (trim/quadri/anual) — oculto por padrão -->
+  <div id="db-consolidado-body" style="display:none">
+    <div class="kg" id="kpi-db-cons" style="margin-bottom:12px"></div>
+    <div class="cd" style="margin-bottom:12px">
+      <div class="ct">Evolução Mensal <span class="cs" id="db-cons-label"></span></div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse" id="tb-db-cons"></table></div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="cd">
+        <div class="ct">Faturamento × Despesas</div>
+        <div class="cw" style="height:200px"><canvas id="c-db-cons-fat" role="img"></canvas></div>
+      </div>
+      <div class="cd">
+        <div class="ct">Semáforo Financeiro <span class="cs" id="db-cons-sem-label"></span></div>
+        <div class="sf" id="sf-db-cons"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="kg" id="kpi-db"></div>
-  <div class="g2">
+  <div class="g2" id="db-charts-row">
     <div class="cd"><div class="ct">Faturamento × Despesas <span class="cs">6 meses</span></div><div class="cw" style="height:200px"><canvas id="c-fat" role="img" aria-label="fat vs desp"></canvas></div></div>
     <div class="cd"><div class="ct">Composição de Custos <span class="cs">Mês atual</span></div><div class="cw" style="height:160px;margin-bottom:8px"><canvas id="c-dnut" role="img" aria-label="custos"></canvas></div><div id="leg-dnut" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
   </div>
-  <div class="g3">
+  <div class="g3" id="db-semaforo-row">
     <div class="cd"><div class="ct">Semáforo Financeiro</div><div class="sf" id="sf-db"></div></div>
     <div class="cd"><div class="ct">Ponto de Equilíbrio</div><div id="pe-db"></div></div>
     <div class="cd"><div class="ct">Alertas</div><div id="al-db"></div></div>
@@ -4152,6 +4202,10 @@ function go(pg,btn){
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
   if(pg==='estoque'){ eqInitMes(); setTimeout(()=>{ eqSincronizarCAP(); },200); }
+  if(pg==='dashboard'){ dbInitMes(); }
+  // Oculta badge de mês no dashboard (tem seletor próprio)
+  const bdgMes=document.getElementById('bdg-mes');
+  if(bdgMes) bdgMes.style.display=pg==='dashboard'?'none':'';
   if(pg==='rel-vendas')  initRelVendas();
 }
 
@@ -6149,7 +6203,66 @@ function dbTendencia(atual, ant, inverso){
   return { cls, icon, txt: `${sinal}${pct.toFixed(1)}% vs mês ant.` };
 }
 
-function dbKpiCard(label, icon, corIcon, valAtual, valAnt, formato, inverso, subLabel){
+// KPI Card consolidado com detalhamento mensal expansível
+function dbKpiCardCons(label, icon, corIcon, valTotal, dadosMeses, nomesMeses, formato, inverso, subLabel, idSuffix, pctVal){
+  const fmt = v => formato==='qtd' ? v.toLocaleString('pt-BR',{maximumFractionDigits:0}) : R(v);
+  const pct = v => formato==='pct' ? P(v) : '';
+  const semDados = valTotal===0 && dadosMeses.every(v=>v===0);
+
+  // Tendência (maior valor vs menor valor nos meses)
+  const max = Math.max(...dadosMeses);
+  const min = Math.min(...dadosMeses);
+  const trend = dadosMeses.length>1
+    ? (dadosMeses[dadosMeses.length-1] > dadosMeses[0] ? 'up' : dadosMeses[dadosMeses.length-1] < dadosMeses[0] ? 'down' : 'eq')
+    : 'eq';
+  const trendCor = trend==='up' ? (inverso?'var(--rd)':'var(--gr)') : trend==='down' ? (inverso?'var(--gr)':'var(--rd)') : 'var(--tx3)';
+  const trendIcon = trend==='up' ? 'fa-arrow-trend-up' : trend==='down' ? 'fa-arrow-trend-down' : 'fa-minus';
+
+  // Barras mini dos meses
+  const miniBarras = dadosMeses.map((v,i)=>{
+    const pctBar = max>0 ? Math.round(v/max*100) : 0;
+    const nomeMes = nomesMeses[i]||'';
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:3px" title="${nomeMes}: ${fmt(v)}">
+      <span style="font-size:9px;color:var(--tx3);white-space:nowrap">${fmt(v)}</span>
+      <div style="width:100%;height:32px;background:var(--dk4);border-radius:3px;display:flex;align-items:flex-end;overflow:hidden">
+        <div style="width:100%;height:${pctBar}%;background:${corIcon};border-radius:3px;min-height:2px;transition:height 0.3s"></div>
+      </div>
+      <span style="font-size:9px;color:var(--tx3);white-space:nowrap">${nomeMes}</span>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="kc" style="border-color:${semDados?'var(--bd)':'rgba(242,100,25,0.2)'};cursor:pointer" onclick="dbToggleKpiDetalhe('kpi-det-${idSuffix}',this)">
+      <div class="kl"><i class="fa-solid ${icon}" style="color:${corIcon}"></i>${label}
+        <i class="fa-solid fa-chevron-down" style="margin-left:auto;font-size:9px;color:var(--tx3);transition:transform 0.2s" id="kpi-chev-${idSuffix}"></i>
+      </div>
+      <div class="kv" style="color:${semDados?'var(--tx3)':'var(--tx)'}">
+        ${semDados?'—':fmt(valTotal)}${pctVal!==undefined&&!semDados?`<span style="font-size:13px;font-weight:400;color:var(--tx3);margin-left:6px">— ${P(pctVal)}</span>`:''}
+      </div>
+      ${subLabel?`<div style="font-size:10px;color:var(--tx3);margin-top:2px">${subLabel}</div>`:''}
+      <div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+        <i class="fa-solid ${trendIcon}" style="color:${trendCor};font-size:10px"></i>
+        <span style="font-size:10px;color:${trendCor}">${trend==='up'?'Crescente':trend==='down'?'Queda':'Estável'}</span>
+      </div>
+      <!-- Detalhamento por mês (expansível) -->
+      <div id="kpi-det-${idSuffix}" style="display:none;margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)">
+        <div style="display:flex;gap:4px;align-items:flex-end;height:72px">${miniBarras}</div>
+      </div>
+    </div>`;
+}
+
+function dbToggleKpiDetalhe(detId, card){
+  const det = document.getElementById(detId);
+  const chev = document.getElementById(detId.replace('kpi-det-','kpi-chev-'));
+  if(!det) return;
+  const aberto = det.style.display==='block';
+  det.style.display = aberto?'none':'block';
+  if(chev) chev.style.transform = aberto?'':'rotate(180deg)';
+  // Marca card como expandido
+  card.style.borderColor = aberto?'rgba(242,100,25,0.2)':'var(--or)';
+}
+
+function dbKpiCard(label, icon, corIcon, valAtual, valAnt, formato, inverso, subLabel, pctVal){
   const tend   = dbTendencia(valAtual, valAnt, inverso||false);
   const valFmt = formato==='R$' ? R(valAtual)
                : formato==='%'  ? P(valAtual)
@@ -6160,10 +6273,16 @@ function dbKpiCard(label, icon, corIcon, valAtual, valAnt, formato, inverso, sub
                : formato==='qtd'? valAnt.toLocaleString('pt-BR')
                : R(valAnt);
   const semDados = valAtual === 0 && valAnt === 0;
+  // Mostra % ao lado do valor em R$ se pctVal fornecido
+  const pctTag = (pctVal !== undefined && !semDados)
+    ? `<span style="font-size:13px;font-weight:400;color:var(--tx3);margin-left:6px">— ${P(pctVal)}</span>`
+    : '';
   return `
     <div class="kc" style="border-color:${semDados?'var(--bd)':'rgba(242,100,25,0.2)'}">
       <div class="kl"><i class="fa-solid ${icon}" style="color:${corIcon}"></i>${label}</div>
-      <div class="kv" style="color:${semDados?'var(--tx3)':'var(--tx)'}">${semDados?'—':valFmt}</div>
+      <div class="kv" style="color:${semDados?'var(--tx3)':'var(--tx)'}">
+        ${semDados?'—':valFmt}${pctTag}
+      </div>
       ${subLabel ? `<div style="font-size:10px;color:var(--tx3);margin-top:2px">${subLabel}</div>` : ''}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)">
         <span class="kd ${tend.cls}" style="font-size:10px">
@@ -6174,34 +6293,309 @@ function dbKpiCard(label, icon, corIcon, valAtual, valAnt, formato, inverso, sub
     </div>`;
 }
 
+// ── Dashboard — variáveis de período ──
+let _dbMes   = new Date().toISOString().slice(0,7);
+let _dbModo  = 'mensal'; // 'mensal' | 'trimestral' | 'quadrimestral' | 'anual'
+let _dbAno   = new Date().getFullYear();
+let _dbPeriodoIdx = 0; // índice no select de períodos
+
+// Retorna array de meses para o modo/período atual
+function dbGetMeses(){
+  if(_dbModo==='mensal') return [_dbMes];
+  const sel = document.getElementById('db-periodo-sel');
+  if(!sel || !sel.value) return [_dbMes];
+  return sel.value.split(',');
+}
+
+// Inicializa o campo de mês
+function dbInitMes(){
+  const el = document.getElementById('db-mes-sel');
+  if(el && !el.value) el.value = _dbMes;
+  dbAtualizarLabel();
+}
+
+function dbSetMes(ym){ _dbMes=ym; dbAtualizarLabel(); renderDashboard(); }
+
+function dbNavMes(d){
+  const [y,m]=_dbMes.split('-').map(Number);
+  const nd=new Date(y,m-1+d,1);
+  _dbMes=nd.toISOString().slice(0,7);
+  const el=document.getElementById('db-mes-sel'); if(el) el.value=_dbMes;
+  dbAtualizarLabel(); renderDashboard();
+}
+
+function dbMesAtual(){
+  _dbMes=new Date().toISOString().slice(0,7);
+  const el=document.getElementById('db-mes-sel'); if(el) el.value=_dbMes;
+  dbAtualizarLabel(); renderDashboard();
+}
+
+// Gera lista de opções para o select de períodos
+function dbGerarOpcoesPeriodo(){
+  const sel=document.getElementById('db-periodo-sel'); if(!sel) return;
+  sel.innerHTML='';
+  const agora=new Date();
+  const anoAtual=agora.getFullYear();
+  const mesAtual=agora.getMonth()+1;
+
+  if(_dbModo==='trimestral'){
+    // Últimos 8 trimestres
+    for(let i=0;i<8;i++){
+      let trim=Math.ceil(mesAtual/3)-i;
+      let ano=anoAtual+Math.floor((trim-1)/4);
+      while(trim<1){trim+=4;ano--;}
+      while(trim>4){trim-=4;ano++;}
+      const inicio=(trim-1)*3+1;
+      const meses=[`${ano}-${String(inicio).padStart(2,'0')}`,
+                   `${ano}-${String(inicio+1).padStart(2,'0')}`,
+                   `${ano}-${String(inicio+2).padStart(2,'0')}`];
+      const nomeMes1=new Date(ano,inicio-1,1).toLocaleString('pt-BR',{month:'short'}).replace('.','');
+      const nomeMes3=new Date(ano,inicio+1,1).toLocaleString('pt-BR',{month:'short'}).replace('.','');
+      const o=document.createElement('option');
+      o.value=meses.join(',');
+      o.textContent=`${trim}º Trim. ${ano} (${nomeMes1} – ${nomeMes3})`;
+      sel.appendChild(o);
+    }
+  } else if(_dbModo==='quadrimestral'){
+    // Últimos 6 quadrimestres
+    for(let i=0;i<6;i++){
+      let quad=Math.ceil(mesAtual/4)-i;
+      let ano=anoAtual+Math.floor((quad-1)/3);
+      while(quad<1){quad+=3;ano--;}
+      while(quad>3){quad-=3;ano++;}
+      const inicio=(quad-1)*4+1;
+      const meses=[];
+      for(let mm=inicio;mm<=Math.min(inicio+3,12);mm++){
+        meses.push(`${ano}-${String(mm).padStart(2,'0')}`);
+      }
+      const nomeMes1=new Date(ano,inicio-1,1).toLocaleString('pt-BR',{month:'short'}).replace('.','');
+      const nomeMesF=new Date(ano,inicio+2,1).toLocaleString('pt-BR',{month:'short'}).replace('.','');
+      const o=document.createElement('option');
+      o.value=meses.join(',');
+      o.textContent=`${quad}º Quad. ${ano} (${nomeMes1} – ${nomeMesF})`;
+      sel.appendChild(o);
+    }
+  } else if(_dbModo==='anual'){
+    // Últimos 5 anos
+    for(let i=0;i<5;i++){
+      const ano=anoAtual-i;
+      const meses=[];
+      for(let mm=1;mm<=12;mm++) meses.push(`${ano}-${String(mm).padStart(2,'0')}`);
+      const o=document.createElement('option');
+      o.value=meses.join(',');
+      o.textContent=`Ano ${ano}`;
+      sel.appendChild(o);
+    }
+  }
+}
+
+function dbSetPeriodo(val){ dbAtualizarLabel(); renderDashboardConsolidado(); }
+
+function dbNavPeriodo(d){
+  const sel=document.getElementById('db-periodo-sel'); if(!sel) return;
+  const idx=sel.selectedIndex+d;
+  if(idx>=0&&idx<sel.options.length){ sel.selectedIndex=idx; dbSetPeriodo(sel.value); }
+}
+
+function dbPeriodoAtual(){
+  const sel=document.getElementById('db-periodo-sel'); if(!sel) return;
+  sel.selectedIndex=0; dbSetPeriodo(sel.value);
+}
+
+function dbSetModo(modo){
+  _dbModo=modo;
+  // Atualiza visual dos botões
+  ['mensal','trimestral','quadrimestral','anual'].forEach(m=>{
+    const btn=document.getElementById('db-tab-'+m);
+    if(btn){ btn.style.background=m===modo?'var(--or)':'transparent'; btn.style.color=m===modo?'#fff':'var(--tx2)'; btn.style.fontWeight=m===modo?'600':'500'; }
+  });
+  // Navegação
+  const navM=document.getElementById('db-nav-mensal');
+  const navP=document.getElementById('db-nav-periodo');
+  if(navM) navM.style.display=modo==='mensal'?'flex':'none';
+  if(navP) navP.style.display=modo!=='mensal'?'flex':'none';
+  // Painéis — controle por IDs específicos
+  const paineisMensaisDisplay = {'kpi-db':'grid','db-charts-row':'grid','db-semaforo-row':'grid'};
+  Object.entries(paineisMensaisDisplay).forEach(([id,disp])=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=modo==='mensal'?disp:'none';
+  });
+  const cons=document.getElementById('db-consolidado-body');
+  if(cons) cons.style.display=modo!=='mensal'?'block':'none';
+
+  if(modo!=='mensal'){
+    dbGerarOpcoesPeriodo();
+    renderDashboardConsolidado();
+  } else {
+    renderDashboard();
+    // Reconstrói gráficos após painéis ficarem visíveis
+    setTimeout(()=>{ try{ buildCharts(); }catch(e){} }, 50);
+  }
+  dbAtualizarLabel();
+}
+
+function dbAtualizarLabel(){
+  const el=document.getElementById('db-periodo-label'); if(!el) return;
+  if(_dbModo==='mensal'){
+    const [y,m]=_dbMes.split('-').map(Number);
+    const nome=new Date(y,m-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    const hoje=new Date().toISOString().slice(0,7);
+    const tag=_dbMes===hoje?'<span style="background:rgba(76,175,80,0.15);color:#81C784;padding:2px 8px;border-radius:3px;font-size:10px;margin-left:6px">Mês atual</span>':'';
+    el.innerHTML=`<i class="fa-solid fa-calendar" style="color:var(--or);margin-right:5px"></i>${nome}${tag}`;
+  } else {
+    const sel=document.getElementById('db-periodo-sel');
+    const label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:'';
+    const modoLabel={trimestral:'Trimestre',quadrimestral:'Quadrimestre',anual:'Ano'}[_dbModo]||'';
+    el.innerHTML=`<i class="fa-solid fa-calendar-days" style="color:var(--or);margin-right:5px"></i>${label}`;
+  }
+}
+
+// ── Renderização consolidada (trim/quadri/anual) ──
+function renderDashboardConsolidado(){
+  const sel=document.getElementById('db-periodo-sel');
+  if(!sel||!sel.value) return;
+  const meses=sel.value.split(',');
+  const nomesMeses=meses.map(ym=>{
+    const [y,m]=ym.split('-').map(Number);
+    return new Date(y,m-1,1).toLocaleString('pt-BR',{month:'short'}).replace('.','').replace(/^\w/,c=>c.toUpperCase());
+  });
+  const label=sel.options[sel.selectedIndex]?.textContent||'';
+  const el=document.getElementById('db-cons-label'); if(el) el.textContent=label;
+  const el2=document.getElementById('db-cons-sem-label'); if(el2) el2.textContent=label;
+
+  // Calcula dados de cada mês
+  const dados=meses.map(ym=>dbCalcMes(ym));
+
+  // Consolidado total
+  const cons={
+    fat:        dados.reduce((a,d)=>a+d.fat,0),
+    totCMV:     dados.reduce((a,d)=>a+d.totCMV,0),
+    totOp:      dados.reduce((a,d)=>a+d.totOp,0),
+    totFin:     dados.reduce((a,d)=>a+d.totFin,0),
+    totImp:     dados.reduce((a,d)=>a+d.totImp,0),
+    ebitda:     dados.reduce((a,d)=>a+d.ebitda,0),
+    lucroBruto: dados.reduce((a,d)=>a+d.lucroBruto,0),
+    qtdPizzas:  dados.reduce((a,d)=>a+d.qtdPizzas,0),
+  };
+  // Mês anterior ao período para comparação
+  const [yFirst,mFirst]=meses[0].split('-').map(Number);
+  const mesAntD=new Date(yFirst,mFirst-2,1);
+  const ymAnt=mesAntD.toISOString().slice(0,7);
+  const ant=dbCalcMes(ymAnt);
+
+  cons.cmvPct    = cons.fat>0?cons.totCMV/cons.fat*100:0;
+  cons.ebitdaPct = cons.fat>0?cons.ebitda/cons.fat*100:0;
+  cons.mcPct     = cons.fat>0?cons.lucroBruto/cons.fat*100:0;
+
+  // KPIs com detalhamento mensal expansível
+  const kpiEl=document.getElementById('kpi-db-cons');
+  if(kpiEl){
+    kpiEl.style.gridTemplateColumns='repeat(3,1fr)';
+    kpiEl.innerHTML=
+      dbKpiCardCons('Faturamento Bruto',     'fa-chart-line',          'var(--or)', cons.fat,        dados.map(d=>d.fat),        nomesMeses, 'R$',  false, `Total do período`,            'fat')+
+      dbKpiCardCons('CMV — Custo Mercadoria','fa-boxes-stacked',       'var(--am)', cons.totCMV,     dados.map(d=>d.totCMV),     nomesMeses, 'R$',  true,  `${P(cons.cmvPct)} da receita`, 'cmv')+
+      dbKpiCardCons('Margem de Contribuição','fa-percent',             'var(--bl)', cons.lucroBruto, dados.map(d=>d.lucroBruto), nomesMeses, 'R$',  false, `${P(cons.mcPct)} da receita`,  'mg')+
+      dbKpiCardCons('Desp. Operacionais',    'fa-file-invoice-dollar', 'var(--rd)', cons.totOp,      dados.map(d=>d.totOp),      nomesMeses, 'R$',  true,  `Total do período`,            'op')+
+      dbKpiCardCons('EBITDA',                'fa-sack-dollar',         'var(--gr)', cons.ebitda,     dados.map(d=>d.ebitda),     nomesMeses, 'R$',  false, `da receita`, 'ebitda', cons.ebitdaPct)+
+      dbKpiCardCons('Pizzas / Rodízios',     'fa-pizza-slice',         'var(--or)', cons.qtdPizzas,  dados.map(d=>d.qtdPizzas),  nomesMeses, 'qtd', false, `Unidades vendidas`,              'piz');
+  }
+
+  // Tabela evolução mensal
+  const tbEl=document.getElementById('tb-db-cons');
+  if(tbEl){
+    const linhas=[
+      {label:'Faturamento',          cor:'var(--or)', vals:dados.map(d=>d.fat)},
+      {label:'CMV',                   cor:'var(--am)', vals:dados.map(d=>d.totCMV)},
+      {label:'CMV %',                 cor:'var(--am)', vals:dados.map(d=>d.fat>0?d.cmvPct:0), pct:true},
+      {label:'Margem de Contribuição',cor:'#81C784',   vals:dados.map(d=>d.lucroBruto)},
+      {label:'Margem %',              cor:'#81C784',   vals:dados.map(d=>d.fat>0?d.mcPct:0),  pct:true},
+      {label:'Desp. Operacionais',    cor:'var(--rd)', vals:dados.map(d=>d.totOp)},
+      {label:'EBITDA',                cor:'var(--bl)', vals:dados.map(d=>d.ebitda)},
+      {label:'Pizzas / Rodízios', cor:'var(--or)', vals:dados.map(d=>d.qtdPizzas), qtd:true},
+    ];
+    const totCols=meses.length;
+    tbEl.innerHTML=`
+      <thead><tr style="border-bottom:2px solid var(--or)">
+        <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--tx3);text-transform:uppercase;white-space:nowrap">Indicador</th>
+        ${nomesMeses.map(n=>`<th style="text-align:right;padding:8px 10px;font-size:11px;color:var(--tx3);text-transform:uppercase;white-space:nowrap">${n}</th>`).join('')}
+        <th style="text-align:right;padding:8px 10px;font-size:11px;color:var(--or);text-transform:uppercase;white-space:nowrap">Total</th>
+      </tr></thead>
+      <tbody>${linhas.map(l=>`
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+          <td style="padding:8px 10px;font-size:12px;color:${l.cor};font-weight:600">${l.label}</td>
+          ${l.vals.map(v=>`<td style="text-align:right;padding:8px 10px;font-size:12px;color:var(--tx2)">${l.pct?P(v):l.qtd?v.toLocaleString('pt-BR',{maximumFractionDigits:0}):R(v)}</td>`).join('')}
+          <td style="text-align:right;padding:8px 10px;font-size:13px;font-weight:700;color:${l.cor}">
+            ${l.pct?P(l.vals.reduce((a,b)=>a+b,0)/l.vals.length):l.qtd?l.vals.reduce((a,b)=>a+b,0).toLocaleString('pt-BR',{maximumFractionDigits:0}):R(l.vals.reduce((a,b)=>a+b,0))}
+          </td>
+        </tr>`).join('')}
+      </tbody>`;
+  }
+
+  // Gráfico barras
+  const cvFat=document.getElementById('c-db-cons-fat');
+  if(cvFat){
+    if(window._chartDbConsFat) window._chartDbConsFat.destroy();
+    window._chartDbConsFat=new Chart(cvFat.getContext('2d'),{
+      type:'bar',
+      data:{ labels:nomesMeses, datasets:[
+        {label:'Faturamento', data:dados.map(d=>d.fat),    backgroundColor:'rgba(242,100,25,0.8)', borderRadius:4},
+        {label:'CMV',         data:dados.map(d=>d.totCMV), backgroundColor:'rgba(255,143,0,0.7)',  borderRadius:4},
+        {label:'Desp. Op.',   data:dados.map(d=>d.totOp),  backgroundColor:'rgba(33,150,243,0.7)', borderRadius:4},
+        {label:'EBITDA',      data:dados.map(d=>Math.max(0,d.ebitda)), backgroundColor:'rgba(76,175,80,0.8)', borderRadius:4},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#AAAAAA',font:{size:10},boxWidth:10}}},
+        scales:{x:{ticks:{color:'#666'},grid:{color:'rgba(255,255,255,0.04)'}},
+                y:{ticks:{color:'#666',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}
+    });
+  }
+
+  // Semáforo consolidado
+  const sfEl=document.getElementById('sf-db-cons');
+  if(sfEl){
+    const cmvOk=cons.fat>0&&cons.cmvPct<=35;
+    const mgOk=cons.fat>0&&cons.ebitdaPct>=10;
+    const opOk=cons.fat>0&&(cons.totOp/cons.fat*100)<=40;
+    sfEl.innerHTML=cons.fat===0
+      ? `<div style="text-align:center;color:var(--tx3);font-size:12px;padding:20px">Sem dados no período.</div>`
+      : `<div class="si ${cmvOk?'sg':'sr'}"><div class="sv">${P(cons.cmvPct)}</div><div class="sl">CMV %</div></div>
+         <div class="si ${cons.lucroBruto>0?'sg':'sr'}"><div class="sv">${P(cons.mcPct)}</div><div class="sl">Margem Contrib.</div></div>
+         <div class="si ${opOk?'sg':'sa'}"><div class="sv">${P(cons.fat>0?cons.totOp/cons.fat*100:0)}</div><div class="sl">Desp. Op. %</div></div>
+         <div class="si ${mgOk?'sg':cons.ebitdaPct>=0?'sa':'sr'}"><div class="sv">${P(cons.ebitdaPct)}</div><div class="sl">EBITDA %</div></div>`;
+  }
+  dbAtualizarLabel();
+}
+
 function renderDashboard(){
-  // Calcula mês atual e anterior
-  const hoje   = new Date();
-  const ymAtual = hoje.toISOString().slice(0,7);
-  const dAnt    = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
-  const ymAnt   = dAnt.toISOString().slice(0,7);
+  dbInitMes();
+  const ymAtual = _dbMes;
+  const [y,m] = ymAtual.split('-').map(Number);
+  const dAnt   = new Date(y, m-2, 1);
+  const ymAnt  = dAnt.toISOString().slice(0,7);
 
   const at = dbCalcMes(ymAtual);
   const an = dbCalcMes(ymAnt);
 
-  const mesLabel  = new Date(ymAtual+'-01').toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  const antLabel  = new Date(ymAnt  +'-01').toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  const [_y,_m] = ymAtual.split('-').map(Number);
+  const mesLabel = new Date(_y,_m-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+  const [_ya,_ma] = ymAnt.split('-').map(Number);
+  const antLabel = new Date(_ya,_ma-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
 
   // ── KPIs principais (6 cards em 2 linhas de 3) ──
   const kpiEl = document.getElementById('kpi-db');
   if(kpiEl){
     kpiEl.style.gridTemplateColumns = 'repeat(3,1fr)';
     kpiEl.innerHTML =
-      dbKpiCard('Faturamento Bruto',    'fa-chart-line',       'var(--or)', at.fat,       an.fat,       'R$',  false) +
-      dbKpiCard('EBITDA',               'fa-sack-dollar',      'var(--gr)', at.ebitda,    an.ebitda,    'R$',  false,
-        `${P(at.ebitdaPct)} da receita`) +
-      dbKpiCard('CMV — Custo Mercadoria','fa-boxes-stacked',   'var(--am)', at.totCMV,    an.totCMV,    'R$',  true,
+      dbKpiCard('Faturamento Bruto',      'fa-chart-line',          'var(--or)', at.fat,        an.fat,        'R$',  false) +
+      dbKpiCard('CMV — Custo Mercadoria', 'fa-boxes-stacked',       'var(--am)', at.totCMV,     an.totCMV,     'R$',  true,
         `${P(at.cmvPct)} da receita`) +
-      dbKpiCard('Margem de Contribuição','fa-percent',         'var(--bl)', at.lucroBruto,an.lucroBruto,'R$',  false,
+      dbKpiCard('Margem de Contribuição', 'fa-percent',             'var(--bl)', at.lucroBruto, an.lucroBruto, 'R$',  false,
         `${P(at.mcPct)} da receita`) +
-      dbKpiCard('Desp. Operacionais',   'fa-file-invoice-dollar','var(--rd)',at.totOp,    an.totOp,     'R$',  true) +
-      dbKpiCard('Pizzas / Rodízios',    'fa-pizza-slice',      'var(--or)', at.qtdPizzas, an.qtdPizzas, 'qtd', false,
-        'PAX vendidos no mês');
+      dbKpiCard('Desp. Operacionais',     'fa-file-invoice-dollar', 'var(--rd)', at.totOp,      an.totOp,      'R$',  true) +
+      dbKpiCard('EBITDA',                 'fa-sack-dollar',         'var(--gr)', at.ebitda,     an.ebitda,     'R$',  false,
+        `da receita`, at.ebitdaPct) +
+      dbKpiCard('Pizzas / Rodízios',      'fa-pizza-slice',         'var(--or)', at.qtdPizzas,  an.qtdPizzas,  'qtd', false,
+        'Unidades vendidas');
   }
 
   // ── Label de período no semáforo ──
@@ -6217,7 +6611,7 @@ function renderDashboard(){
            Sem dados no mês atual.<br>Registre lançamentos para ver o semáforo.
          </div>`
       : `<div class="si ${cmvOk?'sg':'sr'}"><div class="sv">${P(at.cmvPct)}</div><div class="sl">CMV %</div></div>
-         <div class="si ${at.lucroBruto>0?'sg':'sr'}"><div class="sv">${P(at.mcPct)}</div><div class="sl">Mg. Contrib.</div></div>
+         <div class="si ${at.lucroBruto>0?'sg':'sr'}"><div class="sv">${P(at.mcPct)}</div><div class="sl">Margem Contrib.</div></div>
          <div class="si ${opOk?'sg':'sa'}"><div class="sv">${P(at.fat>0?at.totOp/at.fat*100:0)}</div><div class="sl">Desp. Op. %</div></div>
          <div class="si ${mgOk?'sg':at.ebitdaPct>=0?'sa':'sr'}"><div class="sv">${P(at.ebitdaPct)}</div><div class="sl">EBITDA %</div></div>`;
   }
@@ -14163,7 +14557,7 @@ function initAll(){
   _cxData=new Date().toISOString().slice(0,10);
   const cxSelEl=document.getElementById('cx-data-sel');if(cxSelEl)cxSelEl.value=_cxData;
   renderDashboard();renderPizzas();renderFluxo();renderCaixa();
-  eqInitMes();renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
+  eqInitMes();dbInitMes();renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
   initCatProdPadrao(); renderCategoriasProd();
   initCatProdVendaPadrao(); renderCatProdVenda();
