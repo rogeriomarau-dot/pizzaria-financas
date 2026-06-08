@@ -47,6 +47,28 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--dk4);border-radius:99px;}
 
+
+/* ── MÓDULO USUÁRIOS / PERMISSÕES ── */
+.usr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:16px}
+.usr-card{background:var(--dk3);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.usr-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.usr-avatar{width:42px;height:42px;border-radius:50%;background:var(--or);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.usr-avatar.op{background:var(--bl)}
+.usr-card-name{font-size:14px;font-weight:600;color:var(--tx)}
+.usr-card-role{font-size:11px;color:var(--tx2);margin-top:2px}
+.usr-card-actions{display:flex;gap:6px;margin-top:10px}
+.usr-badge-admin{background:rgba(242,100,25,0.15);color:var(--or);border:1px solid rgba(242,100,25,0.3);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600}
+.usr-badge-op{background:rgba(33,150,243,0.15);color:var(--bl);border:1px solid rgba(33,150,243,0.3);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:600}
+/* Modal usuário */
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px}
+.perm-section{grid-column:1/-1;font-size:10px;font-weight:600;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-top:8px;margin-bottom:2px}
+.perm-item{display:flex;align-items:center;gap:8px;background:var(--dk4);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;cursor:pointer;transition:.15s}
+.perm-item:hover{border-color:rgba(33,150,243,0.4)}
+.perm-item.on{border-color:rgba(33,150,243,0.5);background:rgba(33,150,243,0.08)}
+.perm-item input[type=checkbox]{accent-color:var(--bl);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.perm-item label{font-size:12px;color:var(--tx2);cursor:pointer;line-height:1.3}
+.perm-item.on label{color:var(--tx)}
+
 /* LOGIN */
 #ls{position:fixed;inset:0;background:var(--dk);display:flex;align-items:center;justify-content:center;z-index:9999;
   background-image:radial-gradient(circle at 1px 1px,rgba(242,100,25,0.06) 1px,transparent 0);background-size:28px 28px;}
@@ -367,6 +389,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-pagamentos',this)"><i class="fa-solid fa-credit-card"></i>Cadastro de Formas de Cobrança</button>
     <button class="ni" onclick="go('cad-recebimentos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Cadastro de Formas de Recebimento</button>
     <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Cadastro de Conta Corrente / Banco</button>
+    <div class="sb-sec" id="sb-sec-admin">Administração</div>
+    <button class="ni" id="menu-usuarios" onclick="go('usuarios',this)"><i class="fa-solid fa-users-gear"></i>Usuários e Acesso</button>
     <div class="sb-sec">Relatórios</div>
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
@@ -394,6 +418,83 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
     </div>
     <div class="ca">
+
+
+<!-- USUÁRIOS E PERMISSÕES -->
+<div class="page" id="page-usuarios">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div>
+      <div style="font-size:16px;font-weight:600;color:var(--tx)">Usuários do Sistema</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">Gerencie os acessos e permissões de cada usuário</div>
+    </div>
+    <button class="btn btn-p" onclick="usrAbrirNovo()"><i class="fa-solid fa-user-plus"></i> Novo Usuário</button>
+  </div>
+  <div id="usr-lista" class="usr-grid"></div>
+</div>
+
+<!-- MODAL NOVO/EDITAR USUÁRIO -->
+<div id="mod-usuario" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;align-items:center;justify-content:center">
+  <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:14px;width:600px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:28px 28px 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:15px;font-weight:600;color:var(--tx)" id="usr-mod-titulo">Novo Usuário</div>
+      <button onclick="usrFecharModal()" style="background:none;border:none;color:var(--tx2);font-size:18px;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <input type="hidden" id="usr-edit-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="fg"><label>Nome completo</label><input id="usr-nome" type="text" placeholder="Ex: Maria Silva"></div>
+      <div class="fg"><label>Perfil</label>
+        <select id="usr-perfil" onchange="usrTogglePerfil()" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;width:100%">
+          <option value="admin">Administrador</option>
+          <option value="operador">Operador</option>
+        </select>
+      </div>
+      <div class="fg"><label>Login (e-mail ou usuário)</label><input id="usr-login" type="text" placeholder="Ex: maria@pizzaria.com"></div>
+      <div class="fg"><label>Senha</label><input id="usr-senha" type="password" placeholder="Mínimo 6 caracteres"></div>
+    </div>
+
+    <!-- Painel de permissões (só para operador) -->
+    <div id="usr-perm-panel">
+      <div style="font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-shield-halved" style="color:var(--bl)"></i> Permissões do Operador
+        <span style="font-size:11px;color:var(--tx3);font-weight:400">— marque o que este usuário pode acessar</span>
+      </div>
+      <div class="perm-grid">
+        <div class="perm-section">Principal</div>
+        <div class="perm-item" id="pi-dashboard" onclick="usrTogglePerm('dashboard')"><input type="checkbox" id="pc-dashboard"><label for="pc-dashboard"><i class="fa-solid fa-chart-pie" style="color:var(--or);margin-right:4px"></i> Dashboard</label></div>
+        <div class="perm-item" id="pi-pizzas" onclick="usrTogglePerm('pizzas')"><input type="checkbox" id="pc-pizzas"><label for="pc-pizzas"><i class="fa-solid fa-pizza-slice" style="color:var(--or);margin-right:4px"></i> Pizzas Vendidas</label></div>
+        <div class="perm-item" id="pi-dre" onclick="usrTogglePerm('dre')"><input type="checkbox" id="pc-dre"><label for="pc-dre"><i class="fa-solid fa-file-chart-column" style="color:var(--or);margin-right:4px"></i> DRE</label></div>
+        <div class="perm-item" id="pi-fluxo" onclick="usrTogglePerm('fluxo')"><input type="checkbox" id="pc-fluxo"><label for="pc-fluxo"><i class="fa-solid fa-arrows-left-right" style="color:var(--or);margin-right:4px"></i> Fluxo de Caixa</label></div>
+        <div class="perm-item" id="pi-caixa" onclick="usrTogglePerm('caixa')"><input type="checkbox" id="pc-caixa"><label for="pc-caixa"><i class="fa-solid fa-cash-register" style="color:var(--or);margin-right:4px"></i> Caixa Diário</label></div>
+        <div class="perm-section">Financeiro</div>
+        <div class="perm-item" id="pi-pagar" onclick="usrTogglePerm('pagar')"><input type="checkbox" id="pc-pagar"><label for="pc-pagar"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--bl);margin-right:4px"></i> Contas a Pagar</label></div>
+        <div class="perm-item" id="pi-receber" onclick="usrTogglePerm('receber')"><input type="checkbox" id="pc-receber"><label for="pc-receber"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bl);margin-right:4px"></i> Contas a Receber</label></div>
+        <div class="perm-section">Operacional</div>
+        <div class="perm-item" id="pi-estoque" onclick="usrTogglePerm('estoque')"><input type="checkbox" id="pc-estoque"><label for="pc-estoque"><i class="fa-solid fa-boxes-stacked" style="color:var(--am);margin-right:4px"></i> Estoque</label></div>
+        <div class="perm-item" id="pi-cmv" onclick="usrTogglePerm('cmv')"><input type="checkbox" id="pc-cmv"><label for="pc-cmv"><i class="fa-solid fa-calculator" style="color:var(--am);margin-right:4px"></i> CMV / Fichas</label></div>
+        <div class="perm-item" id="pi-metas" onclick="usrTogglePerm('metas')"><input type="checkbox" id="pc-metas"><label for="pc-metas"><i class="fa-solid fa-bullseye" style="color:var(--am);margin-right:4px"></i> Metas</label></div>
+        <div class="perm-section">Cadastros</div>
+        <div class="perm-item" id="pi-plano" onclick="usrTogglePerm('plano')"><input type="checkbox" id="pc-plano"><label for="pc-plano"><i class="fa-solid fa-sitemap" style="margin-right:4px"></i> Plano de Contas</label></div>
+        <div class="perm-item" id="pi-cad-insumos" onclick="usrTogglePerm('cad-insumos')"><input type="checkbox" id="pc-cad-insumos"><label for="pc-cad-insumos"><i class="fa-solid fa-wheat-awn" style="margin-right:4px"></i> Cad. Insumos</label></div>
+        <div class="perm-item" id="pi-cad-servicos" onclick="usrTogglePerm('cad-servicos')"><input type="checkbox" id="pc-cad-servicos"><label for="pc-cad-servicos"><i class="fa-solid fa-screwdriver-wrench" style="margin-right:4px"></i> Cad. Serviços</label></div>
+        <div class="perm-item" id="pi-cad-fornecedores" onclick="usrTogglePerm('cad-fornecedores')"><input type="checkbox" id="pc-cad-fornecedores"><label for="pc-cad-fornecedores"><i class="fa-solid fa-truck" style="margin-right:4px"></i> Cad. Fornecedores</label></div>
+        <div class="perm-item" id="pi-cad-produtos" onclick="usrTogglePerm('cad-produtos')"><input type="checkbox" id="pc-cad-produtos"><label for="pc-cad-produtos"><i class="fa-solid fa-boxes-stacked" style="margin-right:4px"></i> Cad. Produtos Compra</label></div>
+        <div class="perm-item" id="pi-cad-produtos-venda" onclick="usrTogglePerm('cad-produtos-venda')"><input type="checkbox" id="pc-cad-produtos-venda"><label for="pc-cad-produtos-venda"><i class="fa-solid fa-tag" style="margin-right:4px"></i> Cad. Produtos Venda</label></div>
+        <div class="perm-item" id="pi-cad-pagamentos" onclick="usrTogglePerm('cad-pagamentos')"><input type="checkbox" id="pc-cad-pagamentos"><label for="pc-cad-pagamentos"><i class="fa-solid fa-credit-card" style="margin-right:4px"></i> Cad. Formas Cobrança</label></div>
+        <div class="perm-item" id="pi-cad-recebimentos" onclick="usrTogglePerm('cad-recebimentos')"><input type="checkbox" id="pc-cad-recebimentos"><label for="pc-cad-recebimentos"><i class="fa-solid fa-hand-holding-dollar" style="margin-right:4px"></i> Cad. Formas Recebimento</label></div>
+        <div class="perm-item" id="pi-cad-bancos" onclick="usrTogglePerm('cad-bancos')"><input type="checkbox" id="pc-cad-bancos"><label for="pc-cad-bancos"><i class="fa-solid fa-building-columns" style="margin-right:4px"></i> Cad. Bancos</label></div>
+        <div class="perm-section">Relatórios</div>
+        <div class="perm-item" id="pi-rel-pagar" onclick="usrTogglePerm('rel-pagar')"><input type="checkbox" id="pc-rel-pagar"><label for="pc-rel-pagar"><i class="fa-solid fa-file-lines" style="color:var(--gr);margin-right:4px"></i> Rel. Contas a Pagar</label></div>
+        <div class="perm-item" id="pi-rel-compras" onclick="usrTogglePerm('rel-compras')"><input type="checkbox" id="pc-rel-compras"><label for="pc-rel-compras"><i class="fa-solid fa-basket-shopping" style="color:var(--gr);margin-right:4px"></i> Rel. Compras / Estoque</label></div>
+        <div class="perm-item" id="pi-rel-vendas" onclick="usrTogglePerm('rel-vendas')"><input type="checkbox" id="pc-rel-vendas"><label for="pc-rel-vendas"><i class="fa-solid fa-chart-bar" style="color:var(--gr);margin-right:4px"></i> Rel. Vendas de Produtos</label></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button class="btn-out" onclick="usrFecharModal()">Cancelar</button>
+      <button class="btn btn-p" onclick="usrSalvar()"><i class="fa-solid fa-floppy-disk"></i> Salvar Usuário</button>
+    </div>
+  </div>
+</div>
 
 <!-- DASHBOARD -->
 <div class="page act" id="page-dashboard">
@@ -4083,33 +4184,279 @@ function showExpired(){
   if(exp) exp.style.display='flex';
 }
 
+
+// ══════════════════════════════════════
+// MÓDULO USUÁRIOS E PERMISSÕES
+// ══════════════════════════════════════
+
+// Usuário logado atualmente
+let _usrAtual = null; // { id, nome, login, perfil, perms:{} }
+
+// Permissões padrão do operador (nenhuma marcada por padrão)
+const USR_TODAS_PERMS = ['dashboard','pizzas','dre','fluxo','cad-fcx','caixa','pagar','receber','estoque','cmv','metas','plano','cad-insumos','cad-servicos','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-catprod','cad-catprod-venda','cad-pagamentos','cad-recebimentos','cad-bancos','rel-pagar','rel-compras','rel-vendas'];
+
+function usrGetUsuarios(){ return S.g('sys_usuarios') || []; }
+function usrSaveUsuarios(arr){ S.s('sys_usuarios', arr); }
+
+// Inicializar — cria admin padrão se não existir
+function usrInit(){
+  let lista = usrGetUsuarios();
+  if(!lista.length){
+    lista = [{
+      id: 'admin_default',
+      nome: 'Administrador',
+      login: 'demo@pizzaria.com',
+      senha: '123456',
+      perfil: 'admin',
+      perms: {}
+    }];
+    usrSaveUsuarios(lista);
+  }
+}
+
+// Login com verificação de usuário cadastrado
 function login(){
   if(checkExpiration()){ showExpired(); return; }
-  const u=document.getElementById('iu').value.trim();
-  const p=document.getElementById('ip').value.trim();
-  if(u==='demo@pizzaria.com'&&p==='123456'){
-    const ls = document.getElementById('ls');
+  const u = document.getElementById('iu').value.trim();
+  const p = document.getElementById('ip').value.trim();
+  
+  usrInit();
+  const lista = usrGetUsuarios();
+  const usr = lista.find(x => x.login === u && x.senha === p);
+  
+  if(usr){
+    _usrAtual = usr;
+    const ls  = document.getElementById('ls');
     const app = document.getElementById('app');
-    const btnLogin = document.querySelector('#ls .btn-primary, #ls button[onclick]');
+    const btnLogin = document.querySelector('#ls .btn-lg');
     if(btnLogin){ btnLogin.textContent = '⏳ Carregando...'; btnLogin.disabled = true; }
     _loadAllFromCloud().then(()=>{
       _storageReady = true;
-      if(ls) ls.style.display='none';
+      if(ls)  ls.style.display='none';
       if(app) app.classList.add('vis');
       _fbCarregou = true;
+      usrAplicarPermissoes();
       initAll();
     }).catch(()=>{
       _storageReady = true;
       _fbCarregou = false;
-      if(ls) ls.style.display='none';
+      if(ls)  ls.style.display='none';
       if(app) app.classList.add('vis');
+      usrAplicarPermissoes();
       initAll();
     });
   } else {
     document.getElementById('ip').style.borderColor='var(--rd)';
-    setTimeout(()=>document.getElementById('ip').style.borderColor='',2000);
+    document.getElementById('iu').style.borderColor='var(--rd)';
+    setTimeout(()=>{
+      document.getElementById('ip').style.borderColor='';
+      document.getElementById('iu').style.borderColor='';
+    }, 2000);
+    // Shake visual
+    const box = document.querySelector('.lg-box');
+    if(box){ box.style.transform='translateX(-8px)'; setTimeout(()=>box.style.transform='translateX(8px)',80); setTimeout(()=>box.style.transform='',160); }
   }
 }
+
+// Aplicar permissões conforme perfil do usuário logado
+function usrAplicarPermissoes(){
+  if(!_usrAtual) return;
+  const isAdmin = _usrAtual.perfil === 'admin';
+  const perms   = _usrAtual.perms || {};
+
+  // Mostrar/ocultar seção Administração no sidebar
+  const secAdmin = document.getElementById('sb-sec-admin');
+  const menuUsr  = document.getElementById('menu-usuarios');
+  if(secAdmin) secAdmin.style.display = isAdmin ? '' : 'none';
+  if(menuUsr)  menuUsr.style.display  = isAdmin ? '' : 'none';
+
+  if(isAdmin){ 
+    // Admin vê tudo
+    document.querySelectorAll('.ni').forEach(b => b.style.display = '');
+    return; 
+  }
+
+  // Operador — ocultar menus sem permissão
+  USR_TODAS_PERMS.forEach(pg => {
+    const btn = document.querySelector(`.ni[onclick*="go('${pg}'"]`);
+    if(btn) btn.style.display = perms[pg] ? '' : 'none';
+  });
+
+  // Ocultar seções do sidebar que ficaram sem itens visíveis
+  document.querySelectorAll('.sb-sec').forEach(sec => {
+    let next = sec.nextElementSibling;
+    let temVisivel = false;
+    while(next && !next.classList.contains('sb-sec') && !next.classList.contains('sb-ft')){
+      if(next.style.display !== 'none') temVisivel = true;
+      next = next.nextElementSibling;
+    }
+    sec.style.display = temVisivel ? '' : 'none';
+  });
+
+  // Navegar para a primeira tela permitida
+  const primeiraPermitida = USR_TODAS_PERMS.find(pg => perms[pg]);
+  if(primeiraPermitida){
+    const btn = document.querySelector(`.ni[onclick*="go('${primeiraPermitida}'"]`);
+    if(btn) go(primeiraPermitida, btn);
+  }
+}
+
+// Renderizar lista de usuários
+function renderUsuarios(){
+  usrInit();
+  const lista = usrGetUsuarios();
+  const el = document.getElementById('usr-lista');
+  if(!el) return;
+  if(!lista.length){ el.innerHTML='<div style="color:var(--tx3);font-size:13px">Nenhum usuário cadastrado.</div>'; return; }
+  
+  el.innerHTML = lista.map(u => {
+    const ini = u.nome.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+    const badge = u.perfil==='admin' ? '<span class="usr-badge-admin">Administrador</span>' : '<span class="usr-badge-op">Operador</span>';
+    const permsCount = u.perfil==='operador' ? Object.values(u.perms||{}).filter(Boolean).length : USR_TODAS_PERMS.length;
+    const avCls = u.perfil==='admin' ? 'usr-avatar' : 'usr-avatar op';
+    return `<div class="usr-card">
+      <div class="usr-card-top">
+        <div class="${avCls}">${ini}</div>
+        <div><div class="usr-card-name">${u.nome}</div><div class="usr-card-role">${u.login}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        ${badge}
+        <span style="font-size:11px;color:var(--tx3)">${permsCount} acesso(s)</span>
+      </div>
+      <div class="usr-card-actions">
+        <button class="btn-out" style="flex:1;font-size:11px;padding:5px" onclick="usrAbrirEditar('${u.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
+        ${u.id!=='admin_default' ? `<button class="btn-out" style="flex:1;font-size:11px;padding:5px;border-color:rgba(229,57,53,0.3);color:var(--rd)" onclick="usrExcluir('${u.id}')"><i class="fa-solid fa-trash"></i> Excluir</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Abrir modal novo usuário
+function usrAbrirNovo(){
+  document.getElementById('usr-mod-titulo').textContent = 'Novo Usuário';
+  document.getElementById('usr-edit-id').value = '';
+  document.getElementById('usr-nome').value = '';
+  document.getElementById('usr-login').value = '';
+  document.getElementById('usr-senha').value = '';
+  document.getElementById('usr-perfil').value = 'operador';
+  // Limpar todas as permissões
+  USR_TODAS_PERMS.forEach(pg => {
+    const cb = document.getElementById('pc-'+pg);
+    const pi = document.getElementById('pi-'+pg);
+    if(cb){ cb.checked = false; }
+    if(pi){ pi.classList.remove('on'); }
+  });
+  usrTogglePerfil();
+  const mod = document.getElementById('mod-usuario');
+  mod.style.display='flex';
+}
+
+// Abrir modal editar usuário
+function usrAbrirEditar(id){
+  const lista = usrGetUsuarios();
+  const u = lista.find(x=>x.id===id);
+  if(!u) return;
+  document.getElementById('usr-mod-titulo').textContent = 'Editar Usuário';
+  document.getElementById('usr-edit-id').value = u.id;
+  document.getElementById('usr-nome').value = u.nome;
+  document.getElementById('usr-login').value = u.login;
+  document.getElementById('usr-senha').value = u.senha;
+  document.getElementById('usr-perfil').value = u.perfil;
+  // Marcar permissões
+  USR_TODAS_PERMS.forEach(pg => {
+    const cb = document.getElementById('pc-'+pg);
+    const pi = document.getElementById('pi-'+pg);
+    const val = !!(u.perms && u.perms[pg]);
+    if(cb){ cb.checked = val; }
+    if(pi){ pi.classList.toggle('on', val); }
+  });
+  usrTogglePerfil();
+  document.getElementById('mod-usuario').style.display='flex';
+}
+
+// Toggle painel de permissões conforme perfil
+function usrTogglePerfil(){
+  const perfil = document.getElementById('usr-perfil').value;
+  const panel  = document.getElementById('usr-perm-panel');
+  if(panel) panel.style.display = perfil==='operador' ? 'block' : 'none';
+}
+
+// Toggle individual de permissão
+function usrTogglePerm(pg){
+  const cb = document.getElementById('pc-'+pg);
+  const pi = document.getElementById('pi-'+pg);
+  if(!cb) return;
+  cb.checked = !cb.checked;
+  if(pi) pi.classList.toggle('on', cb.checked);
+}
+
+// Fechar modal
+function usrFecharModal(){
+  document.getElementById('mod-usuario').style.display='none';
+}
+
+// Salvar usuário
+function usrSalvar(){
+  const nome   = document.getElementById('usr-nome').value.trim();
+  const login  = document.getElementById('usr-login').value.trim();
+  const senha  = document.getElementById('usr-senha').value.trim();
+  const perfil = document.getElementById('usr-perfil').value;
+  const editId = document.getElementById('usr-edit-id').value;
+
+  if(!nome){ alert('Informe o nome do usuário.'); return; }
+  if(!login){ alert('Informe o login.'); return; }
+  if(!senha || senha.length < 6){ alert('A senha deve ter pelo menos 6 caracteres.'); return; }
+
+  // Coletar permissões
+  const perms = {};
+  if(perfil === 'operador'){
+    USR_TODAS_PERMS.forEach(pg => {
+      const cb = document.getElementById('pc-'+pg);
+      perms[pg] = cb ? cb.checked : false;
+    });
+  }
+
+  let lista = usrGetUsuarios();
+
+  // Verificar login duplicado
+  const duplicado = lista.find(x => x.login === login && x.id !== editId);
+  if(duplicado){ alert('Já existe um usuário com este login.'); return; }
+
+  if(editId){
+    lista = lista.map(u => u.id===editId ? {...u, nome, login, senha, perfil, perms} : u);
+  } else {
+    lista.push({ id: 'usr_'+Date.now(), nome, login, senha, perfil, perms });
+  }
+
+  usrSaveUsuarios(lista);
+  usrFecharModal();
+  renderUsuarios();
+  showToast('Usuário salvo com sucesso!');
+}
+
+// Excluir usuário
+function usrExcluir(id){
+  if(!confirm('Excluir este usuário?')) return;
+  let lista = usrGetUsuarios().filter(x=>x.id!==id);
+  usrSaveUsuarios(lista);
+  renderUsuarios();
+  showToast('Usuário excluído.');
+}
+
+// Toast helper (reutiliza se existir ou cria simples)
+function showToast(msg){
+  let t = document.getElementById('sys-toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id='sys-toast';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:99999;opacity:0;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0', 2500);
+}
+
 document.getElementById('ip').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 
 // Mostra info do trial na tela de login
@@ -4141,6 +4488,7 @@ function logout(){document.getElementById('app').classList.remove('vis');documen
 // ══════════════════════════════════════
 const titles={
   dashboard:['Dashboard Geral','Visão consolidada do negócio'],
+  usuarios:['Usuários e Permissões','Gerencie acessos e perfis do sistema'],
   pizzas:['Pizzas Vendidas','Ranking e análise de vendas'],
   dre:['DRE — Demonstrativo de Resultado','Análise econômica do período'],
   fluxo:['Fluxo de Caixa','Movimentação financeira'],
@@ -4194,7 +4542,7 @@ function go(pg,btn){
     pg === 'cad-insumos' || pg === 'cad-servicos' ||
     pg === 'cad-pagamentos' || pg === 'cad-recebimentos' || pg === 'cad-bancos' ||
     pg === 'cmv' || pg === 'metas' || pg === 'estoque' ||
-    pg === 'pagar' || pg === 'receber'
+    pg === 'pagar' || pg === 'receber' || pg === 'usuarios'
   ) ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='cad-fcx')       { renderFcxContas(); }
@@ -4207,6 +4555,7 @@ function go(pg,btn){
   const bdgMes=document.getElementById('bdg-mes');
   if(bdgMes) bdgMes.style.display=pg==='dashboard'?'none':'';
   if(pg==='rel-vendas')  initRelVendas();
+  if(pg==='usuarios')     renderUsuarios();
 }
 
 // ══════════════════════════════════════
@@ -6427,9 +6776,8 @@ function dbSetModo(modo){
     dbGerarOpcoesPeriodo();
     renderDashboardConsolidado();
   } else {
-    renderDashboard();
-    // Reconstrói gráficos após painéis ficarem visíveis
-    setTimeout(()=>{ try{ buildCharts(); }catch(e){} }, 50);
+    // Aguarda o browser aplicar display:grid nos painéis antes de criar os charts
+    setTimeout(()=>{ renderDashboard(); }, 80);
   }
   dbAtualizarLabel();
 }
@@ -6695,6 +7043,7 @@ function renderDashboard(){
   }
 
   // ── Gráfico Faturamento × Despesas (6 meses) ──
+  const hoje = new Date();
   const meses6 = [], fatS = [], despS = [];
   for(let i=5; i>=0; i--){
     const d  = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
@@ -14539,6 +14888,7 @@ function cxCorrigirDatasCAP(){
 
 let _initAllRunning = false;
 function initAll(){
+  usrInit();
   if(_initAllRunning) return;
   _initAllRunning = true;
   try{
