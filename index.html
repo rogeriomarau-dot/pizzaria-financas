@@ -1266,11 +1266,118 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- ESTOQUE -->
 <div class="page" id="page-estoque">
-  <div class="kg" id="kpi-eq"></div>
-  <div class="g2">
-    <div class="cd"><div class="ct">Ingredientes <button class="btn btn-sm" onclick="openMod('mod-estoque')"><i class="fa-solid fa-plus"></i></button></div><div id="eq-list"></div></div>
-    <div class="cd"><div class="ct">Valor por Categoria</div><div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div></div>
+
+  <!-- Barra de controles -->
+  <div class="cd" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <!-- Filtro mês competência -->
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Mês</label>
+          <input type="month" id="eq-mes" onchange="renderEstoque()"
+            style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+        </div>
+        <!-- Filtro categoria -->
+        <select id="eq-filtro-cat" onchange="renderEstoque()"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px">
+          <option value="">Todas as categorias</option>
+          <option>Insumos</option>
+          <option>Bebidas</option>
+          <option>Material de Expediente</option>
+          <option>Material Utensílios</option>
+          <option>Material Descartável</option>
+          <option>Material de Limpeza</option>
+          <option>Imobilizado</option>
+        </select>
+        <!-- Filtro status -->
+        <select id="eq-filtro-st" onchange="renderEstoque()"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px">
+          <option value="">Todos os status</option>
+          <option value="critico">Crítico</option>
+          <option value="baixo">Baixo</option>
+          <option value="ok">OK</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="eqAbrirEstoqueInicial()" title="Lançar estoque inicial do primeiro mês"><i class="fa-solid fa-warehouse"></i> Est. Inicial</button>
+        <button class="btn btn-sm" onclick="eqAbrirInventario()"><i class="fa-solid fa-clipboard-list"></i> Inventário</button>
+        <button class="btn btn-sm" onclick="eqGerarListaCompras()"><i class="fa-solid fa-cart-shopping"></i> Lista de Compras</button>
+        <button class="btn btn-sm" title="Importar lançamentos do Contas a Pagar para o Estoque" onclick="eqSincronizarCAP()"><i class="fa-solid fa-rotate"></i> Sincronizar CAP</button>
+
+      </div>
+    </div>
   </div>
+
+  <!-- KPIs -->
+  <div class="kg" id="kpi-eq" style="margin-bottom:12px"></div>
+
+  <!-- Tabela principal -->
+  <div class="cd" style="margin-bottom:12px">
+    <div class="ct">
+      Controle de Estoque — Regime de Competência
+      <span id="eq-periodo-label" style="font-size:11px;color:var(--tx2);font-weight:400"></span>
+    </div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" onclick="eqSortCol('nome',this)" style="cursor:pointer">Produto <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('cat',this)" style="cursor:pointer">Categoria <i class="fa-solid sort-icon"></i></th>
+            <th>Unid.</th>
+            <th class="sortable" onclick="eqSortCol('estoqueInicial',this)" style="text-align:right;color:#64B5F6;cursor:pointer">Est. Inicial Qtd <i class="fa-solid sort-icon"></i></th>
+            <th style="text-align:right;color:#64B5F6">Est. Inicial R$</th>
+            <th class="sortable" onclick="eqSortCol('totalComprasQtd',this)" style="text-align:right;color:#81C784;cursor:pointer">+ Compras Qtd <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('totalComprasVal',this)" style="text-align:right;color:#81C784;cursor:pointer">+ Compras R$ <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('estoqueFinal',this)" style="text-align:right;color:#EF9A9A;cursor:pointer">− Est. Final Qtd <i class="fa-solid sort-icon"></i></th>
+            <th style="text-align:right;color:#EF9A9A">− Est. Final R$</th>
+            <th class="sortable" onclick="eqSortCol('cmvQtd',this)" style="text-align:right;color:var(--or);cursor:pointer">= CMV Qtd <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Último Preço <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('cmvVal',this)" style="text-align:right;color:var(--or);cursor:pointer">CMV R$ <i class="fa-solid sort-icon"></i></th>
+            <th style="text-align:center">Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tb-eq"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Linha do CMV Total + Gráficos -->
+  <div class="g2">
+    <div class="cd">
+      <div class="ct">Curva ABC — Valor de Compras <span class="cs" id="eq-abc-per"></span></div>
+      <div id="eq-abc-list"></div>
+    </div>
+    <div class="cd">
+      <div class="ct">Valor por Categoria <span class="cs" id="eq-cat-per"></span></div>
+      <div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Histórico de movimentações -->
+  <div class="cd" style="margin-top:12px">
+    <div class="ct">
+      Histórico de Movimentações
+      <button class="btn btn-sm" onclick="eqToggleHistorico(this)"><i class="fa-solid fa-chevron-down"></i> Ver histórico</button>
+    </div>
+    <div id="eq-historico" style="display:none">
+      <div class="tw" style="max-height:280px">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Produto</th><th>Categoria</th>
+            <th style="text-align:center">Tipo</th>
+            <th style="text-align:right">Qtd</th>
+            <th style="text-align:right">Custo Unit.</th>
+            <th style="text-align:right">Total</th>
+            <th>Fornecedor / Obs</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="tb-eq-hist"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- CMV -->
@@ -1890,6 +1997,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <select id="rc-order" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onchange="gerarRelCompras()">
           <option value="data-desc">Data (mais recente)</option>
           <option value="data-asc">Data (mais antiga)</option>
+          <option value="cat-asc">Categoria (A→Z)</option>
+          <option value="cat-desc">Categoria (Z→A)</option>
           <option value="nome-asc">Produto (A→Z)</option>
           <option value="nome-desc">Produto (Z→A)</option>
           <option value="qtd-desc">Quantidade (maior→menor)</option>
@@ -1928,7 +2037,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <tr>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('data')">Data Compra <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-data"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('nome')">Produto / Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-nome"></i></th>
-            <th style="white-space:nowrap">Categoria</th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-cat"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('un')">Unid. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-un"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('qtd')">Qtd. Comprada <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-qtd"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('preco')">Preço Unit. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-preco"></i></th>
@@ -2507,7 +2616,20 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="background:var(--dk3);border-radius:8px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--bd)">
         <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px"><i class="fa-solid fa-file-invoice" style="margin-right:5px"></i>Cabeçalho da Nota Fiscal</div>
         <div class="fr">
-          <div class="fg"><label>Fornecedor</label><select id="mpp-forn"><option value="">— Selecione —</option></select></div>
+          <div class="fg">
+            <label>Fornecedor</label>
+            <div style="position:relative">
+              <input type="text" id="mpp-forn-busca" placeholder="Digite para buscar fornecedor..."
+                autocomplete="off"
+                style="width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:11px 36px 11px 14px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none"
+                oninput="mppFornBuscar(this.value)"
+                onfocus="this.style.borderColor='var(--or)';mppFornAbrir()"
+                onblur="setTimeout(mppFornFechar,200)">
+              <i class="fa-solid fa-magnifying-glass" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:12px;pointer-events:none"></i>
+              <div id="mpp-forn-drop" style="display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:1100;max-height:220px;overflow-y:auto"></div>
+            </div>
+            <input type="hidden" id="mpp-forn" value="">
+          </div>
           <div class="fg"><label>Nº da NF / Descrição</label><input type="text" id="mpp-desc" placeholder="Ex: NF 001234"></div>
         </div>
         <div class="fr">
@@ -2545,7 +2667,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
                 onblur="setTimeout(()=>ocultarDropItens(),200)">
               <i class="fa-solid fa-magnifying-glass" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:12px;pointer-events:none"></i>
               <!-- Dropdown de resultados -->
-              <div id="mpp-item-drop" style="display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:600;max-height:240px;overflow-y:auto"></div>
+              <div id="mpp-item-drop" style="display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:1100;max-height:240px;overflow-y:auto"></div>
             </div>
           </div>
           <!-- Item selecionado -->
@@ -2776,12 +2898,176 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 <!-- ESTOQUE -->
-<div class="mo" id="mod-estoque">
+<!-- MODAL MOVIMENTO ESTOQUE (Entrada / Saída) -->
+<div class="mo" id="mod-eq-mov">
+  <div class="mb wide">
+    <div class="mt">
+      <span id="eq-mov-titulo"><i class="fa-solid fa-boxes-stacked" style="color:var(--or);margin-right:8px"></i>Nova Entrada de Estoque</span>
+      <span class="mc" onclick="closeMod('mod-eq-mov')">✕</span>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Data da Compra / Nota Fiscal *</label>
+        <input type="date" id="eq-mov-data">
+      </div>
+      <div class="fg">
+        <label>Tipo de Movimento</label>
+        <select id="eq-mov-tipo" onchange="eqToggleTipoMov(this.value)"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:11px 14px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+          <option value="entrada">↑ Entrada (Compra)</option>
+          <option value="saida">↓ Saída Manual</option>
+          <option value="ajuste">⚖ Ajuste de Inventário</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Categoria *</label>
+        <select id="eq-mov-cat" onchange="eqFiltrarProdutosPorCat()"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:11px 14px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+          <option value="">Selecione a categoria...</option>
+          <option>Insumos</option>
+          <option>Bebidas</option>
+          <option>Material de Expediente</option>
+          <option>Material Utensílios</option>
+          <option>Material Descartável</option>
+          <option>Material de Limpeza</option>
+          <option>Imobilizado</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Produto *</label>
+        <select id="eq-mov-produto"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:11px 14px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+          <option value="">Selecione o produto...</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr3">
+      <div class="fg">
+        <label>Quantidade *</label>
+        <input type="number" id="eq-mov-qtd" step="0.001" min="0" placeholder="0,000" oninput="eqCalcTotal()">
+      </div>
+      <div class="fg">
+        <label>Custo Unitário (R$) *</label>
+        <input type="number" id="eq-mov-custo" step="0.01" min="0" placeholder="0,00" oninput="eqCalcTotal()">
+      </div>
+      <div class="fg">
+        <label>Total (R$)</label>
+        <input type="number" id="eq-mov-total" step="0.01" readonly
+          style="background:rgba(242,100,25,0.08);border-color:rgba(242,100,25,0.3);color:var(--or);font-weight:600">
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg">
+        <label>Fornecedor / NF</label>
+        <select id="eq-mov-forn"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:11px 14px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+          <option value="">Selecione o fornecedor...</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Nº NF / Recibo / Observação</label>
+        <input type="text" id="eq-mov-obs" placeholder="Ex: NF 001234 ou Recibo compra mercado">
+      </div>
+    </div>
+    <input type="hidden" id="eq-mov-edit-id" value="">
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-eq-mov')">Cancelar</button>
+      <button class="bs" onclick="eqSalvarMovimento()"><i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>Salvar Movimento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESTOQUE INICIAL -->
+<div class="mo" id="mod-eq-inicial">
+  <div class="mb wide">
+    <div class="mt">
+      <span><i class="fa-solid fa-warehouse" style="color:#64B5F6;margin-right:8px"></i>Estoque Inicial — Contagem de Abertura</span>
+      <span class="mc" onclick="closeMod('mod-eq-inicial')">✕</span>
+    </div>
+    <div style="background:rgba(33,150,243,0.08);border:1px solid rgba(33,150,243,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--tx2)">
+      <i class="fa-solid fa-info-circle" style="color:#64B5F6;margin-right:6px"></i>
+      Informe a <strong style="color:var(--tx)">quantidade real em estoque</strong> de cada item no <strong style="color:#64B5F6">início do primeiro mês</strong> de uso do sistema.
+      Este valor é o <strong style="color:#64B5F6">Estoque Inicial (EI)</strong> que será usado na fórmula do CMV:
+      <span style="color:var(--or);font-weight:600"> CMV = EI + Compras − EF</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="fg" style="margin:0;flex:0 0 200px">
+        <label>Mês de Referência (1º mês)</label>
+        <input type="month" id="eq-ini-mes"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+      </div>
+    </div>
+    <div class="tw" style="max-height:380px">
+      <table>
+        <thead><tr>
+          <th>Produto</th><th>Categoria</th><th>Unid.</th>
+          <th style="text-align:right;color:#64B5F6">Qtd. Inicial *</th>
+          <th style="text-align:right">Custo Unitário</th>
+          <th style="text-align:right;color:#64B5F6">Valor Est. Inicial</th>
+        </tr></thead>
+        <tbody id="tb-eq-ini"></tbody>
+      </table>
+    </div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-eq-inicial')">Cancelar</button>
+      <button class="bs" style="background:#2196F3;border-color:#2196F3" onclick="eqSalvarEstoqueInicial()">
+        <i class="fa-solid fa-warehouse" style="margin-right:6px"></i>Salvar Estoque Inicial
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INVENTÁRIO (Estoque Final do Mês) -->
+<div class="mo" id="mod-eq-inventario">
+  <div class="mb wide">
+    <div class="mt">
+      <span><i class="fa-solid fa-clipboard-list" style="color:var(--or);margin-right:8px"></i>Inventário — Estoque Final do Mês</span>
+      <span class="mc" onclick="closeMod('mod-eq-inventario')">✕</span>
+    </div>
+    <div style="background:rgba(242,100,25,0.08);border:1px solid rgba(242,100,25,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--tx2)">
+      <i class="fa-solid fa-info-circle" style="color:var(--or);margin-right:6px"></i>
+      Informe a <strong style="color:var(--tx)">contagem física real</strong> de cada item no dia 01 do mês. Este valor será usado como <strong style="color:var(--or)">Estoque Final</strong> para o cálculo do CMV.
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div class="fg" style="margin:0;flex:0 0 200px">
+        <label>Mês de Referência</label>
+        <input type="month" id="eq-inv-mes"
+          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none;width:100%">
+      </div>
+    </div>
+    <div class="tw" style="max-height:360px">
+      <table>
+        <thead><tr>
+          <th>Produto</th><th>Categoria</th><th>Unid.</th>
+          <th style="text-align:right;color:#81C784">Qtd Sistema</th>
+          <th style="text-align:right;color:var(--or)">Qtd Real (Contagem) *</th>
+          <th style="text-align:right">Custo Médio</th>
+          <th style="text-align:right;color:var(--or)">Valor Est. Final</th>
+        </tr></thead>
+        <tbody id="tb-eq-inv"></tbody>
+      </table>
+    </div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-eq-inventario')">Cancelar</button>
+      <button class="bs" onclick="eqSalvarInventario()"><i class="fa-solid fa-clipboard-check" style="margin-right:6px"></i>Salvar Inventário</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE COMPRAS -->
+<div class="mo" id="mod-eq-compras">
   <div class="mb">
-    <div class="mt"><span>Novo Item de Estoque</span><span class="mc" onclick="closeMod('mod-estoque')">✕</span></div>
-    <div class="fr"><div class="fg"><label>Nome</label><input type="text" id="me-nome"></div><div class="fg"><label>Categoria</label><select id="me-cat"><option>Laticínios</option><option>Carnes</option><option>Farináceos</option><option>Molhos</option><option>Embalagens</option><option>Bebidas</option><option>Outros</option></select></div></div>
-    <div class="fr3"><div class="fg"><label>Qtd Atual</label><input type="number" id="me-qty"></div><div class="fg"><label>Qtd Mín</label><input type="number" id="me-min"></div><div class="fg"><label>Unidade</label><select id="me-un"><option>kg</option><option>L</option><option>un</option><option>cx</option></select></div></div>
-    <div class="mf"><button class="bc" onclick="closeMod('mod-estoque')">Cancelar</button><button class="bs" onclick="saveEstoque()">Salvar</button></div>
+    <div class="mt">
+      <span><i class="fa-solid fa-cart-shopping" style="color:var(--or);margin-right:8px"></i>Lista de Compras — Itens Críticos/Baixo</span>
+      <span class="mc" onclick="closeMod('mod-eq-compras')">✕</span>
+    </div>
+    <div id="eq-lista-compras-body"></div>
+    <div class="mf">
+      <button class="bc" onclick="closeMod('mod-eq-compras')">Fechar</button>
+      <button class="bs" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right:6px"></i>Imprimir</button>
+    </div>
   </div>
 </div>
 
@@ -3865,6 +4151,7 @@ function go(pg,btn){
   if(pg==='fluxo')          { renderFluxo(); }
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-compras') initRelCompras();
+  if(pg==='estoque'){ eqInitMes(); setTimeout(()=>{ eqSincronizarCAP(); },200); }
   if(pg==='rel-vendas')  initRelVendas();
 }
 
@@ -3918,6 +4205,42 @@ let curReg='caixa'; // mantido por compatibilidade com dados existentes
 function setReg(r){ curReg=r; } // stub — toggle removido do modal
 
 // Preenche selects de contas
+// Preenche select com contas de receita operacional (grupo 1) + cad-contas receita
+function fillSelectContasReceita(selId){
+  const sel = document.getElementById(selId);
+  if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Selecione a conta —</option>';
+  const pc = getPC();
+  // Grupo 1 — Receitas Operacionais (contas diretas do plano)
+  const recOp = pc.filter(c=>
+    c.tipo==='conta' &&
+    (c.natureza==='receita' || c.nat==='receita') &&
+    String(c.grupo)==='1'
+  );
+  // Contas do cad-contas com natureza receita (criadas pelo usuário)
+  const cadRec = (S.g('cad-contas')||[]).filter(c=>
+    (c.natureza==='receita'||c.nat==='receita') && c.st!=='Inativo'
+  );
+  // Une e ordena por código
+  const todas = [...recOp, ...cadRec.filter(c=>!recOp.find(r=>r.cod===c.cod))];
+  todas.sort((a,b)=>{
+    const pa = (a.cod||'').split('.').map(Number);
+    const pb = (b.cod||'').split('.').map(Number);
+    for(let i=0;i<Math.max(pa.length,pb.length);i++){
+      if((pa[i]||0)!==(pb[i]||0)) return (pa[i]||0)-(pb[i]||0);
+    }
+    return 0;
+  });
+  todas.forEach(c=>{
+    const o = document.createElement('option');
+    o.value = c.cod;
+    o.textContent = `${c.cod} — ${c.nome}`;
+    sel.appendChild(o);
+  });
+  sel.value = prev;
+}
+
 function fillSelectContas(selId,filter){
   const sel=document.getElementById(selId);
   if(!sel)return;
@@ -3973,11 +4296,77 @@ function fillSelectContasPagar(selId){
 }
 
 function fillSelectForn(selId){
-  const sel=document.getElementById(selId);if(!sel)return;
+  const sel=document.getElementById(selId);
+  if(!sel) return;
+  // Se for o hidden do novo campo busca, não faz nada
+  if(sel.type==='hidden') return;
   const prev=sel.value;
   sel.innerHTML='<option value="">— Selecione —</option>';
-  (S.g('fornecedores')||[]).forEach(f=>{const o=document.createElement('option');o.value=f.n;o.textContent=f.n;sel.appendChild(o);});
+  const forns = (S.g('fornecedores')||[]).filter(f=>f.st!=='Inativo');
+  forns.sort((a,b)=>(a.n||'').localeCompare(b.n||'','pt-BR'));
+  forns.forEach(f=>{
+    const o=document.createElement('option');
+    o.value=f.id||f.n; o.textContent=f.n;
+    sel.appendChild(o);
+  });
   sel.value=prev;
+}
+
+// ── Busca dinâmica de fornecedor ──
+// ── Fornecedor CAP — busca dinâmica ──
+function mppFornLista(){
+  return (S.g('fornecedores')||[])
+    .filter(f=>f.st!=='Inativo')
+    .sort((a,b)=>(a.n||'').localeCompare(b.n||'','pt-BR'));
+}
+function mppFornAbrir(){
+  mppFornRender(mppFornLista());
+}
+function mppFornBuscar(q){
+  const t=(q||'').toLowerCase();
+  const lista = t ? mppFornLista().filter(f=>(f.n||'').toLowerCase().includes(t)) : mppFornLista();
+  mppFornRender(lista);
+}
+function mppFornRender(lista){
+  const drop=document.getElementById('mpp-forn-drop');
+  if(!drop) return;
+  drop.style.display='block';
+  if(!lista.length){
+    drop.innerHTML='<div style="padding:12px;text-align:center;font-size:12px;color:var(--tx3)">Nenhum fornecedor encontrado</div>';
+    return;
+  }
+  drop.innerHTML=lista.map(f=>{
+    const n=(f.n||'').replace(/'/g,"&#39;");
+    const i=String(f.id||f.n).replace(/'/g,"&#39;");
+    return `<div style="padding:9px 14px;cursor:pointer;font-size:13px;color:var(--tx2);border-bottom:1px solid rgba(255,255,255,0.03)"
+      onmouseover="this.style.background='rgba(242,100,25,0.1)';this.style.color='var(--tx)'"
+      onmouseout="this.style.background='';this.style.color='var(--tx2)'"
+      onmousedown="event.preventDefault();mppFornSel(this.dataset.id,this.dataset.nome)"
+      data-id="${i}" data-nome="${n}">
+      <i class="fa-solid fa-truck" style="color:var(--or);font-size:10px;margin-right:8px"></i>${f.n}
+    </div>`;
+  }).join('');
+}
+function mppFornSel(id,nome){
+  const inp=document.getElementById('mpp-forn-busca');
+  const hid=document.getElementById('mpp-forn');
+  const drop=document.getElementById('mpp-forn-drop');
+  if(inp){inp.value=nome;inp.style.borderColor='var(--or)';}
+  if(hid) hid.value=id;
+  if(drop) drop.style.display='none';
+}
+function mppFornFechar(){
+  const drop=document.getElementById('mpp-forn-drop');
+  if(drop) drop.style.display='none';
+}
+function fornOcultar(dropId){
+  const el=document.getElementById(dropId);
+  if(el) el.style.display='none';
+}
+function fornLimpar(inputId,hiddenId,dropId){
+  const a=document.getElementById(inputId); if(a) a.value='';
+  const b=document.getElementById(hiddenId); if(b) b.value='';
+  const c=document.getElementById(dropId);  if(c) c.style.display='none';
 }
 function fillSubgrupos(grpCod,selId='msc-subgrupo'){
   const sel=document.getElementById(selId);if(!sel)return;
@@ -4239,6 +4628,10 @@ function savePagar(){
     itens: mpItens.length ? [...mpItens] : undefined,
   });
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
+
+  // ── Integração automática CAP → Estoque ──
+  const lancamento = arr[arr.length-1];
+  eqIntegrarDoCAP(lancamento);
 }
 
 // ── Itens da NF no Lançamento Único ──
@@ -4485,6 +4878,8 @@ function getCatalogItens(){
     });
   });
 
+  // Ordena alfabeticamente por nome
+  itens.sort((a,b)=>(a.nome||"").localeCompare(b.nome||"","pt-BR"));
   return itens;
 }
 
@@ -4688,7 +5083,7 @@ function resetModalPagar(){
   ['mpp-desc','mpp-comp'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}});
   // Limpa aviso de competência vs vencimento
   const aviso=document.getElementById('aviso-comp-venc'); if(aviso)aviso.remove();;
-  ['mpp-forn'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  fornLimpar('mpp-forn-busca','mpp-forn','mpp-forn-drop');
   document.getElementById('mpp-nparcelas').selectedIndex=0;
   document.getElementById('mpp-grade').style.display='none';
   document.getElementById('mpp-linhas').innerHTML='';
@@ -4914,6 +5309,10 @@ function saveParcelado(){
     if(!confirmar) return;
   }
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
+
+  // ── Integração automática CAP → Estoque (somente da 1ª parcela que tem itens) ──
+  const primLanc = arr.find(l=>l.itens && l.itens.length);
+  if(primLanc) eqIntegrarDoCAP(primLanc);
 }
 // ── variável temporária de itens da comanda ──
 let _mrItens = [];
@@ -5399,7 +5798,7 @@ function saveSubconta(){
   document.getElementById('msc-nome').value='';
   const scCod=document.getElementById('msc-cod'); scCod.style.color=''; scCod.style.fontWeight='';
   renderPlano();renderCadContas();
-  fillSelectContasPagar('mp-conta');fillSelectContas('mr-conta',c=>c.natureza==='receita');
+  fillSelectContasPagar('mp-conta');fillSelectContasReceita('mr-conta');
   fillSelectContas('mfn-conta');fillSelectContas('mpr-conta');
 }
 function saveCadConta(){
@@ -5424,7 +5823,7 @@ function saveCadConta(){
   arr.push({id:Date.now(),cod,nome,grupo:grp,subgrupo:sub||undefined,nat,natureza:nat,st,tipoCusto:tipoCusto||undefined});
   S.s('cad-contas',arr);closeMod('mod-cadconta');
   renderPlano();renderCadContas();
-  fillSelectContasPagar('mp-conta');fillSelectContas('mr-conta',c=>c.natureza==='receita');
+  fillSelectContasPagar('mp-conta');fillSelectContasReceita('mr-conta');
   fillSelectContas('mfn-conta');fillSelectContas('mpr-conta');
   // reset form
   document.getElementById('mcc-grupo').value='';
@@ -7041,7 +7440,7 @@ function cxBuscarItens(q){
   const drop = document.getElementById('cx-sai-item-drop');
   if(!drop) return;
   const termo = (q||'').toLowerCase();
-  const todos = getCatalogItens();
+  const todos = getCatalogItens(); // já vem ordenado alfabeticamente
   const filtrados = termo.length > 0
     ? todos.filter(i=>
         i.nome.toLowerCase().includes(termo)||
@@ -7946,7 +8345,7 @@ function renderReceber(){
 
   if(!filtrado.length){
     const labelAtual = document.getElementById('rc-periodo-label')?.textContent || '';
-    tbEl.innerHTML=`<tr><td colspan="11" style="text-align:center;color:var(--tx3);padding:32px;font-size:13px">
+    tbEl.innerHTML=`<tr><td colspan="14" style="text-align:center;color:var(--tx3);padding:32px;font-size:13px">
       <i class="fa-solid fa-inbox" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
       Nenhum lançamento em <strong style="color:var(--tx)">${labelAtual}</strong>.<br>
       <span style="font-size:11px">Clique em <strong style="color:var(--or)">+ Nova Venda</strong> para adicionar.</span>
@@ -7992,23 +8391,970 @@ function renderReceber(){
   }).join('');
 }
 
+// ══════════════════════════════════════════════════
+// INTEGRAÇÃO CAP → ESTOQUE
+// Categorias que geram entrada automática no estoque
+// ══════════════════════════════════════════════════
+const EQ_CATS_ESTOQUE = [
+  'Insumos','Bebidas','Material de Expediente',
+  'Material Utensílios','Material Descartável',
+  'Material de Limpeza','Imobilizado'
+];
+
+// Mapa de categoria do Plano de Contas → categoria do Estoque
+const EQ_CAT_MAP = {
+  'insumo':         'Insumos',
+  'insumos':        'Insumos',
+  'bebida':         'Bebidas',
+  'bebidas':        'Bebidas',
+  'expediente':     'Material de Expediente',
+  'utensilio':      'Material Utensílios',
+  'utensilios':     'Material Utensílios',
+  'descartavel':    'Material Descartável',
+  'descartaveis':   'Material Descartável',
+  'limpeza':        'Material de Limpeza',
+  'imobilizado':    'Imobilizado',
+  // Contas do plano que mapeiam para categorias
+  '4.1':            'Insumos',
+  '4.2':            'Bebidas',
+  '4.3':            'Insumos',
+};
+
+function eqSincronizarCAP(){
+  // Usa a mesma lógica do Relatório de Compras para garantir consistência total
+  const pagar = S.g('pagar')||[];
+  let itensCompras = [];
+
+  pagar.forEach(lanc=>{
+    const dataCompra = lanc.comp || lanc.venc || lanc.dtpag || '';
+    const lancId     = lanc.cod || String(lanc.id);
+    const fornId     = lanc.forn || '';
+
+    if(lanc.itens && lanc.itens.length){
+      lanc.itens.forEach(it=>{
+        const contaNome = nomeContaByCod(it.conta)||'';
+        const catItem   = detectarCategoriaItem(it, contaNome);
+        if(!CATS_COMPRAS.includes(catItem)) return;
+        itensCompras.push({
+          data: dataCompra, nome: it.nome||'', cat: catItem,
+          un: it.un||'un', qtd: it.qtd||0, preco: it.preco||0,
+          total: it.total||0, fornId, lancId
+        });
+      });
+    }
+    // Lançamentos sem itens detalhados (sintéticos) NÃO entram no estoque como produto
+    // pois a descrição (ex: "RECIBO", "compra alface", "NF 45236 Atacadão") não é um produto real
+  });
+
+  if(!itensCompras.length){
+    showToast('Nenhuma compra de estoque encontrada no CAP.','var(--am)');
+    return;
+  }
+
+  // Remove movimentos de origem CAP (automáticos) e recria do zero
+  let movs    = S.g('eq-movimentos')||[];
+  let prods   = S.g('eq-produtos')||[];
+  const movsManuais = movs.filter(m=>!m.capOrigemId);
+  movs = [...movsManuais];
+
+  let criados = 0;
+  itensCompras.forEach(item=>{
+    const qtd  = parseFloat(item.qtd)||0;
+    const custo = parseFloat(item.preco)||0;
+    if(qtd <= 0) return;
+
+    // Busca produto pelo nome (case-insensitive)
+    let prod = prods.find(p=>
+      p.nome.toLowerCase().trim() === item.nome.toLowerCase().trim() && p.ativo!==false
+    );
+    // Se não existe, cria automaticamente
+    if(!prod){
+      const novoProdId = 'eq-'+(Date.now())+'-'+Math.random().toString(36).slice(2,5);
+      prod = { id:novoProdId, nome:item.nome, cat:item.cat, un:item.un,
+               min:0, custoMedio:custo, ativo:true, criadoEm:new Date().toISOString() };
+      prods.push(prod);
+    } else {
+      // Atualiza categoria/unidade se estiver em branco
+      if(!prod.cat) prod.cat = item.cat;
+      if(!prod.un || prod.un==='un') prod.un = item.un||prod.un;
+    }
+
+    const novoId = movs.length ? Math.max(...movs.map(m=>m.id||0))+1 : 1;
+    movs.push({
+      id: novoId, data: item.data, tipo: 'entrada',
+      prodId: prod.id, qtd, custoUnit: custo, total: item.total,
+      fornId: item.fornId, obs: `CAP: ${item.lancId}`,
+      capOrigemId: item.lancId, criadoEm: new Date().toISOString()
+    });
+    criados++;
+  });
+
+  // Recalcula custo médio de todos os produtos
+  prods = prods.map(p=>{
+    const cm = eqCustoMedio(p.id, movs);
+    return cm > 0 ? {...p, custoMedio: cm} : p;
+  });
+
+  // Sincroniza unidades dos insumos cadastrados com os produtos do estoque
+  const insumos = S.g('insumos')||[];
+  prods = prods.map(p=>{
+    const ins = insumos.find(i=>i.nome.toLowerCase().trim()===p.nome.toLowerCase().trim());
+    if(ins && ins.un && ins.un !== p.un) return {...p, un: ins.un};
+    return p;
+  });
+
+  // Deduplica movimentos por capOrigemId + prodId (evita duplicações de múltiplas sincronizações)
+  const movsDedup = [];
+  const vistos = new Set();
+  movs.forEach(m=>{
+    const chave = m.capOrigemId ? `${m.capOrigemId}|${m.prodId}` : `manual|${m.id}`;
+    if(!vistos.has(chave)){
+      vistos.add(chave);
+      movsDedup.push(m);
+    }
+  });
+
+  S.s('eq-movimentos', movsDedup);
+  S.s('eq-produtos', prods);
+  renderEstoque();
+  const diff = movs.length - movsDedup.length;
+  const msg = diff > 0
+    ? `✓ Sincronização concluída! ${criados} entrada(s). ${diff} duplicata(s) removida(s).`
+    : `✓ Sincronização concluída! ${criados} entrada(s) importada(s).`;
+  showToast(msg,'var(--gr)');
+}
+
+function eqDetectarCategoria(item){
+  // Tenta pelo campo cat direto
+  if(item.cat && EQ_CATS_ESTOQUE.includes(item.cat)) return item.cat;
+  // Tenta pelo tipo do item
+  const tipoLower = (item.tipo||'').toLowerCase();
+  if(tipoLower==='insumo') return 'Insumos';
+  // Tenta pelo nome da conta (busca por palavras-chave)
+  const nomeLower = (item.nome||'').toLowerCase();
+  if(nomeLower.includes('bebida')) return 'Bebidas';
+  if(nomeLower.includes('limpeza')) return 'Material de Limpeza';
+  if(nomeLower.includes('descart')) return 'Material Descartável';
+  if(nomeLower.includes('utens')) return 'Material Utensílios';
+  if(nomeLower.includes('expediente')) return 'Material de Expediente';
+  if(nomeLower.includes('imobiliz')) return 'Imobilizado';
+  // Tenta pelo código da conta
+  const conta = (item.conta||'');
+  for(const [key,cat] of Object.entries(EQ_CAT_MAP)){
+    if(conta.startsWith(key)) return cat;
+  }
+  // Tipo insumo/produto = Insumos por padrão
+  if(['insumo','produto'].includes(tipoLower)) return 'Insumos';
+  return null;
+}
+
+function eqIntegrarDoCAP(lancamento){
+  // Usa mesma lógica do relatório de compras para consistência
+  if(!lancamento) return;
+
+  const data   = lancamento.comp || lancamento.venc || lancamento.dtpag || '';
+  const fornId = lancamento.forn || '';
+  const lancId = lancamento.cod  || String(lancamento.id);
+
+  let movs  = S.g('eq-movimentos')||[];
+  let prods = S.g('eq-produtos')||[];
+
+  // Evita duplicação
+  if(movs.some(m=>m.capOrigemId===lancId)) return;
+
+  let itensParaIntegrar = [];
+
+  if(lancamento.itens && lancamento.itens.length){
+    lancamento.itens.forEach(it=>{
+      const contaNome = nomeContaByCod(it.conta)||'';
+      const cat = detectarCategoriaItem(it, contaNome);
+      if(!CATS_COMPRAS.includes(cat)) return;
+      itensParaIntegrar.push({ nome:it.nome||'', cat, un:it.un||'un',
+        qtd:it.qtd||0, preco:it.preco||0, total:it.total||0 });
+    });
+  } else if(lancamento.conta){
+    const contaNome = nomeContaByCod(lancamento.conta)||'';
+    const itSint    = { nome:lancamento.desc||'', conta:lancamento.conta, tipo:'Insumo', cat:'' };
+    const cat       = detectarCategoriaItem(itSint, contaNome);
+    if(CATS_COMPRAS.includes(cat)){
+      itensParaIntegrar.push({ nome:lancamento.desc||'', cat, un:'un',
+        qtd:1, preco:lancamento.val||0, total:lancamento.val||0 });
+    }
+  }
+
+  if(!itensParaIntegrar.length) return;
+
+  let criados = 0;
+  itensParaIntegrar.forEach(item=>{
+    const qtd = parseFloat(item.qtd)||0;
+    if(qtd<=0) return;
+
+    let prod = prods.find(p=>p.nome.toLowerCase().trim()===item.nome.toLowerCase().trim() && p.ativo!==false);
+    if(!prod){
+      const novoProdId = 'eq-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
+      prod = { id:novoProdId, nome:item.nome, cat:item.cat, un:item.un,
+               min:0, custoMedio:item.preco, ativo:true, criadoEm:new Date().toISOString() };
+      prods.push(prod);
+    } else {
+      if(!prod.cat) prod.cat = item.cat;
+    }
+    const novoId = movs.length ? Math.max(...movs.map(m=>m.id||0))+1 : 1;
+    movs.push({ id:novoId, data, tipo:'entrada', prodId:prod.id,
+      qtd, custoUnit:item.preco, total:item.total,
+      fornId, obs:`CAP: ${lancId}`, capOrigemId:lancId,
+      criadoEm:new Date().toISOString() });
+    criados++;
+  });
+
+  if(criados>0){
+    prods = prods.map(p=>{ const cm=eqCustoMedio(p.id,movs); return cm>0?{...p,custoMedio:cm}:p; });
+    S.s('eq-movimentos',movs);
+    S.s('eq-produtos',prods);
+    showToast(`✓ ${criados} item(s) integrado(s) ao Estoque!`,'var(--bl)');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// MÓDULO DE ESTOQUE — FINANCE GESTÃO PRO
+// ══════════════════════════════════════════════════
+
+const EQ_CATS = ['Insumos','Bebidas','Material de Expediente','Material Utensílios','Material Descartável','Material de Limpeza','Imobilizado'];
+
+function eqGetMes(){
+  const el = document.getElementById('eq-mes');
+  if(el && el.value) return el.value;
+  return new Date().toISOString().slice(0,7);
+}
+
+// Inicializa o campo de mês com o mês atual
+function eqInitMes(){
+  const el = document.getElementById('eq-mes');
+  if(el && !el.value) el.value = new Date().toISOString().slice(0,7);
+}
+
+// Calcula custo médio de um produto baseado nas entradas
+// Retorna o último preço unitário de compra do produto
+// Critério: mais recente por data; empate = maior id
+function eqCustoMedio(prodId, movs){
+  const entradas = movs
+    .filter(m=>m.prodId===prodId && m.tipo==='entrada' && (m.custoUnit||0)>0)
+    .sort((a,b)=>{
+      const dc = (b.data||'').localeCompare(a.data||'');
+      if(dc!==0) return dc;
+      return (b.id||0)-(a.id||0);
+    });
+  return entradas.length > 0 ? (entradas[0].custoUnit||0) : 0;
+}
+
+// Calcula estoque de um produto num mês
+function eqCalcProduto(prodId, ym, movs, inventarios){
+  const [y,m] = ym.split('-').map(Number);
+  // Mês anterior para pegar estoque inicial
+  const mesAntD = new Date(y, m-2, 1);
+  const mesAnt = mesAntD.toISOString().slice(0,7);
+
+  // ── Estoque Inicial ──
+  // 1º prioridade: EI explícito lançado via botão "Est. Inicial"
+  const eiExplicito = (inventarios['ei-'+ym]||{})[prodId];
+  // 2º prioridade: EF (inventário) do mês anterior vira EI do mês atual
+  const invAnt = (inventarios[mesAnt]||{})[prodId];
+  // EI explícito do mês anterior também serve (carry-forward)
+  const eiAnt = (inventarios['ei-'+mesAnt]||{})[prodId];
+  const estoqueInicial = eiExplicito !== undefined ? eiExplicito
+                       : invAnt      !== undefined ? invAnt
+                       : eiAnt       !== undefined ? eiAnt
+                       : 0;
+  // Flag: EI tem valor real lançado (não é zero padrão)
+  const temEI = eiExplicito !== undefined || invAnt !== undefined || eiAnt !== undefined;
+
+  // ── Compras do mês ──
+  const compras = movs.filter(m=>m.prodId===prodId && m.tipo==='entrada' && (m.data||'').slice(0,7)===ym);
+  const totalComprasQtd = compras.reduce((a,b)=>a+(b.qtd||0),0);
+  const totalComprasVal = compras.reduce((a,b)=>a+(b.total||0),0);
+
+  // ── Saídas manuais do mês ──
+  const saidas = movs.filter(m=>m.prodId===prodId && m.tipo==='saida' && (m.data||'').slice(0,7)===ym);
+  const totalSaidasQtd = saidas.reduce((a,b)=>a+(b.qtd||0),0);
+
+  // ── Estoque disponível (saldo atual) = EI + Compras - Saídas ──
+  const estoqueDisp = estoqueInicial + totalComprasQtd - totalSaidasQtd;
+
+  // ── Estoque Final ──
+  // Se houver inventário (contagem física) → usa o valor contado
+  // Se não houver → EF = 0 (empresa consumiu tudo no mês)
+  const invAtual = (inventarios[ym]||{})[prodId];
+  const temInventario = invAtual !== undefined;
+  const estoqueFinal = temInventario ? invAtual : 0;
+
+  // ── CMV = EI + Compras − EF ──
+  // Sempre calcula: sem inventário EF = 0, com inventário EF = contagem física
+  const custoMedio = eqCustoMedio(prodId, movs);
+  const cmvQtd = Math.max(0, estoqueInicial + totalComprasQtd - estoqueFinal);
+  const cmvVal = custoMedio > 0 ? cmvQtd * custoMedio : 0;
+
+  return {
+    estoqueInicial, temEI,
+    totalComprasQtd, totalComprasVal,
+    totalSaidasQtd, estoqueDisp,
+    estoqueFinal, temInventario,
+    custoMedio,
+    cmvQtd, cmvVal
+  };
+}
+
+// ── Ordenação do estoque ──
+let _eqSortCol = 'nome';
+let _eqSortDir = 'asc';
+
+function eqSortCol(col, thEl){
+  _eqSortDir = (_eqSortCol===col && _eqSortDir==='asc') ? 'desc' : 'asc';
+  _eqSortCol = col;
+  // Atualiza ícones
+  document.querySelectorAll('#tb-eq').forEach(()=>{});
+  document.querySelectorAll('th.sortable .sort-icon').forEach(ic=>{ ic.className='fa-solid fa-sort sort-icon'; });
+  if(thEl){
+    const ic = thEl.querySelector('.sort-icon');
+    if(ic) ic.className = 'fa-solid fa-sort-'+(_eqSortDir==='asc'?'up':'down')+' sort-icon';
+  }
+  renderEstoque();
+}
+
+// Corrige inventários salvos com arredondamento incorreto
+// Ex: usuário digitou "1" mas salvou como "0.001" por bug
+function eqCorrigirInventariosErrados(){
+  const inventarios = S.g('eq-inventarios')||{};
+  let corrigiu = false;
+  Object.keys(inventarios).forEach(k=>{
+    const obj = inventarios[k];
+    if(!obj) return;
+    Object.keys(obj).forEach(prodId=>{
+      const val = obj[prodId];
+      // Detecta valores suspeitos: entre 0.001 e 0.099 que provavelmente deveriam ser inteiros
+      // Heurística: se val * 1000 é um inteiro redondo, estava com casa decimal errada
+      if(val > 0 && val < 0.1){
+        const valCorrigido = Math.round(val * 1000);
+        if(valCorrigido > 0){
+          obj[prodId] = valCorrigido;
+          corrigiu = true;
+          console.log(`[EqCorrige] Inventário ${k} prod ${prodId}: ${val} → ${valCorrigido}`);
+        }
+      }
+    });
+  });
+  if(corrigiu) S.s('eq-inventarios', inventarios);
+}
+
+function eqLimparEI(prodId){
+  if(!confirm('Remover o Estoque Inicial deste produto?')) return;
+  const inventarios = S.g('eq-inventarios')||{};
+  let removeu = false;
+  // Remove de todas as chaves ei-* E inventários normais que servem como EI
+  Object.keys(inventarios).forEach(k=>{
+    const obj = inventarios[k];
+    if(obj && obj[prodId] !== undefined){
+      delete obj[prodId];
+      removeu = true;
+    }
+  });
+  if(removeu){
+    S.s('eq-inventarios', inventarios);
+    renderEstoque();
+    showToast('Estoque inicial removido.','var(--am)');
+  } else {
+    showToast('Nenhum estoque inicial encontrado para este produto.','var(--tx3)');
+  }
+}
+
 function renderEstoque(){
-  const arr=S.g('estoque')||[];
-  const crit=arr.filter(x=>x.q<x.m).length;
-  document.getElementById('kpi-eq').innerHTML=`
-    <div class="kc"><div class="kl">Itens</div><div class="kv">${arr.length}</div></div>
-    <div class="kc"><div class="kl">Valor Total</div><div class="kv">${R(12840)}</div></div>
-    <div class="kc"><div class="kl">Críticos</div><div class="kv" style="color:var(--rd)">${crit}</div></div>
-    <div class="kc"><div class="kl">Giro Médio</div><div class="kv">4,2x</div></div>`;
-  document.getElementById('eq-list').innerHTML=arr.map(e=>{
-    const cor=e.q<e.m?'var(--rd)':e.q<e.m*1.3?'var(--am)':'var(--gr)';
-    const lbl=e.q<e.m?'CRÍTICO':e.q<e.m*1.3?'BAIXO':'OK';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)">
-      <div style="width:32px;height:32px;border-radius:6px;background:rgba(242,100,25,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-box" style="color:var(--or);font-size:13px"></i></div>
-      <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--tx)">${e.n}</div><div style="font-size:11px;color:var(--tx2)">${e.c} · Mín: ${e.m}${e.u}</div></div>
-      <div style="text-align:right"><div style="font-size:14px;font-weight:500;color:${cor}">${e.q} ${e.u}</div><div style="font-size:10px;color:${cor}">${lbl}</div></div>
+  eqInitMes();
+  const ym = eqGetMes();
+  const movs = S.g('eq-movimentos')||[];
+  const prods = S.g('eq-produtos')||[];
+  const inventarios = S.g('eq-inventarios')||{};
+  const filtCat = document.getElementById('eq-filtro-cat')?.value||'';
+  const filtSt = document.getElementById('eq-filtro-st')?.value||'';
+
+  // Label período
+  const [y,m2] = ym.split('-').map(Number);
+  const nomeMes = new Date(y,m2-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+  const labelEl = document.getElementById('eq-periodo-label');
+  if(labelEl) labelEl.textContent = `— ${nomeMes}`;
+  const abcEl = document.getElementById('eq-abc-per');
+  if(abcEl) abcEl.textContent = nomeMes;
+  const catEl = document.getElementById('eq-cat-per');
+  if(catEl) catEl.textContent = nomeMes;
+
+  // Filtra produtos
+  let prodsFilt = prods.filter(p=>p.ativo!==false);
+  if(filtCat) prodsFilt = prodsFilt.filter(p=>p.cat===filtCat);
+
+  // Calcula dados de cada produto
+  const rows = prodsFilt.map(p=>{
+    const calc = eqCalcProduto(p.id, ym, movs, inventarios);
+    // Status baseado no estoque disponível vs mínimo
+    let status = 'ok', statusLbl='OK', statusCor='var(--gr)';
+    if(p.min > 0){
+      if(calc.estoqueDisp < p.min){ status='critico'; statusLbl='CRÍTICO'; statusCor='var(--rd)'; }
+      else if(calc.estoqueDisp < p.min*1.3){ status='baixo'; statusLbl='BAIXO'; statusCor='var(--am)'; }
+    }
+    return {...p, ...calc, status, statusLbl, statusCor};
+  });
+
+  // Aplica filtro de status
+  let rowsFilt = filtSt ? rows.filter(r=>r.status===filtSt) : rows;
+
+  // Aplica ordenação
+  rowsFilt = [...rowsFilt].sort((a,b)=>{
+    let va = a[_eqSortCol], vb = b[_eqSortCol];
+    if(typeof va === 'number' && typeof vb === 'number'){
+      return _eqSortDir==='asc' ? va-vb : vb-va;
+    }
+    va = String(va||'').toLowerCase();
+    vb = String(vb||'').toLowerCase();
+    if(va<vb) return _eqSortDir==='asc'?-1:1;
+    if(va>vb) return _eqSortDir==='asc'?1:-1;
+    return 0;
+  });
+
+  // KPIs
+  const totalItens = rows.length;
+  const totalComprasVal = rows.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+  const totalCMV = rows.reduce((a,b)=>a+(b.cmvVal||0),0);
+  const itensComCMV = rows.filter(r=>r.cmvVal!==null).length;
+  const totalCriticos = rows.filter(r=>r.status==='critico').length;
+  const totalBaixo = rows.filter(r=>r.status==='baixo').length;
+  const totalEstFinal = rows.reduce((a,b)=>a+(b.temInventario&&b.estoqueFinal>0?b.estoqueFinal*(b.custoMedio||0):0),0);
+
+  const kpiEl = document.getElementById('kpi-eq');
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="kc">
+      <div class="kl"><i class="fa-solid fa-boxes-stacked" style="color:var(--or);margin-right:4px"></i>Total de Itens</div>
+      <div class="kv">${totalItens}</div>
+      <div class="kd nt">${EQ_CATS.length} categorias</div>
+    </div>
+    <div class="kc">
+      <div class="kl"><i class="fa-solid fa-receipt" style="color:#64B5F6;margin-right:4px"></i>Compras do Mês</div>
+      <div class="kv" style="color:#64B5F6">${R(totalComprasVal)}</div>
+      <div class="kd nt">Regime de competência</div>
+    </div>
+    <div class="kc">
+      <div class="kl"><i class="fa-solid fa-chart-pie" style="color:var(--or);margin-right:4px"></i>CMV do Mês</div>
+      <div class="kv" style="color:var(--or)">${R(totalCMV)}</div>
+      <div class="kd nt">EI + Compras − EF</div>
+    </div>
+    <div class="kc" style="border-color:${totalCriticos>0?'rgba(229,57,53,0.3)':totalBaixo>0?'rgba(255,143,0,0.3)':''}">
+      <div class="kl"><i class="fa-solid fa-triangle-exclamation" style="color:${totalCriticos>0?'var(--rd)':'var(--am)'};margin-right:4px"></i>Alertas</div>
+      <div class="kv" style="color:${totalCriticos>0?'var(--rd)':'var(--am)'}">${totalCriticos+totalBaixo}</div>
+      <div class="kd nt">${totalCriticos} crítico(s) · ${totalBaixo} baixo(s)</div>
+    </div>`;
+
+  // Tabela
+  const tbEl = document.getElementById('tb-eq');
+  if(!tbEl) return;
+
+  if(!rowsFilt.length){
+    tbEl.innerHTML=`<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--tx3)">
+      <i class="fa-solid fa-boxes-stacked" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
+      Nenhum produto cadastrado${filtCat?' na categoria '+filtCat:''}.<br>
+      <span style="font-size:11px">Use <strong style="color:var(--or)">+ Nova Entrada</strong> para registrar a primeira compra.</span>
+    </td></tr>`;
+  } else {
+    tbEl.innerHTML = rowsFilt.map(r=>{
+      const invIcon = r.temInventario
+        ? `<i class="fa-solid fa-clipboard-check" style="color:var(--gr);font-size:10px" title="Inventário realizado"></i>`
+        : `<i class="fa-solid fa-clipboard" style="color:var(--tx3);font-size:10px" title="Sem inventário — usando saldo disponível"></i>`;
+      return `<tr>
+        <td style="color:var(--tx);font-weight:500">${r.nome}</td>
+        <td><span class="tg tg-gy" style="font-size:10px">${r.cat||'—'}</span></td>
+        <td style="color:var(--tx3)">${r.un||'un'}</td>
+        <td style="text-align:right;color:#64B5F6;font-weight:500">
+          ${r.temEI ? (r.estoqueInicial||0).toFixed(3).replace(/\.?0+$/,'') : '<span style="color:var(--tx3);font-size:10px">—</span>'}
+        </td>
+        <td style="text-align:right;color:#64B5F6;font-weight:600">
+          ${r.temEI&&r.estoqueInicial>0&&r.custoMedio>0?R(r.estoqueInicial*r.custoMedio):'—'}
+        </td>
+        <td style="text-align:right;color:#81C784;font-weight:500">
+          ${r.totalComprasQtd>0?r.totalComprasQtd.toFixed(3).replace(/\.?0+$/,''):'—'}
+        </td>
+        <td style="text-align:right;color:#81C784;font-weight:600">
+          ${r.totalComprasVal>0?R(r.totalComprasVal):'—'}
+        </td>
+        <td style="text-align:right;color:#EF9A9A;font-weight:500">
+          <span style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
+            ${r.estoqueFinal.toFixed(3).replace(/\.?0+$/,'')||'0'} ${invIcon}
+          </span>
+        </td>
+        <td style="text-align:right;color:#EF9A9A;font-weight:600">
+          ${r.estoqueFinal>0&&r.custoMedio>0?R(r.estoqueFinal*r.custoMedio):'—'}
+        </td>
+        <td style="text-align:right;color:var(--or);font-weight:600">
+          ${r.cmvQtd>0?r.cmvQtd.toFixed(3).replace(/\.?0+$/,''):'0'}
+        </td>
+        <td style="text-align:right;color:var(--tx2)">${r.custoMedio>0?R(r.custoMedio):'—'}</td>
+        <td style="text-align:right;color:var(--or);font-weight:700">
+          ${r.cmvVal>0?R(r.cmvVal):r.cmvQtd>0?R(0):'—'}
+        </td>
+        <td style="text-align:center">
+          <span class="tg" style="background:${r.statusCor==='var(--gr)'?'rgba(76,175,80,0.15)':r.statusCor==='var(--am)'?'rgba(255,143,0,0.15)':'rgba(229,57,53,0.15)'};color:${r.statusCor};font-size:10px">${r.statusLbl}</span>
+        </td>
+        <td><div class="ac-btns" style="opacity:1">
+          <button class="ac-btn ac-edit" title="Nova entrada" onclick="eqAbrirMovimento('entrada','${r.id}')"><i class="fa-solid fa-plus"></i></button>
+          <button class="ac-btn" title="Editar produto" onclick="eqEditarProduto('${r.id}')"
+            style="background:rgba(255,143,0,0.12);color:#FFB74D"><i class="fa-solid fa-pen"></i></button>
+          ${r.temEI?`<button class="ac-btn ac-del" title="Remover Estoque Inicial" onclick="eqLimparEI('${r.id}')"><i class="fa-solid fa-eraser"></i></button>`:''}
+        </div></td>
+      </tr>`;
+    }).join('');
+
+    // Linha totais
+    const totComprasQtd = rowsFilt.reduce((a,b)=>a+(b.totalComprasQtd||0),0);
+    const totComprasVal = rowsFilt.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+    const totCMV        = rowsFilt.reduce((a,b)=>a+(b.cmvVal||0),0);
+    const totEIVal      = rowsFilt.reduce((a,b)=>a+(b.temEI&&b.estoqueInicial>0&&b.custoMedio>0?b.estoqueInicial*b.custoMedio:0),0);
+    const totEFVal      = rowsFilt.reduce((a,b)=>a+(b.temInventario&&b.estoqueFinal>0&&b.custoMedio>0?b.estoqueFinal*b.custoMedio:0),0);
+    const temAlgumCMV   = rowsFilt.some(r=>r.cmvVal!==null);
+    tbEl.innerHTML += `<tr style="border-top:2px solid rgba(255,255,255,0.1);background:rgba(242,100,25,0.06)">
+      <td colspan="3" style="font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;padding:10px">
+        <i class="fa-solid fa-equals" style="color:var(--or);margin-right:6px"></i>Totais do Período
+      </td>
+      <td style="text-align:right;font-weight:700;color:#64B5F6">—</td>
+      <td style="text-align:right;font-weight:700;color:#64B5F6;font-size:13px">${totEIVal>0?R(totEIVal):'—'}</td>
+      <td style="text-align:right;font-weight:700;color:#81C784">—</td>
+      <td style="text-align:right;font-weight:700;color:#81C784;font-size:13px">${R(totComprasVal)}</td>
+      <td style="text-align:right;font-weight:700;color:#EF9A9A">—</td>
+      <td style="text-align:right;font-weight:700;color:#EF9A9A;font-size:13px">${totEFVal>0?R(totEFVal):'—'}</td>
+      <td style="text-align:right;font-weight:700;color:var(--or)">—</td>
+      <td style="text-align:right;font-weight:700;color:var(--tx2)">—</td>
+      <td style="text-align:right;font-weight:700;color:var(--or);font-size:14px">${R(totCMV)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+  }
+
+  // Curva ABC
+  eqRenderABC(rows, ym);
+
+  // Gráfico de pizza por categoria
+  eqRenderGraficoCat(rows);
+
+  // Histórico
+  eqRenderHistorico(movs);
+}
+
+// ── Curva ABC ──
+function eqRenderABC(rows, ym){
+  const abcEl = document.getElementById('eq-abc-list');
+  if(!abcEl) return;
+  const sorted = [...rows].filter(r=>r.totalComprasVal>0).sort((a,b)=>b.totalComprasVal-a.totalComprasVal);
+  const total = sorted.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+  if(!sorted.length){ abcEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--tx3);font-size:12px">Nenhuma compra registrada neste mês.</div>'; return; }
+  let acum = 0;
+  abcEl.innerHTML = sorted.slice(0,15).map((r,i)=>{
+    acum += r.totalComprasVal;
+    const pct = total>0 ? r.totalComprasVal/total*100 : 0;
+    const pctAcum = total>0 ? acum/total*100 : 0;
+    const classe = pctAcum<=80?'A':pctAcum<=95?'B':'C';
+    const corClasse = classe==='A'?'var(--rd)':classe==='B'?'var(--am)':'var(--gr)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)">
+      <span style="width:18px;height:18px;border-radius:3px;background:${corClasse==='var(--rd)'?'rgba(229,57,53,0.2)':corClasse==='var(--am)'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${corClasse};flex-shrink:0">${classe}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.nome}</div>
+        <div style="height:3px;background:var(--dk4);border-radius:99px;margin-top:3px"><div style="width:${pct}%;height:100%;background:${corClasse};border-radius:99px;transition:width 0.3s"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;font-weight:600;color:var(--tx)">${R(r.totalComprasVal)}</div>
+        <div style="font-size:10px;color:var(--tx3)">${pct.toFixed(1)}% · Acum: ${pctAcum.toFixed(0)}%</div>
+      </div>
     </div>`;
   }).join('');
+}
+
+// ── Gráfico por categoria ──
+function eqRenderGraficoCat(rows){
+  // Agrupa por categoria usando CMV R$ (consumo real) ou Compras R$ se não houver CMV
+  const catCompras = {};
+  const catCores = {
+    'Insumos':           '#F26419',
+    'Bebidas':           '#2196F3',
+    'Material de Limpeza':   '#4CAF50',
+    'Material Descartável':  '#FF8F00',
+    'Material Utensílios':   '#9C27B0',
+    'Material de Expediente':'#64B5F6',
+    'Imobilizado':       '#E53935',
+  };
+  rows.forEach(r=>{
+    const val = r.totalComprasVal||0;
+    if(val>0){
+      const cat = r.cat||'Outros';
+      catCompras[cat] = (catCompras[cat]||0) + val;
+    }
+  });
+  const labels = Object.keys(catCompras);
+  const data   = labels.map(l=>catCompras[l]);
+  const cores  = labels.map((l,i)=>catCores[l]||['#F26419','#2196F3','#4CAF50','#FF8F00','#9C27B0','#E53935','#64B5F6'][i%7]);
+  const cv = document.getElementById('c-eq');
+  if(!cv) return;
+  if(window._chartEq) window._chartEq.destroy();
+  if(!labels.length) return;
+  window._chartEq = new Chart(cv.getContext('2d'),{
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:cores, borderWidth:2, borderColor:'#1E1E1E' }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'right', labels:{ color:'#AAAAAA', font:{size:11}, boxWidth:12, padding:10 } },
+        tooltip:{ callbacks:{ label: ctx=>{
+          const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+          const pct = total>0?(ctx.parsed/total*100).toFixed(1):'0';
+          return ` ${ctx.label}: R$ ${ctx.parsed.toFixed(2).replace('.',',')} (${pct}%)`;
+        }}}
+      }
+    }
+  });
+}
+
+// ── Histórico de movimentações ──
+function eqRenderHistorico(movs){
+  const tbEl = document.getElementById('tb-eq-hist');
+  if(!tbEl) return;
+  const prods = S.g('eq-produtos')||[];
+  const sorted = [...movs].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  tbEl.innerHTML = sorted.slice(0,50).map(m=>{
+    const prod = prods.find(p=>p.id===m.prodId)||{};
+    const tipoTag = m.tipo==='entrada'
+      ? `<span class="tg tg-gr" style="font-size:10px">↑ Entrada</span>`
+      : m.tipo==='saida'
+      ? `<span class="tg tg-rd" style="font-size:10px">↓ Saída</span>`
+      : `<span class="tg tg-am" style="font-size:10px">⚖ Ajuste</span>`;
+    return `<tr>
+      <td style="color:var(--or);font-size:12px;white-space:nowrap">${m.data?m.data.split('-').reverse().join('/'):'-'}</td>
+      <td style="color:var(--tx);font-weight:500">${prod.nome||'—'}</td>
+      <td><span class="tg tg-gy" style="font-size:10px">${prod.cat||'—'}</span></td>
+      <td style="text-align:center">${tipoTag}</td>
+      <td style="text-align:right;color:${m.tipo==='entrada'?'#81C784':'#EF9A9A'};font-weight:500">${m.tipo==='entrada'?'+':'−'}${(m.qtd||0).toFixed(3).replace(/\.?0+$/,'')} ${prod.un||''}</td>
+      <td style="text-align:right;color:var(--tx2)">${m.custoUnit>0?R(m.custoUnit):'—'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--tx)">${m.total>0?R(m.total):'—'}</td>
+      <td style="color:var(--tx3);font-size:11px">${m.obs||'—'}</td>
+      <td><div class="ac-btns" style="opacity:1">
+        <button class="ac-btn ac-del" onclick="eqExcluirMov(${m.id})"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--tx3)">Nenhum movimento registrado.</td></tr>`;
+}
+
+function eqToggleHistorico(btn){
+  const el = document.getElementById('eq-historico');
+  if(!el) return;
+  const vis = el.style.display==='block';
+  el.style.display = vis?'none':'block';
+  btn.innerHTML = vis?'<i class="fa-solid fa-chevron-down"></i> Ver histórico':'<i class="fa-solid fa-chevron-up"></i> Ocultar histórico';
+  if(!vis) eqRenderHistorico(S.g('eq-movimentos')||[]);
+}
+
+// ── Abre modal de movimento ──
+function eqAbrirMovimento(tipo, prodId){
+  const d = new Date().toISOString().slice(0,10);
+  document.getElementById('eq-mov-data').value = d;
+  document.getElementById('eq-mov-tipo').value = tipo==='saida'?'saida':'entrada';
+  document.getElementById('eq-mov-qtd').value = '';
+  document.getElementById('eq-mov-custo').value = '';
+  document.getElementById('eq-mov-total').value = '';
+  document.getElementById('eq-mov-obs').value = '';
+  document.getElementById('eq-mov-edit-id').value = '';
+  document.getElementById('eq-mov-cat').value = '';
+  // Popula fornecedores
+  const forns = S.g('fornecedores')||[];
+  const sel = document.getElementById('eq-mov-forn');
+  sel.innerHTML = '<option value="">Selecione o fornecedor...</option>' +
+    forns.filter(f=>f.st!=='inativo').map(f=>`<option value="${f.id}">${f.n}</option>`).join('');
+  // Título
+  document.getElementById('eq-mov-titulo').innerHTML =
+    tipo==='saida'
+      ? '<i class="fa-solid fa-minus" style="color:#EF9A9A;margin-right:8px"></i>Nova Saída de Estoque'
+      : '<i class="fa-solid fa-plus" style="color:#81C784;margin-right:8px"></i>Nova Entrada de Estoque';
+  // Se veio com prodId, pré-seleciona categoria e produto
+  if(prodId){
+    const prod = (S.g('eq-produtos')||[]).find(p=>p.id===prodId);
+    if(prod){
+      document.getElementById('eq-mov-cat').value = prod.cat||'';
+      eqFiltrarProdutosPorCat();
+      document.getElementById('eq-mov-produto').value = prodId;
+      if(prod.custoMedio) document.getElementById('eq-mov-custo').value = prod.custoMedio.toFixed(2);
+    }
+  } else {
+    eqFiltrarProdutosPorCat();
+  }
+  openMod('mod-eq-mov');
+}
+
+function eqFiltrarProdutosPorCat(){
+  const cat = document.getElementById('eq-mov-cat').value;
+  const prods = (S.g('eq-produtos')||[]).filter(p=>p.ativo!==false && (!cat||p.cat===cat));
+  const sel = document.getElementById('eq-mov-produto');
+  sel.innerHTML = '<option value="">Selecione o produto...</option>' +
+    prods.map(p=>`<option value="${p.id}">${p.nome} (${p.un||'un'})</option>`).join('');
+}
+
+function eqToggleTipoMov(tipo){
+  const titulo = document.getElementById('eq-mov-titulo');
+  if(titulo) titulo.innerHTML = tipo==='saida'
+    ? '<i class="fa-solid fa-minus" style="color:#EF9A9A;margin-right:8px"></i>Nova Saída de Estoque'
+    : tipo==='ajuste'
+    ? '<i class="fa-solid fa-scale-balanced" style="color:var(--am);margin-right:8px"></i>Ajuste de Inventário'
+    : '<i class="fa-solid fa-plus" style="color:#81C784;margin-right:8px"></i>Nova Entrada de Estoque';
+}
+
+function eqCalcTotal(){
+  const qtd = parseFloat(document.getElementById('eq-mov-qtd').value)||0;
+  const custo = parseFloat(document.getElementById('eq-mov-custo').value)||0;
+  document.getElementById('eq-mov-total').value = (qtd*custo).toFixed(2);
+}
+
+function eqSalvarMovimento(){
+  const data = document.getElementById('eq-mov-data').value;
+  const tipo = document.getElementById('eq-mov-tipo').value;
+  const prodId = document.getElementById('eq-mov-produto').value;
+  const qtd = parseFloat(document.getElementById('eq-mov-qtd').value)||0;
+  const custoUnit = parseFloat(document.getElementById('eq-mov-custo').value)||0;
+  const total = qtd * custoUnit;
+  const fornId = document.getElementById('eq-mov-forn').value;
+  const obs = document.getElementById('eq-mov-obs').value.trim();
+
+  if(!data){ alert('Informe a data.'); return; }
+  if(!prodId){ alert('Selecione o produto.'); return; }
+  if(qtd<=0){ alert('Informe a quantidade.'); return; }
+
+  let movs = S.g('eq-movimentos')||[];
+  const editId = parseInt(document.getElementById('eq-mov-edit-id').value)||0;
+  const novoId = editId || (movs.length ? Math.max(...movs.map(m=>m.id||0))+1 : 1);
+
+  if(editId) movs = movs.filter(m=>m.id!==editId);
+
+  movs.push({ id:novoId, data, tipo, prodId, qtd, custoUnit, total, fornId, obs, criadoEm:new Date().toISOString() });
+  S.s('eq-movimentos', movs);
+
+  // Atualiza custo médio do produto
+  const prods = S.g('eq-produtos')||[];
+  const idx = prods.findIndex(p=>p.id===prodId);
+  if(idx>=0){
+    prods[idx].custoMedio = eqCustoMedio(prodId, movs);
+    S.s('eq-produtos', prods);
+  }
+
+  closeMod('mod-eq-mov');
+  renderEstoque();
+  showToast('✓ Movimento registrado!','var(--gr)');
+}
+
+function eqExcluirMov(id){
+  if(!confirm('Excluir este movimento?')) return;
+  let movs = S.g('eq-movimentos')||[];
+  movs = movs.filter(m=>m.id!==id);
+  S.s('eq-movimentos', movs);
+  renderEstoque();
+  showToast('Movimento excluído.','var(--am)');
+}
+
+// ── INVENTÁRIO ──
+// ── ESTOQUE INICIAL ──
+function eqAbrirEstoqueInicial(){
+  // Pré-seleciona o mês mais antigo com movimento, ou mês atual
+  const movs = S.g('eq-movimentos')||[];
+  const prods = (S.g('eq-produtos')||[]).filter(p=>p.ativo!==false);
+  const inventarios = S.g('eq-inventarios')||{};
+
+  // Descobre o mês mais antigo com dados
+  let ymInicial = eqGetMes();
+  if(movs.length){
+    const datasSort = movs.map(m=>m.data||'').filter(Boolean).sort();
+    if(datasSort.length) ymInicial = datasSort[0].slice(0,7);
+  }
+
+  const elMes = document.getElementById('eq-ini-mes');
+  if(elMes) elMes.value = ymInicial;
+
+  const tbEl = document.getElementById('tb-eq-ini');
+  if(!tbEl){ openMod('mod-eq-inicial'); return; }
+
+  tbEl.innerHTML = prods.map(p=>{
+    // Verifica se já existe EI salvo (chave especial 'ei-YYYY-MM')
+    const eiKey = 'ei-'+ymInicial;
+    const eiVal = (inventarios[eiKey]||{})[p.id];
+    const valAtual = eiVal !== undefined ? eiVal : '';
+    return `<tr>
+      <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+      <td><span class="tg tg-gy" style="font-size:10px">${p.cat||'—'}</span></td>
+      <td style="color:var(--tx3)">${p.un||'un'}</td>
+      <td style="text-align:right">
+        <input type="number" data-prod="${p.id}" step="0.001" min="0" value="${valAtual}"
+          placeholder="0"
+          oninput="eqCalcIniTotal(this,'${p.id}')"
+          style="width:100px;background:var(--dk3);border:1px solid rgba(33,150,243,0.4);border-radius:5px;padding:5px 8px;color:#64B5F6;font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none">
+      </td>
+      <td style="text-align:right;color:var(--tx2)">${p.custoMedio>0?R(p.custoMedio):'—'}</td>
+      <td style="text-align:right;color:#64B5F6;font-weight:600" id="eq-ini-val-${p.id}">
+        ${eiVal!==undefined&&p.custoMedio>0?R(eiVal*p.custoMedio):'—'}
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--tx3)">Nenhum produto cadastrado. Sincronize o CAP primeiro.</td></tr>';
+
+  openMod('mod-eq-inicial');
+}
+
+function eqCalcIniTotal(input, prodId){
+  const qtd = parseFloat(input.value)||0;
+  const prods = S.g('eq-produtos')||[];
+  const prod = prods.find(p=>p.id===prodId);
+  const cm = prod?.custoMedio||0;
+  const el = document.getElementById('eq-ini-val-'+prodId);
+  if(el) el.textContent = (qtd>0&&cm>0) ? R(qtd*cm) : '—';
+}
+
+function eqSalvarEstoqueInicial(){
+  const ym = document.getElementById('eq-ini-mes').value;
+  if(!ym){ alert('Selecione o mês.'); return; }
+
+  const inputs = document.querySelectorAll('#tb-eq-ini input[data-prod]');
+  const inventarios = S.g('eq-inventarios')||{};
+  const eiKey = 'ei-'+ym;
+  if(!inventarios[eiKey]) inventarios[eiKey]={};
+
+  let salvos = 0;
+  inputs.forEach(inp=>{
+    const prodId = inp.getAttribute('data-prod');
+    const val = inp.value.trim();
+    if(val!==''){
+      inventarios[eiKey][prodId] = parseFloat(val)||0;
+      salvos++;
+    }
+  });
+
+  S.s('eq-inventarios', inventarios);
+  closeMod('mod-eq-inicial');
+  renderEstoque();
+  showToast(`✓ Estoque inicial de ${salvos} item(s) salvo! Coluna EI atualizada.`,'#2196F3');
+}
+
+function eqAbrirInventario(){
+  const ym = eqGetMes();
+  document.getElementById('eq-inv-mes').value = ym;
+  const prods = (S.g('eq-produtos')||[]).filter(p=>p.ativo!==false);
+  const movs = S.g('eq-movimentos')||[];
+  const inventarios = S.g('eq-inventarios')||{};
+
+  const tbEl = document.getElementById('tb-eq-inv');
+  if(!tbEl) return;
+
+  tbEl.innerHTML = prods.map(p=>{
+    const calc = eqCalcProduto(p.id, ym, movs, inventarios);
+    const invAtual = (inventarios[ym]||{})[p.id];
+    const valAtual = invAtual !== undefined ? invAtual : '';
+    return `<tr>
+      <td style="color:var(--tx);font-weight:500">${p.nome}</td>
+      <td><span class="tg tg-gy" style="font-size:10px">${p.cat||'—'}</span></td>
+      <td style="color:var(--tx3)">${p.un||'un'}</td>
+      <td style="text-align:right;color:#81C784">${calc.estoqueDisp.toFixed(3).replace(/\.?0+$/,'')}</td>
+      <td style="text-align:right">
+        <input type="number" data-prod="${p.id}" step="0.001" min="0" value="${valAtual}"
+          placeholder="${calc.estoqueDisp.toFixed(3).replace(/\.?0+$/,'')}"
+          oninput="eqCalcInvTotal(this,'${p.id}')"
+          style="width:100px;background:var(--dk3);border:1px solid rgba(242,100,25,0.4);border-radius:5px;padding:5px 8px;color:var(--or);font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none">
+      </td>
+      <td style="text-align:right;color:var(--tx2)">${calc.custoMedio>0?R(calc.custoMedio):'—'}</td>
+      <td style="text-align:right;color:var(--or);font-weight:600" id="eq-inv-val-${p.id}">
+        ${invAtual!==undefined&&calc.custoMedio>0?R(invAtual*calc.custoMedio):'—'}
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--tx3)">Nenhum produto cadastrado.</td></tr>';
+
+  openMod('mod-eq-inventario');
+}
+
+function eqCalcInvTotal(input, prodId){
+  const qtd = parseFloat(input.value)||0;
+  const movs = S.g('eq-movimentos')||[];
+  const cm = eqCustoMedio(prodId, movs);
+  const el = document.getElementById('eq-inv-val-'+prodId);
+  if(el) el.textContent = cm>0 ? R(qtd*cm) : '—';
+}
+
+function eqSalvarInventario(){
+  const ym = document.getElementById('eq-inv-mes').value;
+  if(!ym){ alert('Selecione o mês.'); return; }
+  const inputs = document.querySelectorAll('#tb-eq-inv input[data-prod]');
+  const inventarios = S.g('eq-inventarios')||{};
+  if(!inventarios[ym]) inventarios[ym]={};
+  inputs.forEach(inp=>{
+    const prodId = inp.getAttribute('data-prod');
+    const val = inp.value.trim();
+    if(val!=='') inventarios[ym][prodId] = Math.round((parseFloat(val)||0)*1000)/1000;
+  });
+  S.s('eq-inventarios', inventarios);
+  closeMod('mod-eq-inventario');
+  renderEstoque();
+  showToast('✓ Inventário salvo! CMV atualizado.','var(--gr)');
+}
+
+// ── LISTA DE COMPRAS ──
+function eqGerarListaCompras(){
+  const movs = S.g('eq-movimentos')||[];
+  const prods = S.g('eq-produtos')||[];
+  const inventarios = S.g('eq-inventarios')||{};
+  const ym = eqGetMes();
+  const alertas = prods.filter(p=>p.ativo!==false && p.min>0).map(p=>{
+    const calc = eqCalcProduto(p.id, ym, movs, inventarios);
+    return {...p, ...calc};
+  }).filter(p=>p.estoqueDisp < (p.min||0)*1.3);
+
+  const bodyEl = document.getElementById('eq-lista-compras-body');
+  if(!bodyEl) return;
+
+  if(!alertas.length){
+    bodyEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--gr)"><i class="fa-solid fa-check-circle" style="font-size:24px;margin-bottom:8px;display:block"></i>Todos os itens estão com estoque adequado!</div>`;
+  } else {
+    bodyEl.innerHTML=`
+      <div style="margin-bottom:12px;font-size:12px;color:var(--tx2)">
+        <i class="fa-solid fa-info-circle" style="color:var(--or);margin-right:6px"></i>${alertas.length} item(s) precisam de reposição:
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left">Produto</th>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left">Categoria</th>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right">Atual</th>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right">Mínimo</th>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right">Repor</th>
+          <th style="font-size:10px;color:var(--tx3);padding:6px 8px;border-bottom:1px solid var(--bd);text-align:center">Status</th>
+        </tr></thead>
+        <tbody>${alertas.map(p=>{
+          const repor = Math.max(0,(p.min||0)*2 - p.estoqueDisp);
+          const cor = p.estoqueDisp<(p.min||0)?'var(--rd)':'var(--am)';
+          const lbl = p.estoqueDisp<(p.min||0)?'CRÍTICO':'BAIXO';
+          return `<tr>
+            <td style="padding:7px 8px;font-size:12px;color:var(--tx);font-weight:500">${p.nome}</td>
+            <td style="padding:7px 8px;font-size:11px;color:var(--tx2)">${p.cat||'—'}</td>
+            <td style="padding:7px 8px;font-size:12px;text-align:right;color:${cor};font-weight:600">${p.estoqueDisp.toFixed(2)} ${p.un||''}</td>
+            <td style="padding:7px 8px;font-size:12px;text-align:right;color:var(--tx2)">${p.min} ${p.un||''}</td>
+            <td style="padding:7px 8px;font-size:12px;text-align:right;color:var(--or);font-weight:600">${repor.toFixed(2)} ${p.un||''}</td>
+            <td style="padding:7px 8px;text-align:center"><span class="tg" style="background:${cor==='var(--rd)'?'rgba(229,57,53,0.15)':'rgba(255,143,0,0.15)'};color:${cor};font-size:10px">${lbl}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+  }
+  openMod('mod-eq-compras');
+}
+
+// ── Editar produto de estoque ──
+function eqEditarProduto(prodId){
+  // Abre modal de entrada com produto pré-selecionado
+  eqAbrirMovimento('entrada', prodId);
+}
+
+// ── Cadastra novo produto no estoque (a partir de compra) ──
+function eqCadastrarProduto(nome, cat, un){
+  const prods = S.g('eq-produtos')||[];
+  const id = 'eq-'+(Date.now());
+  prods.push({ id, nome, cat, un, min:0, custoMedio:0, ativo:true, criadoEm:new Date().toISOString() });
+  S.s('eq-produtos', prods);
+  return id;
 }
 
 function renderCMV(){
@@ -8501,11 +9847,36 @@ function saveInsumo(){
     arr.push({id:Date.now(), cat, cod, un, nome, custo, conta});
   }
   S.s('insumos',arr);
+
+  // ── Sincroniza alterações com eq-produtos do Estoque ──
+  eqSincronizarInsumo(nome, un, custo);
+
   closeMod('mod-insumo');
   resetModalInsumo();
   renderInsumos();
   fillSelectProdutosNF('mpp-item-prod');
   showToast('✓ Insumo salvo!','var(--gr)');
+}
+
+// Sincroniza nome/unidade/custo do insumo editado com eq-produtos
+function eqSincronizarInsumo(nome, un, custo){
+  let prods = S.g('eq-produtos')||[];
+  const idx = prods.findIndex(p=>
+    p.nome.toLowerCase().trim() === nome.toLowerCase().trim() && p.ativo!==false
+  );
+  if(idx === -1) return; // produto não existe no estoque ainda, nada a fazer
+  let alterou = false;
+  if(prods[idx].un !== un){ prods[idx].un = un; alterou = true; }
+  if(custo > 0 && prods[idx].custoMedio !== custo){
+    // Só atualiza custo manual se não houver movimentos (evita sobrescrever custo médio calculado)
+    const movs = S.g('eq-movimentos')||[];
+    const temMovs = movs.some(m=>m.prodId===prods[idx].id && m.tipo==='entrada');
+    if(!temMovs){ prods[idx].custoMedio = custo; alterou = true; }
+  }
+  if(alterou){
+    S.s('eq-produtos', prods);
+    showToast(`✓ Estoque atualizado: ${nome} → unidade "${un}"`, 'var(--bl)');
+  }
 }
 
 // Ao selecionar categoria no insumo, sugere conta automaticamente
@@ -10240,6 +11611,7 @@ function gerarRelCompras(){
   itens.sort((a,b)=>{
     let va, vb;
     switch(sortK){
+      case 'cat':   va=a.cat;   vb=b.cat;   break;
       case 'nome':  va=a.nome;  vb=b.nome;  break;
       case 'un':    va=a.un;    vb=b.un;    break;
       case 'qtd':   va=a.qtd;   vb=b.qtd;   break;
@@ -10447,7 +11819,7 @@ function sortRelCompras(col){
   const dir = (rcSortCol===col && rcSortDir==='asc') ? 'desc' : 'asc';
   document.getElementById('rc-order').value = col+'-'+dir;
   // Atualiza ícones das colunas
-  ['data','nome','un','qtd','preco','total','forn','lanc','contaNome'].forEach(c=>{
+  ['data','nome','cat','un','qtd','preco','total','forn','lanc','contaNome'].forEach(c=>{
     const ic = document.getElementById('rc-sort-'+c);
     if(!ic) return;
     if(c===col) ic.className = 'fa-solid fa-sort-'+(dir==='asc'?'up':'down')+' fa-xs';
@@ -10455,6 +11827,81 @@ function sortRelCompras(col){
     ic.style.color = c===col ? 'var(--or)' : 'var(--tx3)';
   });
   gerarRelCompras();
+}
+
+// ── Filtro dinâmico na coluna Categoria ──
+let _rcCatSel = []; // [] = todas
+
+function rcToggleCatDrop(e){
+  e.stopPropagation();
+  const drop = document.getElementById('rc-cat-drop');
+  if(!drop) return;
+  const aberto = drop.style.display === 'block';
+  // Fecha outros dropdowns abertos
+  document.querySelectorAll('#rc-cat-drop').forEach(d=>d.style.display='none');
+  if(aberto){ drop.style.display='none'; return; }
+  // Monta lista de categorias disponíveis nos dados atuais
+  const cats = [...new Set(rcDados.map(x=>x.cat).filter(Boolean))].sort();
+  const catCor = {
+    'Insumos':'tg-or','Bebidas':'tg-bl','Material Descartável':'tg-am',
+    'Material de Limpeza':'tg-gr','Material Utensílios':'tg-gy',
+    'Material de Expediente':'tg-gy','Imobilizado':'tg-rd'
+  };
+  const listEl = document.getElementById('rc-cat-drop-list');
+  if(listEl) listEl.innerHTML = cats.map(cat=>{
+    const checked = _rcCatSel.length===0 || _rcCatSel.includes(cat);
+    const cor = catCor[cat]||'tg-gy';
+    return `<label style="display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:var(--tx2);transition:background 0.1s"
+      onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background=''">
+      <input type="checkbox" value="${cat}" ${checked?'checked':''} style="accent-color:var(--or);width:13px;height:13px">
+      <span class="tg ${cor}" style="font-size:10px">${cat}</span>
+    </label>`;
+  }).join('');
+  drop.style.display = 'block';
+  // Fecha ao clicar fora
+  setTimeout(()=>{
+    document.addEventListener('click', function handler(ev){
+      if(!drop.contains(ev.target) && ev.target.id!=='rc-th-cat'){
+        drop.style.display='none';
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+
+function rcAplicarCatFiltro(){
+  const checks = document.querySelectorAll('#rc-cat-drop-list input[type=checkbox]');
+  const selecionadas = [...checks].filter(c=>c.checked).map(c=>c.value);
+  const total = [...checks].length;
+  // Se todas marcadas = sem filtro (mostrar todas)
+  _rcCatSel = selecionadas.length === total ? [] : selecionadas;
+  // Atualiza ícone de filtro ativo
+  const icon = document.getElementById('rc-cat-filter-icon');
+  if(icon) icon.style.color = _rcCatSel.length > 0 ? 'var(--or)' : 'var(--tx3)';
+  document.getElementById('rc-cat-drop').style.display = 'none';
+  rcAplicarCatNaDados();
+}
+
+function rcCatFiltroTodos(){
+  const checks = document.querySelectorAll('#rc-cat-drop-list input[type=checkbox]');
+  checks.forEach(c=>c.checked=true);
+}
+
+function rcAplicarCatNaDados(){
+  // Reaplicar o filtro de categoria nos dados já carregados (sem reprocessar tudo)
+  if(!_rcCatSel.length){
+    // Sem filtro — regera sem filtro de cat
+    const el = document.getElementById('rc-cat-filter-icon');
+    if(el) el.style.color = 'var(--tx3)';
+    gerarRelCompras();
+    return;
+  }
+  // Filtra rcDados e rerenderiza
+  const original = rcDados;
+  const filtrado = original.filter(x=>_rcCatSel.includes(x.cat));
+  rcDados = filtrado;
+  renderRelCompras();
+  rcDados = original; // restaura para não perder dados ao reabrir filtro
 }
 
 function renderRelCompras(){
@@ -12708,13 +14155,15 @@ function initAll(){
     const mesAtualYM = new Date().toISOString().slice(0,7);
     cxCarryForwardMensal(mesAtualYM);
   }catch(e){ console.warn('carry-forward init:', e); }
+  // Corrige inventários com arredondamento incorreto (ex: 0.001 que deveria ser 1)
+  try{ eqCorrigirInventariosErrados(); }catch(e){ console.warn('eqCorrigir:', e); }
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
   _cxData=new Date().toISOString().slice(0,10);
   const cxSelEl=document.getElementById('cx-data-sel');if(cxSelEl)cxSelEl.value=_cxData;
   renderDashboard();renderPizzas();renderFluxo();renderCaixa();
-  renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
+  eqInitMes();renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
   initCatProdPadrao(); renderCategoriasProd();
   initCatProdVendaPadrao(); renderCatProdVenda();
@@ -12725,7 +14174,7 @@ function initAll(){
   initFormasPadrao();
   initFormasRecPadrao(); renderFormasPag();
   // Preenche selects dos modais
-  fillSelectContasPagar('mp-conta');fillSelectContas('mr-conta',c=>c.natureza==='receita');
+  fillSelectContasPagar('mp-conta');fillSelectContasReceita('mr-conta');
   // Fornecedor: popula grupos (categoria) nos dois modais
   fillSelectGruposForn('mfn-cat');
   fillSelectGruposForn('mef-cat');
@@ -12737,7 +14186,7 @@ function initAll(){
   fillSelectContasPlano('mepr-cat');
   fillSelectGruposPlano('mepr-conta');
   renderBancos(); fillSelectBancos('mpp-banco'); fillSelectBancos('mep-banco');
-  fillSelectContasPagar('mep-conta');fillSelectContas('mer-conta',c=>c.natureza==='receita');
+  fillSelectContasPagar('mep-conta');fillSelectContasReceita('mer-conta');
   fillSelectContasPagar('mpp-conta');
   fillSelectForn('mp-forn');fillSelectForn('mpp-forn');
   fillSelectProdutosNF('mpp-item-prod');
