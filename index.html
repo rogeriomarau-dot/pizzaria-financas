@@ -30,7 +30,7 @@ html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color
 .rv-ms-dd{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd);border-radius:8px;z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .rv-ms-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;font-size:12px;color:var(--tx2)}
 .rv-ms-item:hover{background:rgba(255,255,255,0.05);color:var(--tx)}
-.rv-ms-item input[type=checkbox]{accent-color:var(--or);width:13px;height:13px;cursor:pointer}
+.rv-ms-item input[type=checkbox]{accent-color:var(--or);width:13px;height:13px;cursor:pointer;pointer-events:none}
 .rv-ms-item.sel{color:var(--or)}
 .rv-ms-sep{height:1px;background:var(--bd);margin:4px 0}
 .rv-th{cursor:pointer;user-select:none;white-space:nowrap}
@@ -1434,10 +1434,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <option value="">Todas as categorias</option>
           <option>Insumos</option>
           <option>Bebidas</option>
-          <option>Material de Expediente</option>
-          <option>Material Utensílios</option>
           <option>Material Descartável</option>
           <option>Material de Limpeza</option>
+          <option>Material Utensílios</option>
+          <option>Material de Expediente</option>
           <option>Imobilizado</option>
         </select>
         <!-- Filtro status -->
@@ -1482,8 +1482,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <th class="sortable" onclick="eqSortCol('estoqueFinal',this)" style="text-align:right;color:#EF9A9A;cursor:pointer">− Est. Final Qtd <i class="fa-solid sort-icon"></i></th>
             <th style="text-align:right;color:#EF9A9A">− Est. Final R$</th>
             <th class="sortable" onclick="eqSortCol('cmvQtd',this)" style="text-align:right;color:var(--or);cursor:pointer">= CMV Qtd <i class="fa-solid sort-icon"></i></th>
-            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Último Preço <i class="fa-solid sort-icon"></i></th>
             <th class="sortable" onclick="eqSortCol('cmvVal',this)" style="text-align:right;color:var(--or);cursor:pointer">CMV R$ <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Último Preço <i class="fa-solid sort-icon"></i></th>
             <th style="text-align:center">Status</th>
             <th></th>
           </tr>
@@ -1496,11 +1496,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <!-- Linha do CMV Total + Gráficos -->
   <div class="g2">
     <div class="cd">
-      <div class="ct">Curva ABC — Valor de Compras <span class="cs" id="eq-abc-per"></span></div>
+      <div class="ct" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Curva ABC <span class="cs" id="eq-abc-per"></span></span>
+        <div style="display:flex;gap:4px">
+          <button id="abc-tab-val" onclick="eqAbcModo('val')" style="padding:3px 10px;border:1px solid var(--or);border-radius:4px;background:var(--or);color:#fff;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">R$ Valor</button>
+          <button id="abc-tab-qtd" onclick="eqAbcModo('qtd')" style="padding:3px 10px;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Qtd</button>
+        </div>
+      </div>
       <div id="eq-abc-list"></div>
     </div>
     <div class="cd">
-      <div class="ct">Valor por Categoria <span class="cs" id="eq-cat-per"></span></div>
+      <div class="ct"><span id="eq-cat-titulo">Valor por Categoria</span> <span class="cs" id="eq-cat-per"></span></div>
       <div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div>
     </div>
   </div>
@@ -3548,7 +3554,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div class="fg"><label>Data de Competência</label><input type="date" id="mep-comp"></div>
       <div class="fg"><label>Data de Pagamento <span style="font-size:10px;color:var(--tx3)">(ao pagar)</span></label><input type="date" id="mep-dtpag"></div>
     </div>
-    <div class="fg"><label>Fornecedor / Descrição</label><input type="text" id="mep-desc"></div>
+    <div class="fr">
+      <div class="fg" style="flex:2"><label>Fornecedor / Descrição</label><input type="text" id="mep-desc"></div>
+      <div class="fg" style="flex:1"><label>NF / Número do Documento</label><input type="text" id="mep-nf" placeholder="Ex: NF 45236"></div>
+    </div>
     <div class="fr">
       <div class="fg"><label>Conta do Plano</label><select id="mep-conta"><option value="">— Selecione —</option></select></div>
       <div class="fg"><label>Valor (R$)</label><input type="number" id="mep-val" step="0.01"></div>
@@ -3566,6 +3575,25 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </select>
       </div>
     <div class="fg" style="margin-top:2px"><label>Conta Corrente / Banco <span style="font-size:10px;color:var(--tx3)">(origem do pagamento)</span></label><select id="mep-banco"><option value="">— Selecione —</option></select></div>
+    </div>
+    <!-- Itens da NF (somente leitura) -->
+    <div id="mep-itens-wrap" style="display:none;margin-top:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:8px"><i class="fa-solid fa-receipt" style="color:var(--or);margin-right:6px"></i>Itens da Nota Fiscal</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="color:var(--tx3);font-size:11px">
+            <th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--bd)">Produto</th>
+            <th style="text-align:center;padding:4px 8px;border-bottom:1px solid var(--bd)">Qtd</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:1px solid var(--bd)">Unit.</th>
+            <th style="text-align:right;padding:4px 8px;border-bottom:1px solid var(--bd)">Total</th>
+            <th style="text-align:center;padding:4px 8px;border-bottom:1px solid var(--bd)" colspan="2">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="mep-itens-body"></tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px;font-size:13px;font-weight:600;color:var(--or)">
+        Total NF: <span id="mep-total-nf" style="margin-left:8px"></span>
+      </div>
     </div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-editpagar')">Cancelar</button><button class="bs" onclick="saveEditPagar()"><i class="fa-solid fa-check"></i> Salvar</button></div>
   </div>
@@ -4195,8 +4223,13 @@ let _usrAtual = null; // { id, nome, login, perfil, perms:{} }
 // Permissões padrão do operador (nenhuma marcada por padrão)
 const USR_TODAS_PERMS = ['dashboard','pizzas','dre','fluxo','cad-fcx','caixa','pagar','receber','estoque','cmv','metas','plano','cad-insumos','cad-servicos','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-catprod','cad-catprod-venda','cad-pagamentos','cad-recebimentos','cad-bancos','rel-pagar','rel-compras','rel-vendas'];
 
-function usrGetUsuarios(){ return S.g('sys_usuarios') || []; }
-function usrSaveUsuarios(arr){ S.s('sys_usuarios', arr); }
+function usrGetUsuarios(){
+  try { return JSON.parse(localStorage.getItem('fpg_sys_usuarios') || '[]'); }
+  catch(e){ return []; }
+}
+function usrSaveUsuarios(arr){
+  localStorage.setItem('fpg_sys_usuarios', JSON.stringify(arr));
+}
 
 // Inicializar — cria admin padrão se não existir
 function usrInit(){
@@ -4339,12 +4372,12 @@ function usrAbrirNovo(){
   document.getElementById('usr-login').value = '';
   document.getElementById('usr-senha').value = '';
   document.getElementById('usr-perfil').value = 'operador';
-  // Limpar todas as permissões
+  // Marcar todas as permissões por padrão
   USR_TODAS_PERMS.forEach(pg => {
     const cb = document.getElementById('pc-'+pg);
     const pi = document.getElementById('pi-'+pg);
-    if(cb){ cb.checked = false; }
-    if(pi){ pi.classList.remove('on'); }
+    if(cb){ cb.checked = true; }
+    if(pi){ pi.classList.add('on'); }
   });
   usrTogglePerfil();
   const mod = document.getElementById('mod-usuario');
@@ -4412,7 +4445,7 @@ function usrSalvar(){
   if(perfil === 'operador'){
     USR_TODAS_PERMS.forEach(pg => {
       const cb = document.getElementById('pc-'+pg);
-      perms[pg] = cb ? cb.checked : false;
+      perms[pg] = cb ? cb.checked : true;
     });
   }
 
@@ -9370,9 +9403,53 @@ function eqGetMes(){
 }
 
 // Inicializa o campo de mês com o mês atual
+
+// ══════════════════════════════════════
+// MULTISELECT CATEGORIA — ESTOQUE
+// ══════════════════════════════════════
+const EQ_CATS_FIXAS = ['Insumos','Bebidas','Material Descartável','Material de Limpeza','Material Utensílios','Material de Expediente','Imobilizado'];
+
+function eqCatMsGetCats(){
+  const prods = S.g('eq-produtos')||[];
+  const din = prods.filter(p=>p.ativo!==false&&p.cat).map(p=>p.cat);
+  return [...new Set([...EQ_CATS_FIXAS,...din])];
+}
+
+function eqCatMsInit(){
+  const cats = eqCatMsGetCats();
+  const cont = document.getElementById('eq-cat-items');
+  if(!cont) return;
+  cont.innerHTML = cats.map(cat=>
+    `<div class="rc-ms-item" onclick="eqCatMsCbToggle(this,event)" data-val="${cat}"><span class="rc-ms-chk"></span><span>${cat}</span></div>`
+  ).join('');
+  eqCatMsUpdateLabel();
+}
+
+// MULTISELECT CATEGORIA ESTOQUE — usa engine msState igual ao CAP
+
+function eqCatMsGetCats(){
+  const prods = S.g('eq-produtos')||[];
+  const din = prods.filter(p=>p.ativo!==false&&p.cat).map(p=>p.cat);
+  return [...new Set([...EQ_CATS_FIXAS,...din])];
+}
+
+function eqCatMsInit(){
+  const cats = eqCatMsGetCats();
+  const items = cats.map(c=>({v:c, l:c}));
+  msInit('eqcat', items);
+  // sel vazio = todas desmarcadas = sem filtro = mostra tudo (igual ao CAP)
+}
+
+function eqCatMsGetSelecionadas(){
+  const st = msState['eqcat'];
+  if(!st || st.sel.size===0) return []; // vazio = sem filtro = mostra tudo
+  return [...st.sel];
+}
+
 function eqInitMes(){
   const el = document.getElementById('eq-mes');
   if(el && !el.value) el.value = new Date().toISOString().slice(0,7);
+  eqCatMsInit();
 }
 
 // Calcula custo médio de um produto baseado nas entradas
@@ -9633,10 +9710,10 @@ function renderEstoque(){
         <td style="text-align:right;color:var(--or);font-weight:600">
           ${r.cmvQtd>0?r.cmvQtd.toFixed(3).replace(/\.?0+$/,''):'0'}
         </td>
-        <td style="text-align:right;color:var(--tx2)">${r.custoMedio>0?R(r.custoMedio):'—'}</td>
         <td style="text-align:right;color:var(--or);font-weight:700">
           ${r.cmvVal>0?R(r.cmvVal):r.cmvQtd>0?R(0):'—'}
         </td>
+        <td style="text-align:right;color:var(--tx2)">${r.custoMedio>0?R(r.custoMedio):'—'}</td>
         <td style="text-align:center">
           <span class="tg" style="background:${r.statusCor==='var(--gr)'?'rgba(76,175,80,0.15)':r.statusCor==='var(--am)'?'rgba(255,143,0,0.15)':'rgba(229,57,53,0.15)'};color:${r.statusCor};font-size:10px">${r.statusLbl}</span>
         </td>
@@ -9684,37 +9761,80 @@ function renderEstoque(){
 }
 
 // ── Curva ABC ──
+let _abcModo = 'val'; // 'val' ou 'qtd'
+let _abcRowsCache = [];
+
+function eqAbcModo(modo){
+  _abcModo = modo;
+  const btnVal = document.getElementById('abc-tab-val');
+  const btnQtd = document.getElementById('abc-tab-qtd');
+  if(btnVal){ btnVal.style.background=modo==='val'?'var(--or)':'transparent'; btnVal.style.color=modo==='val'?'#fff':'var(--tx2)'; btnVal.style.borderColor=modo==='val'?'var(--or)':'var(--bd)'; }
+  if(btnQtd){ btnQtd.style.background=modo==='qtd'?'var(--or)':'transparent'; btnQtd.style.color=modo==='qtd'?'#fff':'var(--tx2)'; btnQtd.style.borderColor=modo==='qtd'?'var(--or)':'var(--bd)'; }
+  eqRenderABC(_abcRowsCache);
+  eqRenderGraficoCat(_abcRowsCache, modo);
+}
+
 function eqRenderABC(rows, ym){
+  _abcRowsCache = rows;
   const abcEl = document.getElementById('eq-abc-list');
   if(!abcEl) return;
-  const sorted = [...rows].filter(r=>r.totalComprasVal>0).sort((a,b)=>b.totalComprasVal-a.totalComprasVal);
-  const total = sorted.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+  const modo = _abcModo;
+
+  // Filtrar e ordenar conforme modo
+  let sorted;
+  if(modo === 'qtd'){
+    sorted = [...rows].filter(r=>r.totalComprasQtd>0).sort((a,b)=>b.totalComprasQtd-a.totalComprasQtd);
+  } else {
+    sorted = [...rows].filter(r=>r.totalComprasVal>0).sort((a,b)=>b.totalComprasVal-a.totalComprasVal);
+  }
+
   if(!sorted.length){ abcEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--tx3);font-size:12px">Nenhuma compra registrada neste mês.</div>'; return; }
+
+  const total = modo==='qtd'
+    ? sorted.reduce((a,b)=>a+(b.totalComprasQtd||0),0)
+    : sorted.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+
   let acum = 0;
-  abcEl.innerHTML = sorted.slice(0,15).map((r,i)=>{
-    acum += r.totalComprasVal;
-    const pct = total>0 ? r.totalComprasVal/total*100 : 0;
+  const itens = sorted.map((r,i)=>{
+    const val = modo==='qtd' ? (r.totalComprasQtd||0) : (r.totalComprasVal||0);
+    acum += val;
+    const pct     = total>0 ? val/total*100 : 0;
     const pctAcum = total>0 ? acum/total*100 : 0;
-    const classe = pctAcum<=80?'A':pctAcum<=95?'B':'C';
+    const classe   = pctAcum<=80?'A':pctAcum<=95?'B':'C';
     const corClasse = classe==='A'?'var(--rd)':classe==='B'?'var(--am)':'var(--gr)';
+    const bgClasse  = classe==='A'?'rgba(229,57,53,0.2)':classe==='B'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)';
+    const vlLabel   = modo==='qtd'
+      ? `${val.toFixed(3).replace(/\.?0+$/,'')} un`
+      : R(val);
     return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)">
-      <span style="width:18px;height:18px;border-radius:3px;background:${corClasse==='var(--rd)'?'rgba(229,57,53,0.2)':corClasse==='var(--am)'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${corClasse};flex-shrink:0">${classe}</span>
+      <span style="width:18px;height:18px;border-radius:3px;background:${bgClasse};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${corClasse};flex-shrink:0">${classe}</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.nome}</div>
-        <div style="height:3px;background:var(--dk4);border-radius:99px;margin-top:3px"><div style="width:${pct}%;height:100%;background:${corClasse};border-radius:99px;transition:width 0.3s"></div></div>
+        <div style="height:3px;background:var(--dk4);border-radius:99px;margin-top:3px"><div style="width:${pct.toFixed(1)}%;height:100%;background:${corClasse};border-radius:99px;transition:width 0.3s"></div></div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:12px;font-weight:600;color:var(--tx)">${R(r.totalComprasVal)}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--tx)">${vlLabel}</div>
         <div style="font-size:10px;color:var(--tx3)">${pct.toFixed(1)}% · Acum: ${pctAcum.toFixed(0)}%</div>
       </div>
     </div>`;
-  }).join('');
+  });
+
+  // Linha de total
+  const totalLabel = modo==='qtd'
+    ? `${total.toFixed(3).replace(/\.?0+$/,'')} un`
+    : R(total);
+  const linhaTotal = `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;margin-top:2px;border-top:1px solid rgba(255,255,255,0.15)">
+    <span style="font-size:12px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:0.5px">Total — ${sorted.length} itens</span>
+    <span style="font-size:13px;font-weight:700;color:var(--or)">${totalLabel}</span>
+  </div>`;
+
+  abcEl.innerHTML = itens.join('') + linhaTotal;
 }
 
 // ── Gráfico por categoria ──
-function eqRenderGraficoCat(rows){
-  // Agrupa por categoria usando CMV R$ (consumo real) ou Compras R$ se não houver CMV
-  const catCompras = {};
+function eqRenderGraficoCat(rows, modo){
+  modo = modo || _abcModo || 'val';
+  const catMap = {};
   const catCores = {
     'Insumos':           '#F26419',
     'Bebidas':           '#2196F3',
@@ -9725,19 +9845,22 @@ function eqRenderGraficoCat(rows){
     'Imobilizado':       '#E53935',
   };
   rows.forEach(r=>{
-    const val = r.totalComprasVal||0;
+    const val = modo==='qtd' ? (r.totalComprasQtd||0) : (r.totalComprasVal||0);
     if(val>0){
       const cat = r.cat||'Outros';
-      catCompras[cat] = (catCompras[cat]||0) + val;
+      catMap[cat] = (catMap[cat]||0) + val;
     }
   });
-  const labels = Object.keys(catCompras);
-  const data   = labels.map(l=>catCompras[l]);
+  const labels = Object.keys(catMap);
+  const data   = labels.map(l=>catMap[l]);
   const cores  = labels.map((l,i)=>catCores[l]||['#F26419','#2196F3','#4CAF50','#FF8F00','#9C27B0','#E53935','#64B5F6'][i%7]);
   const cv = document.getElementById('c-eq');
   if(!cv) return;
   if(window._chartEq) window._chartEq.destroy();
   if(!labels.length) return;
+  // Título do gráfico
+  const tituloEl = document.getElementById('eq-cat-titulo');
+  if(tituloEl) tituloEl.textContent = modo==='qtd' ? 'Quantidade por Categoria' : 'Valor por Categoria';
   window._chartEq = new Chart(cv.getContext('2d'),{
     type:'doughnut',
     data:{ labels, datasets:[{ data, backgroundColor:cores, borderWidth:2, borderColor:'#1E1E1E' }] },
@@ -9748,6 +9871,7 @@ function eqRenderGraficoCat(rows){
         tooltip:{ callbacks:{ label: ctx=>{
           const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
           const pct = total>0?(ctx.parsed/total*100).toFixed(1):'0';
+          if(modo==='qtd') return ` ${ctx.label}: ${ctx.parsed.toFixed(0)} un (${pct}%)`;
           return ` ${ctx.label}: R$ ${ctx.parsed.toFixed(2).replace('.',',')} (${pct}%)`;
         }}}
       }
@@ -11212,6 +11336,7 @@ function editPagar(id){
   document.getElementById('mep-comp').value=c.comp||'';
   document.getElementById('mep-dtpag').value=c.dtpag||'';
   document.getElementById('mep-desc').value=c.forn||c.desc||'';
+  document.getElementById('mep-nf').value=c.nf||c.cod||'';
   fillSelectContasPagar('mep-conta');
   document.getElementById('mep-conta').value=c.conta||'';
   document.getElementById('mep-val').value=c.val||'';
@@ -11220,7 +11345,90 @@ function editPagar(id){
   document.getElementById('mep-banco').value=c.banco||'';
   document.getElementById('mep-status').value=c.status||'Pendente';
   onMepStatusChange();
+
+  // Carregar itens da NF
+  const wrap = document.getElementById('mep-itens-wrap');
+  const body = document.getElementById('mep-itens-body');
+  const totalEl = document.getElementById('mep-total-nf');
+  if(wrap && body && c.itens && c.itens.length){
+    const R = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    body.innerHTML = c.itens.map((it,i) => `
+      <tr id="mep-row-${i}" style="border-bottom:1px solid var(--bd)">
+        <td style="padding:6px 8px;color:var(--tx)">${it.nome||'—'}</td>
+        <td style="padding:6px 8px;text-align:center;color:var(--tx2)">${(it.qtd||1).toString().replace('.',',')} ${it.un||'un'}</td>
+        <td style="padding:6px 8px;text-align:right;color:var(--tx2)">${R(it.custo||0)}</td>
+        <td style="padding:6px 8px;text-align:right;color:var(--or);font-weight:600">${R(it.total||0)}</td>
+        <td style="padding:4px 4px;text-align:center">
+          <button onclick="mepEditarItem(${i})" style="background:none;border:none;color:var(--bl);cursor:pointer;font-size:13px" title="Editar item"><i class="fa-solid fa-pen"></i></button>
+        </td>
+        <td style="padding:4px 4px;text-align:center">
+          <button onclick="mepExcluirItem(${i})" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:13px" title="Excluir item"><i class="fa-solid fa-trash-can"></i></button>
+        </td>
+      </tr>`).join('');
+    const total = c.itens.reduce((a,b)=>a+(b.total||0),0);
+    if(totalEl) totalEl.textContent = R(total);
+    wrap.style.display = 'block';
+  } else {
+    if(wrap) wrap.style.display = 'none';
+  }
+
   openMod('mod-editpagar');
+}
+
+function mepExcluirItem(idx){
+  if(!confirm('Excluir este item da nota?')) return;
+  const id = Number(document.getElementById('mep-id').value);
+  const arr = S.g('pagar')||[];
+  const i = arr.findIndex(x=>x.id===id);
+  if(i===-1) return;
+  if(!arr[i].itens) return;
+  arr[i].itens.splice(idx,1);
+  if(!arr[i].itens.length) arr[i].itens = undefined;
+  S.s('pagar', arr);
+  renderPagar();
+  editPagar(id);
+}
+
+function mepEditarItem(idx){
+  const id = Number(document.getElementById('mep-id').value);
+  const arr = S.g('pagar')||[];
+  const lanc = arr.find(x=>x.id===id);
+  if(!lanc||!lanc.itens||!lanc.itens[idx]) return;
+  const it = lanc.itens[idx];
+  const R = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+  // Substituir a linha por campos editáveis inline
+  const row = document.getElementById('mep-row-'+idx);
+  if(!row) return;
+  row.innerHTML = `
+    <td style="padding:4px 6px"><input id="mep-it-nome-${idx}" type="text" value="${it.nome||''}" style="width:100%;background:var(--dk3);border:1px solid var(--or);border-radius:4px;padding:4px 6px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px"></td>
+    <td style="padding:4px 6px;text-align:center">
+      <input id="mep-it-qtd-${idx}" type="number" value="${it.qtd||1}" step="0.001" style="width:60px;background:var(--dk3);border:1px solid var(--bd);border-radius:4px;padding:4px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;text-align:center">
+    </td>
+    <td style="padding:4px 6px;text-align:right">
+      <input id="mep-it-custo-${idx}" type="number" value="${it.custo||0}" step="0.01" style="width:80px;background:var(--dk3);border:1px solid var(--bd);border-radius:4px;padding:4px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;text-align:right">
+    </td>
+    <td style="padding:4px 6px;text-align:right;color:var(--tx3);font-size:11px">calculado</td>
+    <td style="padding:4px 4px;text-align:center">
+      <button onclick="mepSalvarItem(${idx})" style="background:none;border:none;color:var(--gr);cursor:pointer;font-size:13px" title="Salvar"><i class="fa-solid fa-check"></i></button>
+    </td>
+    <td style="padding:4px 4px;text-align:center">
+      <button onclick="editPagar(${id})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px" title="Cancelar"><i class="fa-solid fa-xmark"></i></button>
+    </td>`;
+}
+
+function mepSalvarItem(idx){
+  const id = Number(document.getElementById('mep-id').value);
+  const arr = S.g('pagar')||[];
+  const i = arr.findIndex(x=>x.id===id);
+  if(i===-1) return;
+  const nome  = document.getElementById('mep-it-nome-'+idx)?.value||'';
+  const qtd   = parseFloat(document.getElementById('mep-it-qtd-'+idx)?.value)||1;
+  const custo = parseFloat(document.getElementById('mep-it-custo-'+idx)?.value)||0;
+  arr[i].itens[idx] = {...arr[i].itens[idx], nome, qtd, custo, total: Math.round(qtd*custo*100)/100};
+  S.s('pagar', arr);
+  renderPagar();
+  editPagar(id);
 }
 function onMepStatusChange(){
   const st = document.getElementById('mep-status')?.value;
@@ -11245,6 +11453,7 @@ function saveEditPagar(){
     dtpag: status==='Pago' ? (dtpag||new Date().toISOString().slice(0,10)) : (dtpag||''),
     forn:document.getElementById('mep-desc').value,
     desc:document.getElementById('mep-desc').value,
+    nf:document.getElementById('mep-nf')?.value||'',
     conta:document.getElementById('mep-conta').value,
     val:parseFloat(document.getElementById('mep-val').value)||0,
     forma:document.getElementById('mep-forma').value,
@@ -11621,6 +11830,16 @@ function msToggle(key, val){
   if(drop) drop.classList.add('open');
   const btn = document.getElementById('ms-'+key+'-btn');
   if(btn) btn.classList.add('open');
+  if(key==='eqcat'){
+    // Delay garante que o evento de clique termina antes do re-render
+    setTimeout(()=>{
+      renderEstoque();
+      const d = document.getElementById('ms-eqcat-drop');
+      const b = document.getElementById('ms-eqcat-btn');
+      if(d) d.classList.add('open');
+      if(b) b.classList.add('open');
+    }, 50);
+  }
 }
 
 function msSelectAll(key){
@@ -11629,6 +11848,7 @@ function msSelectAll(key){
   const search = document.getElementById('ms-'+key+'-search');
   renderMsItems(key, search ? search.value : '');
   updateMsBtn(key);
+  if(key==='eqcat') renderEstoque();
   const drop = document.getElementById('ms-'+key+'-drop');
   if(drop) drop.classList.add('open');
   const btn = document.getElementById('ms-'+key+'-btn');
@@ -11641,6 +11861,7 @@ function msDeselectAll(key){
   const search = document.getElementById('ms-'+key+'-search');
   renderMsItems(key, search ? search.value : '');
   updateMsBtn(key);
+  if(key==='eqcat') renderEstoque();
   const drop = document.getElementById('ms-'+key+'-drop');
   if(drop) drop.classList.add('open');
   const btn = document.getElementById('ms-'+key+'-btn');
@@ -11663,13 +11884,14 @@ function updateMsBtn(key){
     status: ['Todos os status',       'status',     'status'],
     forma:  ['Todas as formas',       'forma',      'formas'],
     cat:    ['Todas as categorias',   'categoria',  'categorias'],
+    eqcat:  ['Todas as categorias',   'categoria',  'categorias'],
   };
   const lbl = labels[key] || ['Todos','item','itens'];
   if(n===0) btn.textContent = lbl[0];
   else if(n===1){
     const item = st.items.find(i=>st.sel.has(i.v));
     btn.textContent = item ? item.l : '1 selecionado';
-  } else btn.textContent = n + ' ' + lbl[2] + ' selecionadas';
+  } else btn.textContent = n + ' ' + lbl[2];
 }
 
 function toggleMs(key){
