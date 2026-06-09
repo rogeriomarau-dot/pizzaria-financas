@@ -1429,17 +1429,24 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
         </div>
         <!-- Filtro categoria -->
-        <select id="eq-filtro-cat" onchange="renderEstoque()"
-          style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px">
-          <option value="">Todas as categorias</option>
-          <option>Insumos</option>
-          <option>Bebidas</option>
-          <option>Material Descartável</option>
-          <option>Material de Limpeza</option>
-          <option>Material Utensílios</option>
-          <option>Material de Expediente</option>
-          <option>Imobilizado</option>
-        </select>
+        <!-- Multiselect Categoria Estoque -->
+        <div class="rc-ms-wrap" id="eq-cat-wrap" style="position:relative">
+          <div class="rc-ms-btn" onclick="eqCatMsToggle()" id="eq-cat-btn"
+            style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 12px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;min-height:34px;min-width:180px;gap:8px">
+            <span id="eq-cat-label" style="flex:1">Todas as categorias</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+          </div>
+          <div id="eq-cat-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,0.6);min-width:100%;max-height:260px;overflow-y:auto">
+            <div class="rc-ms-item" onclick="eqCatMsTodos()" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Todas as categorias</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Insumos"><span class="rc-ms-chk"></span><span>Insumos</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Bebidas"><span class="rc-ms-chk"></span><span>Bebidas</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Material Descartável"><span class="rc-ms-chk"></span><span>Material Descartável</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Material de Limpeza"><span class="rc-ms-chk"></span><span>Material de Limpeza</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Material Utensílios"><span class="rc-ms-chk"></span><span>Material Utensílios</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Material de Expediente"><span class="rc-ms-chk"></span><span>Material de Expediente</span></div>
+            <div class="rc-ms-item" onclick="eqCatMsCb(this)" data-val="Imobilizado"><span class="rc-ms-chk"></span><span>Imobilizado</span></div>
+          </div>
+        </div>
         <!-- Filtro status -->
         <select id="eq-filtro-st" onchange="renderEstoque()"
           style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px">
@@ -1642,16 +1649,16 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw"><table>
       <thead><tr>
-        <th class="sortable" onclick="sortCad('pv','cod',this)">Código <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" onclick="sortCad('pv','nome',this)">Produto / Descrição <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" onclick="sortCad('pv','cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" onclick="sortCad('pv','un',this)">Und. <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" style="text-align:right" onclick="sortCad('pv','custo',this)">Custo Unit. <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" style="text-align:right" onclick="sortCad('pv','preco',this)">Preço Venda <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" style="text-align:right" onclick="sortCad('pv','margem',this)">Margem <i class="fa-solid sort-icon"></i></th>
-        <th style="text-align:right">Lucro Unit.</th>
-        <th class="sortable" onclick="sortCad('pv','conta',this)">Conta Receita <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" onclick="sortCad('pv','st',this)">Status <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('cod',this)">Código <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('nome',this)">Produto / Descrição <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('cat',this)">Categoria <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('un',this)">Und. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="pvSort('custo',this)">Custo Unit. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="pvSort('preco',this)">Preço Venda <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="pvSort('margem',this)">Margem <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" style="text-align:right" onclick="pvSort('lucro',this)">Lucro Unit. <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('conta',this)">Conta Receita <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="pvSort('st',this)">Status <i class="fa-solid sort-icon"></i></th>
         <th></th>
       </tr></thead>
       <tbody id="tb-pv"></tbody>
@@ -4575,7 +4582,8 @@ function go(pg,btn){
     pg === 'cad-insumos' || pg === 'cad-servicos' ||
     pg === 'cad-pagamentos' || pg === 'cad-recebimentos' || pg === 'cad-bancos' ||
     pg === 'cmv' || pg === 'metas' || pg === 'estoque' ||
-    pg === 'pagar' || pg === 'receber' || pg === 'usuarios'
+    pg === 'pagar' || pg === 'receber' || pg === 'usuarios' ||
+    pg === 'fluxo' || pg === 'pizzas'
   ) ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='cad-fcx')       { renderFcxContas(); }
@@ -9041,7 +9049,7 @@ function renderPagar(){
     return `<tr>
     <td style="color:var(--or);font-weight:600;font-size:11px">${c.cod||'—'}</td>
     <td>${fd(c.venc)}</td><td>${fd(c.comp)}</td>
-    <td style="color:var(--tx)">${parcelaTag}${c.forn||c.desc}</td>
+    <td style="color:var(--tx)">${parcelaTag}${nomeFornById(c.forn)||c.desc||'—'}</td>
     <td style="font-size:11px;color:var(--or)">${nomeContaByCod(c.conta)}</td>
     <td>${regTag(c.reg)}</td>
     <td>${R(c.val)}</td><td><span class="tg tg-bl" style="font-size:10px">${c.contaCorrente||c.banco||'—'}</span></td><td>${stTag(c.status)}</td>
@@ -9196,6 +9204,43 @@ const EQ_CAT_MAP = {
   '4.3':            'Insumos',
 };
 
+function eqLimparFantasmas(){
+  const prodsCad   = S.g('produtos')||[];
+  const insumosCad = S.g('insumos')||[];
+  const nomesValidos = new Set([
+    ...prodsCad.map(p=>(p.n||p.nome||'').toLowerCase().trim()),
+    ...insumosCad.map(i=>(i.nome||'').toLowerCase().trim())
+  ].filter(Boolean));
+
+  let prods = S.g('eq-produtos')||[];
+  let movs  = S.g('eq-movimentos')||[];
+
+  const antes = prods.length;
+  // Marca como inativo qualquer produto do estoque que não tem match no cadastro
+  const idsRemover = new Set();
+  prods = prods.map(p=>{
+    const nNorm = (p.nome||'').toLowerCase().trim();
+    if(!nomesValidos.has(nNorm)){
+      idsRemover.add(p.id);
+      return {...p, ativo:false};
+    }
+    return p;
+  });
+
+  // Remove movimentos dos produtos fantasmas
+  movs = movs.filter(m=>!idsRemover.has(m.prodId));
+
+  const removidos = idsRemover.size;
+  S.s('eq-produtos', prods);
+  S.s('eq-movimentos', movs);
+  renderEstoque();
+  if(removidos>0){
+    showToast(`✓ ${removidos} produto(s) fantasma(s) removido(s) do estoque.`,'var(--or)');
+  } else {
+    showToast('Nenhum produto fantasma encontrado.','var(--gr)');
+  }
+}
+
 function eqSincronizarCAP(){
   // Usa a mesma lógica do Relatório de Compras para garantir consistência total
   const pagar = S.g('pagar')||[];
@@ -9233,26 +9278,52 @@ function eqSincronizarCAP(){
   const movsManuais = movs.filter(m=>!m.capOrigemId);
   movs = [...movsManuais];
 
+  // Monta índice de produtos cadastrados (Cadastro de Produtos + Insumos)
+  const prodsCad   = S.g('produtos')||[];
+  const insumosCad2 = S.g('insumos')||[];
+  const nomesValidos = new Set([
+    ...prodsCad.map(p=>(p.n||p.nome||'').toLowerCase().trim()),
+    ...insumosCad2.map(i=>(i.nome||'').toLowerCase().trim())
+  ].filter(Boolean));
+
   let criados = 0;
   itensCompras.forEach(item=>{
     const qtd  = parseFloat(item.qtd)||0;
     const custo = parseFloat(item.preco)||0;
     if(qtd <= 0) return;
 
-    // Busca produto pelo nome (case-insensitive)
+    const nomeNorm = (item.nome||'').toLowerCase().trim();
+
+    // Só processa se o item existir no cadastro de produtos ou insumos
+    // Isso impede que descrições como "RECIBO", "NF 45236 Atacadão" entrem no estoque
+    if(!nomesValidos.has(nomeNorm)) return;
+
+    // Busca produto no estoque pelo nome (case-insensitive)
     let prod = prods.find(p=>
-      p.nome.toLowerCase().trim() === item.nome.toLowerCase().trim() && p.ativo!==false
+      p.nome.toLowerCase().trim() === nomeNorm && p.ativo!==false
     );
-    // Se não existe, cria automaticamente
+    // Se não existe no estoque ainda, cria
     if(!prod){
+      // Pega a categoria correta do cadastro de produtos
+      const cadProd = prodsCad.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm);
+      const cadIns  = insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm);
+      // Categoria: preferir item.cat (já detectada pelo plano de contas, ex: "Insumos")
+      // pois cadProd.cat pode ser um código interno (ex: "CAT-01")
+      const _catBruta = cadIns?.cat || item.cat || 'Insumos';
+      const catCorreta = (EQ_CATS_ESTOQUE.includes(_catBruta) ? _catBruta : item.cat) || 'Insumos';
+      const unCorreta  = (cadProd?.un  || cadIns?.un  || item.un  || 'un');
       const novoProdId = 'eq-'+(Date.now())+'-'+Math.random().toString(36).slice(2,5);
-      prod = { id:novoProdId, nome:item.nome, cat:item.cat, un:item.un,
+      prod = { id:novoProdId, nome:item.nome, cat:catCorreta, un:unCorreta,
                min:0, custoMedio:custo, ativo:true, criadoEm:new Date().toISOString() };
       prods.push(prod);
     } else {
-      // Atualiza categoria/unidade se estiver em branco
-      if(!prod.cat) prod.cat = item.cat;
-      if(!prod.un || prod.un==='un') prod.un = item.un||prod.un;
+      // Corrige unidade com base no cadastro; categoria usa item.cat (do plano de contas)
+      const cadProd = prodsCad.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm);
+      const cadIns  = insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm);
+      // Só atualiza categoria se o valor do estoque não for uma categoria válida
+      if(!EQ_CATS_ESTOQUE.includes(prod.cat)) prod.cat = item.cat || 'Insumos';
+      const unCorreta = cadProd?.un || cadIns?.un;
+      if(unCorreta) prod.un = unCorreta;
     }
 
     const novoId = movs.length ? Math.max(...movs.map(m=>m.id||0))+1 : 1;
@@ -9271,12 +9342,22 @@ function eqSincronizarCAP(){
     return cm > 0 ? {...p, custoMedio: cm} : p;
   });
 
-  // Sincroniza unidades dos insumos cadastrados com os produtos do estoque
-  const insumos = S.g('insumos')||[];
+  // Sincroniza unidade com o cadastro; mantém categoria válida do plano de contas
+  const prodsCadSync = S.g('produtos')||[];
+  const insumos      = S.g('insumos')||[];
   prods = prods.map(p=>{
-    const ins = insumos.find(i=>i.nome.toLowerCase().trim()===p.nome.toLowerCase().trim());
-    if(ins && ins.un && ins.un !== p.un) return {...p, un: ins.un};
-    return p;
+    const nNorm = (p.nome||'').toLowerCase().trim();
+    const cp = prodsCadSync.find(x=>(x.n||x.nome||'').toLowerCase().trim()===nNorm);
+    const ci = insumos.find(i=>(i.nome||'').toLowerCase().trim()===nNorm);
+    const unCorr = cp?.un || ci?.un;
+    // Só sobrescreve categoria se a atual não for uma categoria válida do estoque
+    const catAtual = p.cat||'';
+    const catCorr  = EQ_CATS_ESTOQUE.includes(catAtual) ? catAtual : (ci?.cat || p.cat || 'Insumos');
+    return {
+      ...p,
+      cat: catCorr,
+      un:  unCorr || p.un
+    };
   });
 
   // Deduplica movimentos por capOrigemId + prodId (evita duplicações de múltiplas sincronizações)
@@ -9360,19 +9441,37 @@ function eqIntegrarDoCAP(lancamento){
 
   if(!itensParaIntegrar.length) return;
 
+  // Índice de nomes válidos do cadastro
+  const _prodsCad2   = S.g('produtos')||[];
+  const _insumosCad2 = S.g('insumos')||[];
+  const _nomesValidos2 = new Set([
+    ..._prodsCad2.map(p=>(p.n||p.nome||'').toLowerCase().trim()),
+    ..._insumosCad2.map(i=>(i.nome||'').toLowerCase().trim())
+  ].filter(Boolean));
+
   let criados = 0;
   itensParaIntegrar.forEach(item=>{
     const qtd = parseFloat(item.qtd)||0;
     if(qtd<=0) return;
 
-    let prod = prods.find(p=>p.nome.toLowerCase().trim()===item.nome.toLowerCase().trim() && p.ativo!==false);
+    const nomeNorm2 = (item.nome||'').toLowerCase().trim();
+    if(!_nomesValidos2.has(nomeNorm2)) return; // ignora itens não cadastrados
+
+    let prod = prods.find(p=>p.nome.toLowerCase().trim()===nomeNorm2 && p.ativo!==false);
     if(!prod){
+      const _cp = _prodsCad2.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm2);
+      const _ci = _insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm2);
+      const catCorreta2 = _cp?.cat || _ci?.cat || item.cat || 'Insumos';
+      const unCorreta2  = _cp?.un  || _ci?.un  || item.un  || 'un';
       const novoProdId = 'eq-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
-      prod = { id:novoProdId, nome:item.nome, cat:item.cat, un:item.un,
+      prod = { id:novoProdId, nome:item.nome, cat:catCorreta2, un:unCorreta2,
                min:0, custoMedio:item.preco, ativo:true, criadoEm:new Date().toISOString() };
       prods.push(prod);
     } else {
-      if(!prod.cat) prod.cat = item.cat;
+      const _cp = _prodsCad2.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm2);
+      const _ci = _insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm2);
+      const catCorreta2 = _cp?.cat || _ci?.cat;
+      if(catCorreta2) prod.cat = catCorreta2;
     }
     const novoId = movs.length ? Math.max(...movs.map(m=>m.id||0))+1 : 1;
     movs.push({ id:novoId, data, tipo:'entrada', prodId:prod.id,
@@ -9585,13 +9684,62 @@ function eqLimparEI(prodId){
   }
 }
 
+// ── Multiselect Categoria — Estoque ──
+function eqCatMsToggle(){
+  const drop = document.getElementById('eq-cat-drop');
+  if(!drop) return;
+  const isOpen = drop.style.display !== 'none';
+  // Fecha outros dropdowns abertos
+  document.querySelectorAll('.rc-ms-drop').forEach(d=>d.style.display='none');
+  drop.style.display = isOpen ? 'none' : 'block';
+}
+function eqCatMsCb(el){
+  el.classList.toggle('sel');
+  eqCatMsUpdateLabel();
+  renderEstoque();
+}
+function eqCatMsTodos(){
+  document.querySelectorAll('#eq-cat-drop .rc-ms-item[data-val]').forEach(el=>el.classList.remove('sel'));
+  eqCatMsUpdateLabel();
+  document.getElementById('eq-cat-drop').style.display='none';
+  renderEstoque();
+}
+function eqCatMsUpdateLabel(){
+  const sels = [...document.querySelectorAll('#eq-cat-drop .rc-ms-item.sel')].map(el=>el.dataset.val).filter(Boolean);
+  const lbl = document.getElementById('eq-cat-label');
+  const btn = document.getElementById('eq-cat-btn');
+  if(!lbl) return;
+  if(!sels.length){
+    lbl.textContent = 'Todas as categorias';
+    lbl.style.color = 'var(--tx)';
+    if(btn) btn.style.borderColor = 'var(--bd)';
+  } else if(sels.length === 1){
+    lbl.textContent = sels[0];
+    lbl.style.color = 'var(--or)';
+    if(btn) btn.style.borderColor = 'var(--or)';
+  } else {
+    lbl.textContent = sels.length + ' categorias';
+    lbl.style.color = 'var(--or)';
+    if(btn) btn.style.borderColor = 'var(--or)';
+  }
+}
+// Fecha dropdown ao clicar fora
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('eq-cat-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    const drop = document.getElementById('eq-cat-drop');
+    if(drop) drop.style.display='none';
+  }
+});
+
 function renderEstoque(){
   eqInitMes();
   const ym = eqGetMes();
   const movs = S.g('eq-movimentos')||[];
   const prods = S.g('eq-produtos')||[];
   const inventarios = S.g('eq-inventarios')||{};
-  const filtCat = document.getElementById('eq-filtro-cat')?.value||'';
+  // Multiselect categorias
+  const filtCats = [...document.querySelectorAll('#eq-cat-drop .rc-ms-item.sel')].map(el=>el.dataset.val).filter(Boolean);
   const filtSt = document.getElementById('eq-filtro-st')?.value||'';
 
   // Label período
@@ -9606,7 +9754,7 @@ function renderEstoque(){
 
   // Filtra produtos
   let prodsFilt = prods.filter(p=>p.ativo!==false);
-  if(filtCat) prodsFilt = prodsFilt.filter(p=>p.cat===filtCat);
+  if(filtCats.length) prodsFilt = prodsFilt.filter(p=>filtCats.some(fc=>fc.trim().toLowerCase()===(p.cat||'').trim().toLowerCase()));
 
   // Calcula dados de cada produto
   const rows = prodsFilt.map(p=>{
@@ -9675,7 +9823,7 @@ function renderEstoque(){
   if(!rowsFilt.length){
     tbEl.innerHTML=`<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--tx3)">
       <i class="fa-solid fa-boxes-stacked" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
-      Nenhum produto cadastrado${filtCat?' na categoria '+filtCat:''}.<br>
+      Nenhum produto cadastrado${filtCats.length?' na(s) categoria(s) selecionada(s)':''}.<br>
       <span style="font-size:11px">Use <strong style="color:var(--or)">+ Nova Entrada</strong> para registrar a primeira compra.</span>
     </td></tr>`;
   } else {
@@ -9744,17 +9892,17 @@ function renderEstoque(){
       <td style="text-align:right;font-weight:700;color:#EF9A9A">—</td>
       <td style="text-align:right;font-weight:700;color:#EF9A9A;font-size:13px">${totEFVal>0?R(totEFVal):'—'}</td>
       <td style="text-align:right;font-weight:700;color:var(--or)">—</td>
-      <td style="text-align:right;font-weight:700;color:var(--tx2)">—</td>
       <td style="text-align:right;font-weight:700;color:var(--or);font-size:14px">${R(totCMV)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--tx2)">—</td>
       <td colspan="2"></td>
     </tr>`;
   }
 
-  // Curva ABC
-  eqRenderABC(rows, ym);
+  // Curva ABC e gráfico sincronizados com filtro de categoria ativo
+  eqRenderABC(rowsFilt, ym);
 
   // Gráfico de pizza por categoria
-  eqRenderGraficoCat(rows);
+  eqRenderGraficoCat(rowsFilt);
 
   // Histórico
   eqRenderHistorico(movs);
@@ -9780,23 +9928,25 @@ function eqRenderABC(rows, ym){
   if(!abcEl) return;
   const modo = _abcModo;
 
-  // Filtrar e ordenar conforme modo
+  // Curva ABC baseada no CONSUMO REAL (CMV) — não nas compras
+  // R$ Valor → cmvVal (consumo real = EI + Compras − EF × custo médio)
+  // Qtd      → cmvQtd (quantidade consumida)
   let sorted;
   if(modo === 'qtd'){
-    sorted = [...rows].filter(r=>r.totalComprasQtd>0).sort((a,b)=>b.totalComprasQtd-a.totalComprasQtd);
+    sorted = [...rows].filter(r=>(r.cmvQtd||0)>0).sort((a,b)=>b.cmvQtd-a.cmvQtd);
   } else {
-    sorted = [...rows].filter(r=>r.totalComprasVal>0).sort((a,b)=>b.totalComprasVal-a.totalComprasVal);
+    sorted = [...rows].filter(r=>(r.cmvVal||0)>0).sort((a,b)=>b.cmvVal-a.cmvVal);
   }
 
-  if(!sorted.length){ abcEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--tx3);font-size:12px">Nenhuma compra registrada neste mês.</div>'; return; }
+  if(!sorted.length){ abcEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--tx3);font-size:12px">Nenhum consumo registrado neste mês.</div>'; return; }
 
   const total = modo==='qtd'
-    ? sorted.reduce((a,b)=>a+(b.totalComprasQtd||0),0)
-    : sorted.reduce((a,b)=>a+(b.totalComprasVal||0),0);
+    ? sorted.reduce((a,b)=>a+(b.cmvQtd||0),0)
+    : sorted.reduce((a,b)=>a+(b.cmvVal||0),0);
 
   let acum = 0;
   const itens = sorted.map((r,i)=>{
-    const val = modo==='qtd' ? (r.totalComprasQtd||0) : (r.totalComprasVal||0);
+    const val = modo==='qtd' ? (r.cmvQtd||0) : (r.cmvVal||0);
     acum += val;
     const pct     = total>0 ? val/total*100 : 0;
     const pctAcum = total>0 ? acum/total*100 : 0;
@@ -9819,7 +9969,7 @@ function eqRenderABC(rows, ym){
     </div>`;
   });
 
-  // Linha de total
+  // Linha de total — agora bate com o total CMV R$ da tabela
   const totalLabel = modo==='qtd'
     ? `${total.toFixed(3).replace(/\.?0+$/,'')} un`
     : R(total);
@@ -9844,8 +9994,9 @@ function eqRenderGraficoCat(rows, modo){
     'Material de Expediente':'#64B5F6',
     'Imobilizado':       '#E53935',
   };
+  // Gráfico por categoria baseado no CMV (consumo real), igual à Curva ABC
   rows.forEach(r=>{
-    const val = modo==='qtd' ? (r.totalComprasQtd||0) : (r.totalComprasVal||0);
+    const val = modo==='qtd' ? (r.cmvQtd||0) : (r.cmvVal||0);
     if(val>0){
       const cat = r.cat||'Outros';
       catMap[cat] = (catMap[cat]||0) + val;
@@ -13322,20 +13473,53 @@ function editProdVenda(id){
   openMod('mod-pvenda');
 }
 
+function pvSort(col, th){
+  if(_pvSortCol===col){ _pvSortDir = _pvSortDir==='asc'?'desc':'asc'; }
+  else { _pvSortCol=col; _pvSortDir = (col==='nome'||col==='cat'||col==='cod') ? 'asc' : 'desc'; }
+  // Atualiza ícones — reseta todos
+  document.querySelectorAll('#page-cad-produtos-venda th i').forEach(i=>{ i.className='fa-solid fa-sort sort-icon'; });
+  // Marca a coluna ativa
+  if(th){ const ic=th.querySelector('i'); if(ic) ic.className=`fa-solid fa-sort-${_pvSortDir==='asc'?'up':'down'} sort-icon`; }
+  renderProdVenda();
+}
+
+// Estado de ordenação do cadastro de produtos venda
+let _pvSortCol = 'cod', _pvSortDir = 'asc';
+
 function renderProdVenda(){
   const arr     = S.g('prod-venda')||[];
   const filtCat = document.getElementById('pv-filtro-cat')?.value||'';
-  // popula filtro
+  // Popula filtro de categoria
   const selFilt = document.getElementById('pv-filtro-cat');
   if(selFilt){
     const cats = [...new Set(arr.map(p=>p.cat))].sort();
     const cur  = selFilt.value;
     selFilt.innerHTML = '<option value="">Todas as categorias</option>'+cats.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
   }
-  const filtrado = filtCat ? arr.filter(p=>p.cat===filtCat) : arr;
-  const catCor   = {'Rodízio':'tg-or','Bebidas':'tg-bl','Drinks':'tg-gy','Cervejas':'tg-am','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  // Aplica filtro de categoria
+  let filtrado = filtCat ? arr.filter(p=>p.cat===filtCat) : arr;
+  // Aplica ordenação
+  filtrado = [...filtrado].sort((a,b)=>{
+    const col = _pvSortCol, dir = _pvSortDir;
+    let va, vb;
+    if(col==='margem'){
+      va = (a.preco>0&&a.custo>0) ? (a.preco-a.custo)/a.preco*100 : 0;
+      vb = (b.preco>0&&b.custo>0) ? (b.preco-b.custo)/b.preco*100 : 0;
+    } else if(col==='lucro'){
+      va = (a.preco>0&&a.custo>0) ? a.preco-a.custo : 0;
+      vb = (b.preco>0&&b.custo>0) ? b.preco-b.custo : 0;
+    } else {
+      va = a[col]; vb = b[col];
+    }
+    if(typeof va==='number'&&typeof vb==='number') return dir==='asc'?va-vb:vb-va;
+    va=String(va||''); vb=String(vb||'');
+    return dir==='asc'
+      ? va.localeCompare(vb,'pt-BR',{sensitivity:'base'})
+      : vb.localeCompare(va,'pt-BR',{sensitivity:'base'});
+  });
+  const catCor = {'Rodízio':'tg-or','Bebidas':'tg-bl','Drinks':'tg-gy','Cervejas':'tg-am','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
   document.getElementById('tb-pv').innerHTML = filtrado.length===0
-    ? `<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhum produto cadastrado</td></tr>`
+    ? `<tr><td colspan="11" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhum produto cadastrado</td></tr>`
     : filtrado.map(p=>{
       const temCusto = p.preco>0 && p.custo>0;
       const margem   = temCusto ? ((p.preco-p.custo)/p.preco*100) : null;
@@ -14041,7 +14225,7 @@ function sortCad(tableKey, col, thEl){
   const MAP = {
     fn:      { store:'fornecedores',      render: ()=>renderFornSorted(col,dir) },
     pr:      { store:'produtos',          render: ()=>renderProdSorted(col,dir) },
-    pv:      { store:'prod-venda',        render: ()=>renderProdVendaSorted(col,dir) },
+    pv:      { store:'prod-venda',        render: ()=>renderProdVenda() }, // usa pvSort interno
     cc:      { store:'cad-contas',        render: ()=>renderCadContasSorted(col,dir) },
     ins:     { store:'insumos',           render: ()=>renderInsumosSorted(col,dir) },
     serv:    { store:'servicos',          render: ()=>renderServicosSorted(col,dir) },
