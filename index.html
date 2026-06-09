@@ -1260,6 +1260,11 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           title="Detecta lançamentos com itens E val simultâneos que causam dupla contagem no DRE">
           <i class="fa-solid fa-stethoscope"></i> Diagnóstico DRE
         </button>
+        <button class="btn btn-sm" onclick="auditarReceitas()"
+          style="border-color:rgba(100,181,246,0.4);color:#64B5F6"
+          title="Lista todos os lançamentos de receita no localStorage — útil para encontrar lançamentos fantasmas">
+          <i class="fa-solid fa-magnifying-glass-chart"></i> Auditar Receitas
+        </button>
       </div>
     </div>
     <div class="tw"><table><thead><tr>
@@ -2706,7 +2711,21 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:500">
         <i class="fa-solid fa-circle-dollar-to-slot" style="margin-right:6px"></i>Precificação
       </div>
-      <div class="fr">
+      <!-- Tipo do produto -->
+      <div class="fr" style="margin-bottom:10px">
+        <div class="fg" style="max-width:200px">
+          <label>Tipo do Produto <span style="color:var(--tx3);font-size:10px">define como o preço é calculado</span></label>
+          <select id="mpv-tipo" onchange="mpvTipoChanged()">
+            <option value="fixo">Valor Fixo (R$)</option>
+            <option value="percentual">Percentual (%) sobre o total</option>
+          </select>
+        </div>
+        <div class="fg" id="mpv-perc-wrap" style="display:none;max-width:160px">
+          <label>Taxa (%) <span style="color:var(--or);font-size:10px">★ ex: 10% de gorjeta</span></label>
+          <input type="number" id="mpv-perc" step="0.1" min="0" max="100" placeholder="10" oninput="mpvCalcMargem()">
+        </div>
+      </div>
+      <div class="fr" id="mpv-preco-row">
         <div class="fg">
           <label>Preço de Venda (R$) <span style="color:var(--or);font-size:10px">★ tabela de preços</span></label>
           <input type="number" id="mpv-preco" step="0.01" min="0" placeholder="0,00" oninput="mpvCalcMargem()">
@@ -3028,8 +3047,33 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.08)">
-          <span style="font-size:13px;font-weight:500;color:var(--tx)">Total da Venda</span>
-          <span style="font-size:22px;font-weight:700;color:var(--or)" id="mr-total-venda">R$ 0,00</span>
+          <span style="font-size:13px;font-weight:500;color:var(--tx)">Subtotal (itens − descontos)</span>
+          <span style="font-size:16px;font-weight:600;color:var(--tx)" id="mr-total-venda">R$ 0,00</span>
+        </div>
+
+        <!-- Gorjeta / Taxa de Serviço -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;gap:10px">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-size:12px;color:var(--tx2)">
+              <input type="checkbox" id="mr-gorjeta-ck" onchange="mrCalcTotais()" style="accent-color:var(--or);width:14px;height:14px">
+              <i class="fa-solid fa-hand-holding-heart" style="color:var(--am);font-size:11px"></i>
+              Gorjeta / Taxa de Serviço <span style="font-size:10px;color:var(--tx3)" id="mr-gorjeta-label-perc"></span>
+            </label>
+            <select id="mr-gorjeta-prod" onchange="mrGorjetaProdChanged()" style="background:var(--dk4);border:1px solid var(--bd);border-radius:5px;padding:3px 8px;color:var(--tx);font-family:Outfit,sans-serif;font-size:11px;display:none">
+              <option value="">— selecione —</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="mr-gorjeta-perc" step="0.5" min="0" max="100" value="10" placeholder="%" onchange="mrCalcTotais()" style="width:60px;text-align:center;background:var(--dk4);border:1px solid var(--bd);border-radius:5px;padding:4px 6px;color:var(--or);font-family:Outfit,sans-serif;font-size:12px;font-weight:600">
+            <span style="font-size:11px;color:var(--tx3)">%</span>
+            <span style="font-size:13px;font-weight:600;color:var(--am)" id="mr-gorjeta-val" style="min-width:70px;text-align:right">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Total Final com gorjeta -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:2px solid rgba(242,100,25,0.3)">
+          <span style="font-size:14px;font-weight:600;color:var(--tx)">Total Final</span>
+          <span style="font-size:24px;font-weight:700;color:var(--or)" id="mr-total-final">R$ 0,00</span>
         </div>
 
         <div id="mr-liq-box" style="display:none;padding:8px 10px;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.2);border-radius:6px;margin-top:4px">
@@ -5767,6 +5811,13 @@ function saveReceber(){
   const conta = document.getElementById('mr-conta').value;
   if(!comp){ alert('Informe a data de competência (mês da venda).'); return; }
   if(!venc){ alert('Informe a data de vencimento.'); return; }
+  const forma = document.getElementById('mr-forma')?.value||'';
+  if(!forma){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Forma de Recebimento antes de salvar.\n\nEste campo define a data de crédito e é necessário para o Fluxo de Caixa.');
+    const sel = document.getElementById('mr-forma');
+    if(sel){ sel.style.borderColor='var(--rd)'; sel.focus(); setTimeout(()=>sel.style.borderColor='',3000); }
+    return;
+  }
   if(!conta){ 
     alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano antes de salvar a venda.\n\nEste campo é necessário para o correto registro no DRE.');
     const sel = document.getElementById('mr-conta');
@@ -5776,8 +5827,11 @@ function saveReceber(){
   // Só exige itens em novo lançamento — na edição pode ter ficado sem alterar itens
   if(!_mrItens.length && !document._mrEditId){ alert('Adicione pelo menos um produto à comanda.'); return; }
   const totalEl = document.getElementById('mr-total-venda');
-  const val   = totalEl ? parseFloat(totalEl.textContent.replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0;
-  const forma = document.getElementById('mr-forma').value;
+  // Se gorjeta ativa, usa totalFinal; senão usa subtotal dos itens
+  const _gEl = document.getElementById('mr-desc-geral');
+  const _tfVal = _gEl?.dataset?.totalFinal ? parseFloat(_gEl.dataset.totalFinal)||0 : 0;
+  const val = _tfVal > 0 ? _tfVal : (totalEl ? parseFloat(totalEl.textContent.replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0);
+  // forma já lida acima na validação
   const formasArr = S.g('formas-recebimento')||[];
   const fr   = formasArr.find(f=>f.nome===forma);
   const taxa = fr ? (fr.taxa||0) : 0;
@@ -5791,6 +5845,9 @@ function saveReceber(){
     cliente:  document.getElementById('mr-cliente').value.trim(),
     itens:    JSON.parse(JSON.stringify(_mrItens)),
     subtotal: (()=>{ const el=document.getElementById('mr-subtotal'); return el ? parseFloat((el.textContent||el.value||'0').replace('R$ ','').replace(/\./g,'').replace(',','.'))||0 : 0; })(),
+    gorjeta:     parseFloat(document.getElementById('mr-desc-geral')?.dataset?.gorjeta||0)||0,
+    gorjetaAtiva: document.getElementById('mr-gorjeta-ck')?.checked||false,
+    gorjetaPerc:  parseFloat(document.getElementById('mr-gorjeta-perc')?.value)||10,
     desconto: parseFloat(document.getElementById('mr-desc-geral')?.value)||0,
     val, taxa, liq,
     conta:    document.getElementById('mr-conta').value,
@@ -5840,6 +5897,11 @@ function resetModalReceber(){
   // mr-desc-geral resetado via try/catch abaixo
   try{ document.getElementById('mr-subtotal').textContent = 'R$ 0,00'; }catch{}
   try{ document.getElementById('mr-total-venda').textContent = 'R$ 0,00'; }catch{}
+  try{ document.getElementById('mr-total-final').textContent = 'R$ 0,00'; }catch{}
+  try{ document.getElementById('mr-gorjeta-val').textContent = 'R$ 0,00'; }catch{}
+  try{ document.getElementById('mr-gorjeta-ck').checked = false; }catch{}
+  try{ document.getElementById('mr-gorjeta-perc').value = '10'; }catch{}
+  try{ mrPopularGorjetaProds(); }catch{}
   try{ document.getElementById('mr-desc-geral').value = '0'; }catch{}
   try{ document.getElementById('mr-liq-box').style.display='none'; }catch{}
   try{ document.getElementById('mr-forma-info').style.display='none'; }catch{}
@@ -6052,7 +6114,8 @@ function mrAddLinha(){
   cats.forEach(cat=>{
     optsHtml += `<optgroup label="${cat}">`;
     prods.filter(p=>p.cat===cat).forEach(p=>{
-      optsHtml += `<option value="${p.id}" data-preco="${p.preco}" data-cat="${p.cat}" data-un="${p.un}" data-nome="${p.nome}">${p.nome}</option>`;
+      const labelPreco = p.tipo==='percentual' ? ' ('+(p.perc||10)+'%)' : (p.preco>0?' — R$ '+p.preco.toFixed(2).replace('.',','):'');
+      optsHtml += `<option value="${p.id}" data-preco="${p.preco||0}" data-tipo="${p.tipo||'fixo'}" data-perc="${p.perc||0}" data-cat="${p.cat}" data-un="${p.un}" data-nome="${p.nome}">${p.nome}${labelPreco}</option>`;
     });
     optsHtml += '</optgroup>';
   });
@@ -6098,11 +6161,42 @@ function mrAddLinha(){
 }
 
 function mriPreencherPreco(){
-  const sel = document.getElementById('mri-prod');
-  const opt = sel.options[sel.selectedIndex];
+  const sel  = document.getElementById('mri-prod');
+  const opt  = sel.options[sel.selectedIndex];
   if(!opt||!opt.value) return;
-  document.getElementById('mri-preco').value = opt.getAttribute('data-preco')||'';
-  mriCalcTotal();
+  const tipo = opt.getAttribute('data-tipo')||'fixo';
+  const perc = parseFloat(opt.getAttribute('data-perc'))||0;
+  const precoEl  = document.getElementById('mri-preco');
+  const totalCell= document.getElementById('mri-total-cell');
+  const percInfo = document.getElementById('mri-perc-info');
+  if(tipo==='percentual'){
+    // Oculta campo de preço, mostra info de percentual
+    if(precoEl){ precoEl.style.display='none'; precoEl.value='0'; }
+    if(!percInfo){
+      const td = precoEl?.parentElement;
+      if(td){
+        const span = document.createElement('span');
+        span.id = 'mri-perc-info';
+        span.style.cssText = 'font-size:12px;color:var(--am);font-weight:600';
+        span.textContent = perc+'% do total';
+        td.appendChild(span);
+      }
+    } else {
+      percInfo.textContent = perc+'% do total';
+      percInfo.style.display='';
+    }
+    // Calcula já sobre o subtotal atual
+    const subtotal = _mrItens.reduce((a,b)=>a+b.total,0);
+    const vlPerc   = subtotal * perc / 100;
+    if(totalCell) totalCell.textContent = 'R$ '+vlPerc.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    precoEl.dataset.tipo = 'percentual';
+    precoEl.dataset.perc = perc;
+  } else {
+    if(precoEl){ precoEl.style.display=''; precoEl.value = opt.getAttribute('data-preco')||''; delete precoEl.dataset.tipo; }
+    const pi = document.getElementById('mri-perc-info');
+    if(pi) pi.style.display='none';
+    mriCalcTotal();
+  }
 }
 
 function mriCalcTotal(){
@@ -6121,16 +6215,35 @@ function mriConfirmar(){
   const qtd   = parseFloat(document.getElementById('mri-qtd').value)||1;
   const preco = parseFloat(document.getElementById('mri-preco').value)||0;
   const desc  = parseFloat(document.getElementById('mri-desc').value)||0;
-  if(preco<=0){ alert('Informe o preço unitário.'); return; }
-  const total = parseFloat(Math.max(0,(qtd*preco)-desc).toFixed(2));
-  _mrItens.push({
-    id:     Date.now(),
-    prodId: opt.value,
-    nome:   opt.getAttribute('data-nome')||opt.text.split(' — R$')[0],
-    cat:    opt.getAttribute('data-cat')||'',
-    un:     opt.getAttribute('data-un')||'un',
-    qtd, preco, desc, total
-  });
+  const tipo = opt.getAttribute('data-tipo')||'fixo';
+  const perc = parseFloat(opt.getAttribute('data-perc'))||0;
+  let totalItem;
+  if(tipo==='percentual'){
+    // Calcula sobre o subtotal dos itens já lançados
+    const subtotalAtual = _mrItens.reduce((a,b)=>a+b.total,0);
+    const vlPerc = parseFloat((subtotalAtual * perc / 100).toFixed(2));
+    totalItem = vlPerc;
+    _mrItens.push({
+      id:      Date.now(),
+      prodId:  opt.value,
+      nome:    opt.getAttribute('data-nome')||opt.text,
+      cat:     opt.getAttribute('data-cat')||'',
+      un:      opt.getAttribute('data-un')||'un',
+      qtd:     1, preco: vlPerc, desc: 0, total: vlPerc,
+      tipo:    'percentual', perc, percBase: subtotalAtual
+    });
+  } else {
+    if(preco<=0){ alert('Informe o preço unitário.'); return; }
+    totalItem = parseFloat(Math.max(0,(qtd*preco)-desc).toFixed(2));
+    _mrItens.push({
+      id:     Date.now(),
+      prodId: opt.value,
+      nome:   opt.getAttribute('data-nome')||opt.text.split(' — R$')[0],
+      cat:    opt.getAttribute('data-cat')||'',
+      un:     opt.getAttribute('data-un')||'un',
+      qtd, preco, desc, total: totalItem
+    });
+  }
   mriCancelar();
   mrRenderItens();
   mrCalcTotais();
@@ -6151,7 +6264,7 @@ function mrCalcTotais(){
   const subtotalBruto = _mrItens.reduce((a,b)=>a+(b.qtd*b.preco),0);
   // Total dos descontos por item
   const totalDesc     = _mrItens.reduce((a,b)=>a+(b.desc||0),0);
-  // Total líquido = soma dos totais já com desconto por item
+  // Total líquido dos itens (já com descontos)
   const total         = _mrItens.reduce((a,b)=>a+b.total,0);
 
   // Atualiza campo oculto para saveReceber
@@ -6165,7 +6278,7 @@ function mrCalcTotais(){
   if(el_sub) el_sub.textContent = 'R$ '+subtotalBruto.toLocaleString('pt-BR',{minimumFractionDigits:2});
   if(el_tot) el_tot.textContent = 'R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 
-  // Linha de desconto: só aparece se há algum desconto nos itens
+  // Linha de desconto
   if(el_row && el_desc){
     if(totalDesc>0){
       el_desc.textContent = '— R$ '+totalDesc.toLocaleString('pt-BR',{minimumFractionDigits:2});
@@ -6174,7 +6287,60 @@ function mrCalcTotais(){
       el_row.style.display = 'none';
     }
   }
+
+  // ── Gorjeta / Taxa de Serviço ──
+  const gorjetaCk   = document.getElementById('mr-gorjeta-ck');
+  const gorjetaPerc = document.getElementById('mr-gorjeta-perc');
+  const gorjetaVal  = document.getElementById('mr-gorjeta-val');
+  const totalFinalEl= document.getElementById('mr-total-final');
+  const gorjetaAtiva = gorjetaCk?.checked;
+  const perc         = gorjetaAtiva ? (parseFloat(gorjetaPerc?.value)||0) : 0;
+  const vlGorjeta    = total * perc / 100;
+  const totalFinal   = total + vlGorjeta;
+
+  if(gorjetaVal){
+    gorjetaVal.textContent = perc>0
+      ? '+ R$ '+vlGorjeta.toLocaleString('pt-BR',{minimumFractionDigits:2})
+      : 'R$ 0,00';
+    gorjetaVal.style.color = perc>0 ? 'var(--am)' : 'var(--tx3)';
+  }
+  // Mostra "— 10%" ao lado do label quando checkbox marcado
+  const lblPerc = document.getElementById('mr-gorjeta-label-perc');
+  if(lblPerc) lblPerc.textContent = gorjetaAtiva && perc>0 ? '— '+perc+'%' : '';
+  if(totalFinalEl)
+    totalFinalEl.textContent = 'R$ '+totalFinal.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
+  // Guarda gorjeta para saveReceber
+  document.getElementById('mr-desc-geral').dataset.gorjeta = vlGorjeta.toFixed(2);
+  document.getElementById('mr-desc-geral').dataset.totalFinal = totalFinal.toFixed(2);
+
   mrCalcLiquido();
+}
+
+function mrGorjetaProdChanged(){
+  // Preenche % da gorjeta pelo produto cadastrado (tipo=percentual)
+  const sel = document.getElementById('mr-gorjeta-prod');
+  const pid = sel?.value;
+  if(!pid) return;
+  const prods = S.g('prod-venda')||[];
+  const p = prods.find(x=>String(x.id)===String(pid));
+  if(p?.tipo==='percentual' && p.perc>0){
+    const percEl = document.getElementById('mr-gorjeta-perc');
+    if(percEl) percEl.value = p.perc;
+    const ckEl = document.getElementById('mr-gorjeta-ck');
+    if(ckEl) ckEl.checked = true;
+    mrCalcTotais();
+  }
+}
+
+function mrPopularGorjetaProds(){
+  // Popula select com produtos do tipo percentual cadastrados
+  const sel = document.getElementById('mr-gorjeta-prod');
+  if(!sel) return;
+  const prods = (S.g('prod-venda')||[]).filter(p=>p.tipo==='percentual'&&p.st!=='Inativo');
+  if(prods.length===0){ sel.style.display='none'; return; }
+  sel.innerHTML = '<option value="">— selecione —</option>' + prods.map(p=>`<option value="${p.id}">${p.nome} (${p.perc||10}%)</option>`).join('');
+  sel.style.display='';
 }
 
 function mrCalcLiquido(){
@@ -7276,6 +7442,62 @@ function dreListaMeses(de, ate){
 // ══════════════════════════════════════
 // DIAGNÓSTICO DRE — AUDITORIA POR CONTA
 // ══════════════════════════════════════
+function auditarReceitas(){
+  const receber = S.g('receber')||[];
+  if(!receber.length){ alert('Nenhum lançamento em Contas a Receber.'); return; }
+
+  const fd = d => d ? d.slice(0,10).split('-').reverse().join('/') : '—';
+  const R2 = v => 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  let rows = receber.map(l=>{
+    const gorj = l.gorjetaAtiva ? (l.gorjeta||0) : 0;
+    return `<tr style="border-bottom:1px solid var(--bd)">
+      <td style="padding:5px 8px;font-size:11px;color:var(--or)">${l.id}</td>
+      <td style="padding:5px 8px;font-size:11px">${fd(l.comp)}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--tx2)">${l.desc||'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;text-align:center">${l.conta||'—'}</td>
+      <td style="padding:5px 8px;font-size:12px;font-weight:600;color:var(--gr);text-align:right">${R2(l.val)}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--am);text-align:right">${gorj>0?R2(gorj):'—'}</td>
+      <td style="padding:5px 8px;font-size:11px;text-align:center">${(l.itens&&l.itens.length)?l.itens.length+' itens':'sem itens'}</td>
+      <td style="padding:5px 8px;text-align:center">
+        <button onclick="if(confirm('Excluir este lançamento?')){const a=S.g('receber')||[];S.s('receber',a.filter(x=>x.id!==${l.id}));renderReceber();this.closest('tr').remove();}" 
+          style="background:rgba(229,57,53,0.2);border:1px solid rgba(229,57,53,0.4);color:#EF9A9A;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const total = receber.reduce((s,l)=>s+(l.val||0),0);
+
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center';
+  popup.innerHTML = `
+    <div style="background:var(--dk2);border:1px solid var(--bd2);border-radius:12px;padding:24px;width:820px;max-height:80vh;overflow-y:auto;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--tx)"><i class="fa-solid fa-magnifying-glass-chart" style="color:#64B5F6;margin-right:8px"></i>Auditoria de Receitas — localStorage</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:3px">${receber.length} lançamentos · Total: <span style="color:var(--gr);font-weight:600">${R2(total)}</span></div>
+        </div>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--dk4);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 12px;cursor:pointer;font-family:Outfit,sans-serif">✕ Fechar</button>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="border-bottom:2px solid var(--bd2)">
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:left">ID</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:left">Competência</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:left">Descrição</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:center">Conta</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:right">Val Total</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:right">Gorjeta</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:center">Itens</th>
+          <th style="padding:6px 8px;color:var(--tx3);font-size:10px;text-align:center">Excluir</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
 function diagDuplicidade(){
   const pagar  = S.g('pagar')  || [];
   const regime = _dreRegime || 'comp';
@@ -7499,49 +7721,60 @@ function dreClassificarItem(cat){
 // Os itens servem apenas para calcular a proporção alimentação × mercadoria
 function dreAcumularReceitas(filtR){
   const prodVenda = S.g('prod-venda')||[];
-  let totAlim = 0, totMerc = 0, totDesc = 0;
+  let totAlim = 0, totMerc = 0, totServ = 0, totDesc = 0;
   filtR.forEach(lanc=>{
-    const val  = lanc.val  || 0;
-    const desc = lanc.desconto || 0;
-    const bruto = val + desc; // valor bruto antes do desconto
-    if(!bruto) return;
+    // Gorjeta: sempre entra em Venda de Serviços (1.3), separada dos itens
+    const gorjeta = (lanc.gorjetaAtiva && lanc.gorjeta > 0) ? lanc.gorjeta : 0;
+    totServ += gorjeta;
+
+    // Valor dos itens = val total − gorjeta
+    const valItens = (lanc.val || 0) - gorjeta;
+    const desc     = lanc.desconto || 0;
+    const bruto    = valItens + desc;
+    if(!bruto && !gorjeta) return;
     totDesc += desc;
+
     if(lanc.itens && lanc.itens.length){
-      // Proporção baseada nos itens brutos
-      const sumAlim = lanc.itens.reduce((s,i)=>{
+      // Itens percentuais (gorjeta como item) já foram separados acima — ignora
+      const itensFixos = lanc.itens.filter(i=>i.tipo!=='percentual');
+      const sumAlim = itensFixos.reduce((s,i)=>{
         const prod = prodVenda.find(p=>String(p.id)===String(i.prodId));
         const cat  = prod ? prod.cat : i.cat;
         return s + (dreClassificarItem(cat)==='alimentacao' ? (i.total||0) : 0);
       }, 0);
-      const sumMerc = lanc.itens.reduce((s,i)=>{
+      const sumMerc = itensFixos.reduce((s,i)=>{
         const prod = prodVenda.find(p=>String(p.id)===String(i.prodId));
         const cat  = prod ? prod.cat : i.cat;
         return s + (dreClassificarItem(cat)==='mercadoria' ? (i.total||0) : 0);
       }, 0);
       const sumTot = sumAlim + sumMerc;
       if(sumTot > 0){
-        // Distribui o bruto proporcionalmente
         totAlim += bruto * (sumAlim / sumTot);
         totMerc += bruto * (sumMerc / sumTot);
       } else {
         totAlim += bruto;
       }
     } else {
+      // Lançamentos sem itens discriminados — usa conta como classificador
+      // Ignora lançamentos com val=0 (podem ser resquícios de demos)
+      if(bruto <= 0) return;
       if((lanc.conta||'')==='1.2') totMerc += bruto;
-      else                          totAlim += bruto;
+      else if((lanc.conta||'')==='1.3') totServ += bruto;
+      else                               totAlim += bruto;
     }
   });
-  return { totAlim, totMerc, totDesc, totRec: totAlim + totMerc };
+  return { totAlim, totMerc, totServ, totDesc, totRec: totAlim + totMerc + totServ };
 }
 
 function dreCalc(totConta, receitasObj, pc){
   const sg  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totConta[c.cod]||0),0);
   const ssg = (sub) => pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sub).reduce((s,c)=>s+(totConta[c.cod]||0),0);
-  const totAlim    = receitasObj.totAlim;  // bruto por categoria
-  const totMerc    = receitasObj.totMerc;  // bruto por categoria
+  const totAlim    = receitasObj.totAlim;       // Venda de Alimentação
+  const totMerc    = receitasObj.totMerc;       // Venda de Mercadorias
+  const totServ    = receitasObj.totServ || 0;  // Venda de Serviços (gorjetas)
   const totDesc    = receitasObj.totDesc || 0;
   // RECEITAS OPERACIONAIS = bruto − descontos concedidos
-  const totRec     = totAlim + totMerc - totDesc;
+  const totRec     = totAlim + totMerc + totServ - totDesc;
   const totImp     = sg('2');
   const totFin     = sg('3');
   const totCMV     = sg('4');
@@ -7553,7 +7786,7 @@ function dreCalc(totConta, receitasObj, pc){
   const ebitda     = lucroBruto - totFin - totOp;
   const lucroLiq   = ebitda - totNaoOp;
   const sgs5 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').map(s=>({...s, total: ssg(s.cod)}));
-  return { totRec, totAlim, totMerc, totDesc, totImp, totFin, totCMV, totOp, totNaoOp, recLiq, lucroBruto, ebitda, lucroLiq, sgs5 };
+  return { totRec, totAlim, totMerc, totServ, totDesc, totImp, totFin, totCMV, totOp, totNaoOp, recLiq, lucroBruto, ebitda, lucroLiq, sgs5 };
 }
 
 function fmtMes(ym){
@@ -7662,6 +7895,7 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
   html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, '#64B5F6', 'rec_total');
   if(D.totAlim>0) html+=lConta('Venda de Alimentação / Rodízio','1.1',D.totAlim,'var(--tx2)',20,'rec_alim');
   if(D.totMerc>0) html+=lConta('Venda de Mercadoria de Terceiros','1.2',D.totMerc,'var(--tx2)',20,'rec_merc');
+  if((D.totServ||0)>0) html+=lConta('Venda de Serviços / Gorjetas','1.3',D.totServ,'var(--tx2)',20,'rec_serv');
   if(!D.totRec) html+=`<tr><td colspan="3" style="padding:5px 20px;font-size:11px;color:var(--tx3);font-style:italic">Nenhuma receita no período</td></tr>`;
 
   // Descontos Concedidos
@@ -11737,6 +11971,16 @@ function editReceber(id){
     mrRenderItens();
     mrCalcTotais();
 
+    // Restaura gorjeta salva
+    try{
+      const ckEl   = document.getElementById('mr-gorjeta-ck');
+      const percEl = document.getElementById('mr-gorjeta-perc');
+      if(ckEl)   ckEl.checked   = c.gorjetaAtiva || false;
+      if(percEl) percEl.value   = c.gorjetaPerc  || 10;
+      mrPopularGorjetaProds();
+      mrCalcTotais(); // recalcula com gorjeta restaurada
+    }catch(e){}
+
     // Título
     try{ document.querySelector('#mod-receber .mt span:first-child').innerHTML=
       '<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Venda / Comanda'; }catch{}
@@ -13310,6 +13554,20 @@ function gerarCodPV(){
   return 'PV-'+String(next).padStart(3,'0');
 }
 
+function mpvTipoChanged(){
+  const tipo = document.getElementById('mpv-tipo')?.value||'fixo';
+  const percWrap  = document.getElementById('mpv-perc-wrap');
+  const precoRow  = document.getElementById('mpv-preco-row');
+  if(tipo==='percentual'){
+    if(percWrap)  percWrap.style.display='';
+    if(precoRow)  precoRow.style.display='none';
+  } else {
+    if(percWrap)  percWrap.style.display='none';
+    if(precoRow)  precoRow.style.display='';
+  }
+  mpvCalcMargem();
+}
+
 function mpvCalcMargem(){
   const preco = parseFloat(document.getElementById('mpv-preco').value)||0;
   const custo = parseFloat(document.getElementById('mpv-custo').value)||0;
@@ -13361,7 +13619,11 @@ function saveProdVenda(){
   const preco = parseFloat(document.getElementById('mpv-preco').value)||0;
   const conta = document.getElementById('mpv-conta')?.value||'';
   if(!nome){ alert('Informe o nome do produto.'); return; }
-  if(preco<=0){ alert('Informe o preço de venda.'); return; }
+  const _tipo = document.getElementById('mpv-tipo')?.value||'fixo';
+  if(_tipo==='fixo' && preco<=0){ alert('Informe o preço de venda.'); return; }
+  if(_tipo==='percentual' && (parseFloat(document.getElementById('mpv-perc')?.value)||0)<=0){
+    alert('Informe a taxa percentual (ex: 10 para 10%).'); return;
+  }
   if(!conta){ 
     alert('⚠️ Campo obrigatório!\n\nSelecione a Conta do Plano de Contas (Receita) antes de salvar.\n\nEste campo é necessário para o correto lançamento no DRE.');
     const sel = document.getElementById('mpv-conta');
@@ -13376,6 +13638,8 @@ function saveProdVenda(){
     un:         document.getElementById('mpv-un').value,
     custo:      parseFloat(document.getElementById('mpv-custo').value)||0,
     precoPromo: parseFloat(document.getElementById('mpv-preco-promo')?.value)||0,
+    tipo:       document.getElementById('mpv-tipo')?.value||'fixo',
+    perc:       parseFloat(document.getElementById('mpv-perc')?.value)||0,
     conta,
     st:         document.getElementById('mpv-st').value,
     obs:        document.getElementById('mpv-obs').value.trim(),
@@ -13430,6 +13694,8 @@ function resetModalProdVenda(){
   document.getElementById('mpv-st').value    = 'Ativo';
   document.getElementById('mpv-obs').value   = '';
   try{ document.getElementById('mpv-preco-promo').value = ''; }catch{}
+  try{ document.getElementById('mpv-tipo').value = 'fixo'; mpvTipoChanged(); }catch{}
+  try{ document.getElementById('mpv-perc').value = ''; }catch{}
   try{ document.getElementById('mpv-margem-box').style.display='none'; }catch{}
   try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-tag" style="color:var(--or);margin-right:8px"></i>Novo Produto (Vendas)'; }catch{}
   // Popula select de conta
@@ -13467,6 +13733,8 @@ function editProdVenda(id){
   document.getElementById('mpv-st').value    = p.st||'Ativo';
   document.getElementById('mpv-obs').value   = p.obs||'';
   try{ document.getElementById('mpv-preco-promo').value = p.precoPromo||''; }catch{}
+  try{ document.getElementById('mpv-tipo').value = p.tipo||'fixo'; mpvTipoChanged(); }catch{}
+  try{ document.getElementById('mpv-perc').value = p.perc||''; }catch{}
   try{ document.getElementById('mpv-conta').value       = p.conta||''; }catch{}
   try{ document.querySelector('#mod-pvenda .mt span:first-child').innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--or);margin-right:8px"></i>Editar Produto (Vendas)'; }catch{}
   mpvCalcMargem();
@@ -14717,6 +14985,9 @@ function dreDrillDown(tipo, label, cor){
     lancs = filtR.map(l=>({...l, _valDRE:l.val||0}));
   } else if(tipo==='rec_desc'){
     lancs = filtR.filter(l=>(l.desconto||0)>0).map(l=>({...l, _valDRE:l.desconto}));
+  } else if(tipo==='rec_serv'){
+    // Gorjetas — valor separado do val dos itens
+    lancs = filtR.filter(l=>l.gorjetaAtiva && (l.gorjeta||0)>0).map(l=>({...l, _valDRE:l.gorjeta}));
   } else {
     // Despesas por grupo, subgrupo ou conta específica
     const codsDaLinha = pc.filter(x=>{
