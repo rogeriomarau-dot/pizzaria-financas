@@ -4050,6 +4050,7 @@ const D={
   fatS:[68000,71000,74000,79000,82000,87400],
   despS:[58000,60000,63000,66000,68000,72580],
   lucS:[9200,10100,11400,12800,13600,14820],
+  lucLiqS:[8800,9600,10900,12200,13000,14100],
   pzRank:[
     {n:'Calabresa G',q:412,p:100},{n:'Mussarela G',q:387,p:94},
     {n:'Frango Catupiry G',q:298,p:72},{n:'4 Queijos G',q:241,p:58},
@@ -6860,7 +6861,8 @@ function dbCalcMes(ym){
   const mcRatioPE = fat > 0 ? (fat - totCMV) / fat : 0;
   const pe        = mcRatioPE > 0 && despFixas > 0 ? despFixas / mcRatioPE : 0;
 
-  return { fat, totImp, totCMV, totOp, totFin, recLiq, lucroBruto, ebitda,
+  const lucroLiq = ebitda; // sem IR/CS no simples nacional — lucroLiq = EBITDA
+  return { fat, totImp, totCMV, totOp, totFin, recLiq, lucroBruto, ebitda, lucroLiq,
            cmvPct, ebitdaPct, mcPct, qtdPizzas,
            despFixas, despVariaveis, pe, mcRatioPE };
 }
@@ -7371,7 +7373,7 @@ function renderDashboard(){
 
   // ── Gráfico Faturamento × Despesas (6 meses) ──
   const hoje = new Date();
-  const meses6 = [], fatS = [], despS = [];
+  const meses6 = [], fatS = [], despS = [], lucS = [], lucLiqS = [];
   for(let i=5; i>=0; i--){
     const d  = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
     const ym = d.toISOString().slice(0,7);
@@ -7379,6 +7381,8 @@ function renderDashboard(){
     meses6.push(d.toLocaleString('pt-BR',{month:'short'}));
     fatS.push(m.fat);
     despS.push(m.totCMV + m.totOp + m.totImp + m.totFin);
+    lucS.push(m.ebitda);
+    lucLiqS.push(m.lucroLiq||m.ebitda);
   }
   const go={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
     scales:{x:{ticks:{color:'#666',font:{size:10}}},y:{ticks:{color:'#666',font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}};
@@ -7389,6 +7393,27 @@ function renderDashboard(){
       {label:'Faturamento',data:fatS, backgroundColor:'rgba(242,100,25,0.7)',borderRadius:4},
       {label:'Despesas',   data:despS,backgroundColor:'rgba(33,150,243,0.35)',borderRadius:4}
     ]},options:{...go,scales:{x:{ticks:{color:'#666',font:{size:10}}},y:{ticks:{...go.scales.y.ticks},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+
+  // ── Atualiza D com séries reais e renderiza gráfico Evolução do Lucro ──
+  D.months = meses6;
+  D.fatS   = fatS;
+  D.despS  = despS;
+  D.lucS   = lucS;
+  D.lucLiqS = lucLiqS;
+  const txDre={color:'#666',font:{size:10}};
+  const gxDre={color:'rgba(255,255,255,0.04)'};
+  const dreEl = document.getElementById('c-dre');
+  if(dreEl){
+    dc('dre');
+    CH.dre=new Chart(dreEl,{type:'line',data:{labels:meses6,datasets:[
+      {label:'Faturamento', data:fatS,   borderColor:'#F26419',backgroundColor:'transparent',tension:0.4,pointRadius:3,pointBackgroundColor:'#F26419',borderDash:[4,3],borderWidth:1.5},
+      {label:'EBITDA',      data:lucS,   borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#4CAF50',borderWidth:2},
+      {label:'Lucro Líq.',  data:lucLiqS,borderColor:'#2196F3',backgroundColor:'rgba(33,150,243,0.05)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#2196F3',borderWidth:2}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:10,padding:10}},
+               tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$${(ctx.raw/1000).toFixed(1)}k`}}},
+      scales:{x:{ticks:txDre},y:{ticks:{...txDre,callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:gxDre}}}});
+  }
 
   // ── Gráfico Composição de Custos (donut) ──
   const pC=at.fat>0?at.totCMV/at.fat*100:0;
@@ -12443,7 +12468,11 @@ function buildCharts(){
   const fat0=D.fat||1;
   const pC=D.cmv/fat0*100,pP=D.pessoal/fat0*100,pA=D.aluguel/fat0*100,pO=(D.energia+D.mkt+D.outros)/fat0*100,pL=Math.max(0,100-pC-pP-pA-pO);
   if(vis('dnut')) try{dc('dnut');CH.dnut=new Chart(document.getElementById('c-dnut'),{type:'doughnut',data:{labels:['CMV','Pessoal','Aluguel','Outros','Lucro'],datasets:[{data:[pC,pP,pA,pO,pL],backgroundColor:['#F26419','#2196F3','#FF8F00','#888','#4CAF50'],borderWidth:2,borderColor:'#1E1E1E'}]},options:{...go,cutout:'65%'}});}catch(e){}
-  if(vis('dre'))  try{dc('dre');CH.dre=new Chart(document.getElementById('c-dre'),{type:'line',data:{labels:M,datasets:[{data:D.lucS,borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#4CAF50'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:gx}}}});}catch(e){}
+  if(vis('dre'))  try{dc('dre');CH.dre=new Chart(document.getElementById('c-dre'),{type:'line',data:{labels:M,datasets:[
+    {label:'Faturamento',data:D.fatS,borderColor:'#F26419',backgroundColor:'transparent',tension:0.4,pointRadius:3,pointBackgroundColor:'#F26419',borderDash:[4,3],borderWidth:1.5},
+    {label:'EBITDA',     data:D.lucS,borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,0.07)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#4CAF50',borderWidth:2},
+    {label:'Lucro Líq.', data:D.lucLiqS||D.lucS,borderColor:'#2196F3',backgroundColor:'rgba(33,150,243,0.05)',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#2196F3',borderWidth:2}
+  ]},options:{...go,plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:10,padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$${(ctx.raw/1000).toFixed(1)}k`}}},scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:gx}}}});}catch(e){}
   if(vis('flx'))  try{dc('flx');CH.flx=new Chart(document.getElementById('c-flx'),{type:'bar',data:{labels:['Sem 1','Sem 2','Sem 3','Sem 4'],datasets:[{data:[22400,24100,21800,22940],backgroundColor:'rgba(76,175,80,0.6)',borderRadius:3},{data:[16800,17200,16400,17300],backgroundColor:'rgba(229,57,53,0.6)',borderRadius:3},{type:'line',data:[5600,12500,17900,23540],borderColor:'#2196F3',tension:0.4,yAxisID:'y2',pointRadius:4}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:gx},y2:{position:'right',ticks:{...tx,callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{display:false}}}}});}catch(e){}
   if(vis('sem'))  try{dc('sem');CH.sem=new Chart(document.getElementById('c-sem'),{type:'bar',data:{labels:D.dias,datasets:[{data:D.vDia,backgroundColor:D.vDia.map((_,i)=>i>=4?'#F26419':'rgba(242,100,25,0.4)'),borderRadius:3}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});}catch(e){}
   if(vis('ped'))  try{dc('ped');CH.ped=new Chart(document.getElementById('c-ped'),{type:'line',data:{labels:M,datasets:[{data:D.pedM,borderColor:'#F26419',backgroundColor:'rgba(242,100,25,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#F26419'}]},options:{...go,scales:{x:{ticks:tx},y:{ticks:tx,grid:gx}}}});}catch(e){}
