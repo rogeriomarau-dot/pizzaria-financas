@@ -405,6 +405,18 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <i class="fa-solid fa-broom"></i> Limpar demos do CAR
       </button>
       <div id="sb-backup-info" style="font-size:10px;color:var(--tx3);text-align:center;margin-top:4px"><i class="fa-solid fa-database" style="color:var(--or)"></i> Firebase conectado</div>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(33,150,243,0.4);color:var(--bl)" onclick="cxCorrigirCAPsFaltantes()" title="Corrige lançamentos do caixa que não aparecem no DRE e Fluxo">
+        <i class="fa-solid fa-wrench"></i> Corrigir CAPs do Caixa
+      </button>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(76,175,80,0.4);color:var(--gr)" onclick="diagPorCodigo(prompt('Código do lançamento (ex: PAG-00023):','PAG-00023'))" title="Diagnóstico detalhado de um lançamento específico">
+        <i class="fa-solid fa-stethoscope"></i> Diagnóstico por Código
+      </button>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(255,143,0,0.4);color:var(--am)" onclick="diagCruzamentoMes(prompt('Mês (YYYY-MM):',new Date().toISOString().slice(0,7)))" title="Cruzamento Estoque x CAP por mês">
+        <i class="fa-solid fa-scale-balanced"></i> Cruzar Estoque x CAP
+      </button>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(229,57,53,0.4);color:var(--rd)" onclick="eqRemoverOrfaosERessinc()" title="Remove movimentos do estoque sem vínculo ao CAP">
+        <i class="fa-solid fa-trash-can"></i> Remover Órfãos do Estoque
+      </button>
       <button class="btn-out" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
     </div>
   </div>
@@ -1406,7 +1418,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <th class="sortable" onclick="sortRC('comp',this)">Competência <i class="fa-solid sort-icon"></i></th>
         <th class="sortable" onclick="sortRC('venc',this)">Vencimento <i class="fa-solid sort-icon"></i></th>
         <th class="sortable" onclick="sortRC('comanda',this)">Comanda <i class="fa-solid sort-icon"></i></th>
-        <th class="sortable" onclick="sortRC('cliente',this)">Cliente <i class="fa-solid sort-icon"></i></th>
+        <th class="sortable" onclick="sortRC('conta',this)">Plano de Contas <i class="fa-solid sort-icon"></i></th>
         <th>Itens</th>
         <th class="sortable" onclick="sortRC('forma',this)">Forma <i class="fa-solid sort-icon"></i></th>
         <th class="sortable" style="text-align:right" onclick="sortRC('val',this)">Total Bruto <i class="fa-solid sort-icon"></i></th>
@@ -6703,7 +6715,16 @@ function dbCalcMes(ym){
 
   // Acumula por grupo de conta
   const totC = {};
-  pag.forEach(l=>{ const c=l.conta||''; if(c) totC[c]=(totC[c]||0)+(l.val||0); });
+  pag.forEach(l=>{
+    const val = l.val||0; if(!val) return;
+    const cod = l.conta||'';
+    if(cod){ totC[cod]=(totC[cod]||0)+val; return; }
+    // Conta vazia com itens: distribui pelas contas dos itens
+    if(l.itens&&l.itens.length){
+      const tot=l.itens.reduce((s,i)=>s+(i.total||0),0);
+      if(tot>0){ l.itens.forEach(it=>{ if(it.conta) totC[it.conta]=(totC[it.conta]||0)+val*(it.total||0)/tot; }); }
+    }
+  });
 
   const sg = grp => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totC[c.cod]||0),0);
   const totImp = sg('2');
@@ -7439,6 +7460,92 @@ function dreListaMeses(de, ate){
 }
 
 
+
+// ── Corrige lançamentos de caixa que não geraram CAP (ou CAP sem val/conta) ──
+function cxCorrigirCAPsFaltantes(){
+  let movs  = S.g('caixa-mov')||[];
+  let pagar = S.g('pagar')||[];
+  let gerados = 0;
+  let corrigidos = 0;
+
+  // Helper: deriva conta principal dos itens
+  const derivarConta = (m) => {
+    let conta = m.conta||'';
+    if(!conta && m.itens && m.itens.length){
+      const cv={};
+      m.itens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+(it.total||0);});
+      const melhor=Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
+      if(melhor) conta=melhor[0];
+    }
+    return conta;
+  };
+
+  movs = movs.map(m => {
+    if(m.tipo!=='Saída') return m;
+
+    // Caso 1: sem capId → gerar CAP novo
+    if(!m.capId){
+      const conta = derivarConta(m);
+      const newId = Date.now()+Math.floor(Math.random()*9999);
+      pagar.push({
+        id:newId,
+        cod:'PAG-CX-'+String(newId).slice(-6),
+        venc:m.data, comp:m.data,
+        forn:m.forn||m.desc||'Caixa', desc:m.desc||'',
+        conta, val:m.valor||0,
+        forma:'Dinheiro', status:'Pago',
+        reg:'caixa', dtpag:m.data,
+        contaCorrente:'Caixa', banco:'Caixa',
+        origemCaixa:true,
+        itens:m.itens||undefined,
+      });
+      gerados++;
+      return {...m, capId:newId};
+    }
+
+    // Caso 2: tem capId mas o CAP não existe em pagar[] (órfão)
+    const capIdx = pagar.findIndex(p=>String(p.id)===String(m.capId));
+    if(capIdx<0){
+      const conta = derivarConta(m);
+      const newId = m.capId; // mantém o mesmo capId para consistência
+      pagar.push({
+        id:newId,
+        cod:'PAG-CX-'+String(newId).slice(-6),
+        venc:m.data, comp:m.data,
+        forn:m.forn||m.desc||'Caixa', desc:m.desc||'',
+        conta, val:m.valor||0,
+        forma:'Dinheiro', status:'Pago',
+        reg:'caixa', dtpag:m.data,
+        contaCorrente:'Caixa', banco:'Caixa',
+        origemCaixa:true,
+        itens:m.itens||undefined,
+      });
+      gerados++;
+      return m; // capId já está correto
+    }
+
+    // Caso 3: CAP existe mas com val=0 ou conta vazia
+    let cap = pagar[capIdx];
+    let mudou = false;
+    if(!cap.val && m.valor){ cap={...cap, val:m.valor}; mudou=true; }
+    if(!cap.conta){ const conta=derivarConta(m); if(conta){cap={...cap,conta};mudou=true;} }
+    if(!cap.itens && m.itens && m.itens.length){ cap={...cap,itens:m.itens};mudou=true; }
+    if(mudou){ pagar[capIdx]=cap; corrigidos++; }
+    return m;
+  });
+
+  S.s('caixa-mov', movs);
+  S.s('pagar', pagar);
+
+  if(gerados+corrigidos>0){
+    showToast(`✓ ${gerados} CAP(s) gerado(s) + ${corrigidos} corrigido(s). Atualizando...`,'var(--gr)');
+    setTimeout(()=>{ renderPagar(); renderFluxo(); if(typeof renderDRE==='function')renderDRE(); if(typeof renderDashboard==='function')renderDashboard(); },500);
+  } else {
+    showToast('Todos os CAPs estão consistentes.','var(--bl)');
+  }
+}
+window.cxCorrigirCAPsFaltantes = cxCorrigirCAPsFaltantes;
+
 // ══════════════════════════════════════
 // DIAGNÓSTICO DRE — AUDITORIA POR CONTA
 // ══════════════════════════════════════
@@ -7684,13 +7791,31 @@ function diagCorrigirTodos(){
 function dreAcumular(lancamentos){
   const tot = {};
   lancamentos.forEach(lanc => {
-    // DRE financeiro: usa SEMPRE lanc.val + lanc.conta (cabeçalho do lançamento)
-    // Os itens de NF existem apenas para o Relatório de Compras/Estoque
-    // Usar itens causava duplicidade quando val e totalItens eram iguais mas
-    // o sistema somava pelos dois caminhos em versões antigas dos dados
-    const cod = lanc.conta || '';
     const val = lanc.val || 0;
-    if(cod && val) tot[cod] = (tot[cod]||0) + val;
+    if(!val) return;
+
+    // Se tem conta principal preenchida: usa ela (comportamento original, sem duplicidade)
+    const cod = lanc.conta || '';
+    if(cod){
+      tot[cod] = (tot[cod]||0) + val;
+      return;
+    }
+
+    // Conta vazia mas tem itens (lançamento multi-item do caixa sem conta principal):
+    // distribui proporcionalmente pelas contas dos itens
+    if(lanc.itens && lanc.itens.length){
+      const totalItens = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+      if(totalItens > 0){
+        lanc.itens.forEach(it=>{
+          const codIt = it.conta||'';
+          if(!codIt) return;
+          const itVal = val * (it.total||0) / totalItens;
+          if(itVal) tot[codIt] = (tot[codIt]||0) + itVal;
+        });
+        return;
+      }
+    }
+    // Sem conta e sem itens: não acumula (evita lançamentos fantasma)
   });
   return tot;
 }
@@ -9298,7 +9423,25 @@ function renderPagar(){
   </tr>`;}).join('');
 }
 
+function rcLimparClienteComConta(){
+  // Corrige lançamentos onde campo cliente foi gravado com código de conta (ex: "1.1")
+  const arr = S.g('receber')||[];
+  const pc  = getPC();
+  const codsConta = new Set(pc.map(x=>x.cod));
+  let alterou = false;
+  const corrigido = arr.map(l=>{
+    const cli = (l.cliente||'').trim();
+    if(codsConta.has(cli) || /^\d+\.\d/.test(cli)){
+      alterou = true;
+      return {...l, cliente: ''};
+    }
+    return l;
+  });
+  if(alterou) S.s('receber', corrigido);
+}
+
 function renderReceber(){
+  rcLimparClienteComConta();
   const arr    = S.g('receber')||[];
   const hoje   = new Date().toISOString().slice(0,7);
 
@@ -9394,7 +9537,7 @@ function renderReceber(){
       <td style="color:var(--or);font-size:11px;font-weight:500">${compLabel}</td>
       <td>${fd(c.venc)}</td>
       <td style="color:var(--or);font-weight:600">${c.comanda||'—'}</td>
-      <td style="color:var(--tx)">${c.cliente||'—'}</td>
+      <td style="font-size:11px;color:var(--tx2)" title="${nomeContaByCod(c.conta)}">${(()=>{const _pc=getPC().find(x=>x.cod===(c.conta||''));return _pc?_pc.nome:'—';})()}</td>
       <td style="font-size:11px;color:var(--tx2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${descItens}">${numItens?numItens+' item'+(numItens!==1?'s':''):descItens.slice(0,30)}</td>
       <td><span class="tg tg-bl" style="font-size:10px">${c.forma||'—'}</span></td>
       <td style="font-weight:500;text-align:right">${R(c.val||0)}</td>
@@ -11721,7 +11864,7 @@ function editPagar(id){
   document.getElementById('mep-comp').value=c.comp||'';
   document.getElementById('mep-dtpag').value=c.dtpag||'';
   document.getElementById('mep-desc').value=c.forn||c.desc||'';
-  document.getElementById('mep-nf').value=c.nf||c.cod||'';
+  document.getElementById('mep-nf').value=c.nf||c.desc||'';
   fillSelectContasPagar('mep-conta');
   document.getElementById('mep-conta').value=c.conta||'';
   document.getElementById('mep-val').value=c.val||'';
@@ -11837,7 +11980,7 @@ function saveEditPagar(){
     comp:document.getElementById('mep-comp').value,
     dtpag: status==='Pago' ? (dtpag||new Date().toISOString().slice(0,10)) : (dtpag||''),
     forn:document.getElementById('mep-desc').value,
-    desc:document.getElementById('mep-desc').value,
+    desc:document.getElementById('mep-nf')?.value||document.getElementById('mep-desc').value||'',
     nf:document.getElementById('mep-nf')?.value||'',
     conta:document.getElementById('mep-conta').value,
     val:parseFloat(document.getElementById('mep-val').value)||0,
@@ -12315,7 +12458,9 @@ const mpState = {}; // { comp: { year:2026, sel: Set<'YYYY-MM'> } }
 
 function mpInit(key){
   const now = new Date();
-  mpState[key] = { year: now.getFullYear(), sel: new Set() };
+  // Preserva seleção existente ao reinicializar (ex: ao voltar para a página)
+  const selExistente = mpState[key]?.sel || new Set();
+  mpState[key] = { year: now.getFullYear(), sel: selExistente };
   renderMpMonths(key);
 }
 
@@ -12349,6 +12494,8 @@ function mpToggle(key, ym){
   if(st.sel.has(ym)) st.sel.delete(ym); else st.sel.add(ym);
   renderMpMonths(key);
   updateMpBtn(key);
+  // Aplica filtro automaticamente ao selecionar mês de competência
+  if(key === 'comp') gerarRelPagar();
 }
 
 function mpClear(key){
@@ -12404,8 +12551,14 @@ function initRelPagar(){
   const todasCats = [...new Map([...catsProd,...catsExtra].map(x=>[x.v,x])).values()];
   msInit('cat', todasCats);
 
-  // Inicializa month picker
-  mpInit('comp');
+  // Inicializa month picker — só reinicia se não houver seleção ativa
+  if(!mpState['comp'] || mpState['comp'].sel.size === 0){
+    mpInit('comp');
+  } else {
+    // Apenas re-renderiza sem limpar a seleção do usuário
+    renderMpMonths('comp');
+    updateMpBtn('comp');
+  }
 
   gerarRelPagar();
 }
@@ -12469,8 +12622,11 @@ function gerarRelPagar(){
 
   if(selComp.size > 0){
     arr = arr.filter(x=>{
-      const comp = x.comp || x.venc || '';
+      // Usa SOMENTE x.comp para filtro de competência — nunca fallback para venc
+      // Se comp está vazio, o lançamento não tem competência definida e não passa no filtro
+      const comp = (x.comp||'').trim();
       if(!comp) return false;
+      // Suporta formatos YYYY-MM-DD e YYYY-MM
       return selComp.has(comp.slice(0,7));
     });
   }
@@ -12513,13 +12669,13 @@ function gerarRelPagar(){
             if(contaCat[it.conta] && selCatNorm.has(contaCat[it.conta])) return true;
             // Fallback por grupo da conta
             const grp = (it.conta||'').split('.')[0];
-            const grpMap = {'3':'servicos/impostos','4':'insumos','5':'servicos/impostos'};
             // Grupo 4 pode ser insumos ou bebidas — usa o cod completo
-            if(it.conta === '4.2' && selCatNorm.has('bebidas')) return true;
-            if(it.conta === '4.3' && selCatNorm.has('insumos')) return true;
-            if(it.conta === '4.1' && selCatNorm.has('insumos')) return true;
-            if(grp === '5' && selCatNorm.has('servicos/impostos')) return true;
-            if(grp === '3' && selCatNorm.has('servicos/impostos')) return true;
+            if(it.conta === '4.2') return selCatNorm.has('bebidas');
+            if(it.conta === '4.3') return selCatNorm.has('insumos');
+            if(it.conta === '4.1') return selCatNorm.has('insumos');
+            if(grp === '4') return selCatNorm.has('insumos');
+            if(grp === '5') return selCatNorm.has('servicos/impostos');
+            if(grp === '3') return selCatNorm.has('servicos/impostos');
           }
           // Tipo direto — resolve imediatamente
           if(it.tipo === 'Serviço/Imposto' && selCatNorm.has('servicos/impostos')) return true;
@@ -12551,9 +12707,8 @@ function gerarRelPagar(){
       if(cod){
         const grp = cod.split('.')[0];
         if(grp === '4'){
-          if(cod === '4.2' && selCatNorm.has('bebidas')) return true;
-          if(selCatNorm.has('insumos')) return cod !== '4.2';
-          return false;
+          if(cod === '4.2') return selCatNorm.has('bebidas');
+          return selCatNorm.has('insumos');
         }
         if(GRUPO_CAT[grp]) return selCatNorm.has(GRUPO_CAT[grp]);
       }
@@ -12562,7 +12717,7 @@ function gerarRelPagar(){
         .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
       const palavrasCat = {
         'insumos':['insumo','mussarela','queijo','farinha','massa','tomate','molho','carne','frango','calabresa','ingrediente','latic','trigo'],
-        'bebidas':['bebida','refri','suco','agua','cerveja','drink'],
+        'bebidas':['bebida','refri','suco','cerveja','drink','ambev','skol','brahma','heineken','antarctica'],
         'material descartavel':['descart','embalagem','caixa','copo','sacola'],
         'material de limpeza':['limpeza','detergente','higiene','sabao'],
         'utensilios':['utensilio','panela','cozinha'],
@@ -12620,7 +12775,7 @@ function resolverCatLancamento(lanc){
     if(/^\d+$/.test(v)){
       const catObj = getCatProds().find(c=>String(c.id)===v||String(c.cod)===v);
       if(catObj) return catObj.nome;
-      return 'Serviços/Impostos';
+      return null; // ID não encontrado — não assume categoria padrão
     }
     return catVal;
   };
@@ -12658,7 +12813,7 @@ function resolverCatLancamento(lanc){
       }
       const mapa = [
         ['Insumos',                ['insumo','ingrediente','cmv','materia','aliment','mercador','massa','queijo','latic','farinha','molho','tomate']],
-        ['Bebidas',                ['bebida','refri','suco','agua','cerveja','drink','gelada']],
+        ['Bebidas',                ['bebida','refri','suco','cerveja','drink','gelada','ambev','skol','brahma']],
         ['Material Descartável',   ['descart','embalagem','copo','sacola','guardanapo','talher']],
         ['Material de Limpeza',    ['limpeza','higiene','detergente','desinfet','sabao','vassoura']],
         ['Utensílios',             ['utensilio','cozinha','panela','utensilios','utensil']],
@@ -12681,7 +12836,7 @@ function resolverCatLancamento(lanc){
   const descNome = na((lanc.desc||'')+' '+(lanc.forn||''));
   const mapaDesc = [
     ['Insumos',            ['mussarela','queijo','farinha','massa','tomate','molho','latic','ingrediente']],
-    ['Bebidas',            ['bebida','refri','suco','cerveja','agua mineral']],
+    ['Bebidas',            ['bebida','refri','suco','cerveja','drink','ambev','skol','brahma','heineken']],
     ['Serviços/Impostos',  ['aluguel','contabil','folha','energia','luz','gas','agua','telefone','internet','imposto','taxa','inss','fgts','servico','consultoria','psicologia','honorario']],
   ];
   for(const [nome, palavras] of mapaDesc){
@@ -14737,6 +14892,10 @@ function renderBancosSorted(col,dir){
     </tr>`).join('');
 }
 
+
+// ── Corrige lançamentos de caixa que não geraram CAP (ou CAP sem val/conta) ──
+
+
 // ══════════════════════════════════════
 // DIAGNÓSTICO DE CONSISTÊNCIA DRE × RECEBER
 // ══════════════════════════════════════
@@ -15290,6 +15449,24 @@ function renderFluxo(){
     const dia = parseInt((lanc.venc||'').slice(8,10));
     if(!dia) return;
     const val = lanc.val||0;
+
+    // Lançamentos com itens: distribui por conta de cada item
+    if(lanc.itens && lanc.itens.length){
+      const totalItens = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+      lanc.itens.forEach(it=>{
+        const itVal = totalItens>0 ? val*(it.total||0)/totalItens : (it.total||0);
+        if(!itVal) return;
+        const cod = it.conta||lanc.conta||'';
+        const pcIt = pc.find(p=>p.cod===cod&&p.tipo==='conta');
+        const grp  = pcIt?.grupo||'5';
+        saiDia[dia][grp]=(saiDia[dia][grp]||0)+itVal;
+        saiDiaAnalitico[dia][cod]=(saiDiaAnalitico[dia][cod]||0)+itVal;
+        if(cod&&!contasUsadas[cod]) contasUsadas[cod]={nome:pcIt?.nome||cod,grupo:grp,subgrupo:pcIt?.subgrupo||''};
+      });
+      return; // já processado pelos itens
+    }
+
+    // Lançamento simples: usa conta principal
     const pcConta = pc.find(p=>p.cod===lanc.conta&&p.tipo==='conta');
     const grp = pcConta?.grupo||'5';
     saiDia[dia][grp]=(saiDia[dia][grp]||0)+val;
@@ -15528,6 +15705,314 @@ function showToast(msg, cor='var(--gr)'){
   document.body.appendChild(t);
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);},3000);
 }
+
+
+
+// ── Corrige lançamentos de caixa que não geraram CAP (ou CAP sem val/conta) ──
+
+
+
+
+// ══════════════════════════════════════
+// CORREÇÃO — Remove movimentos órfãos do estoque e ressincroniza
+// ══════════════════════════════════════
+function eqRemoverOrfaosERessinc(){
+  let movs = S.g('eq-movimentos')||[];
+  
+  const orfaos = movs.filter(m => m.tipo==='entrada' && !m.capOrigemId);
+  
+  if(!orfaos.length){
+    showToast('Nenhum movimento órfão encontrado.','var(--bl)');
+    return;
+  }
+  
+  const lista = orfaos.map(m=>{
+    const prods = S.g('eq-produtos')||[];
+    const prod = prods.find(p=>p.id===m.prodId);
+    return `• ${m.data} — ${prod?.nome||m.prodId} — R$ ${(m.total||0).toFixed(2)}`;
+  }).join('\n');
+  
+  if(!confirm(`Remover ${orfaos.length} movimento(s) órfão(s) do estoque?\n\n${lista}\n\nEsses lançamentos não têm vínculo com o CAP e estão causando divergência.\n\nApós remover, clique em "Sincronizar CAP" no Estoque.`)){
+    return;
+  }
+  
+  // Remove apenas os órfãos (mantém manuais com obs diferente e vinculados)
+  const idsOrfaos = new Set(orfaos.map(m=>m.id));
+  movs = movs.filter(m => !idsOrfaos.has(m.id));
+  
+  S.s('eq-movimentos', movs);
+  
+  showToast(`✓ ${orfaos.length} movimento(s) órfão(s) removido(s). Clique em "Sincronizar CAP" no Estoque.`,'var(--gr)');
+  
+  if(typeof renderEstoque==='function') renderEstoque();
+}
+window.eqRemoverOrfaosERessinc = eqRemoverOrfaosERessinc;
+
+// ══════════════════════════════════════
+// DIAGNÓSTICO CRUZAMENTO ESTOQUE x CAP
+// ══════════════════════════════════════
+function diagCruzamentoMes(ym){
+  ym = ym || new Date().toISOString().slice(0,7);
+  const pagar   = S.g('pagar')||[];
+  const movs    = S.g('eq-movimentos')||[];
+  const pc      = getPC();
+
+  // --- CAP: lançamentos de insumos/bebidas no mês (por competência) ---
+  const CATS_CMV = ['4.1','4.2','4.3'];
+  const capMes = pagar.filter(l=>{
+    const comp = (l.comp||'').trim();
+    if(!comp) return false;
+    return comp.slice(0,7)===ym;
+  });
+
+  // Separa lançamentos CAP com itens e sem itens
+  const capComItens = [], capSemItens = [];
+  capMes.forEach(l=>{
+    const grp = (l.conta||'').split('.')[0];
+    const isCompra = CATS_CMV.includes(l.conta) || grp==='4';
+    if(l.itens && l.itens.length){
+      capComItens.push(l);
+    } else if(isCompra){
+      capSemItens.push(l);
+    }
+  });
+
+  // Total CAP (itens)
+  let totalCapItens = 0;
+  capComItens.forEach(l=>{ l.itens.forEach(it=>{ totalCapItens += (it.total||0); }); });
+
+  // Total CAP (sintéticos)
+  const totalCapSint = capSemItens.reduce((a,b)=>a+(b.val||0),0);
+
+  // --- ESTOQUE: movimentos de entrada no mês ---
+  const movsMes = movs.filter(m=>m.tipo==='entrada' && (m.data||'').slice(0,7)===ym);
+  const totalEstoque = movsMes.reduce((a,b)=>a+(b.total||0),0);
+
+  // Movimentos sem capOrigemId (manuais ou de versões antigas)
+  const movsOrfaos = movsMes.filter(m=>!m.capOrigemId);
+  const totalOrfaos = movsOrfaos.reduce((a,b)=>a+(b.total||0),0);
+
+  // Todos lançamentos CAP com comp no mês (todos os grupos para referência)
+  const totalCapMes = capMes.reduce((a,b)=>a+(b.val||0),0);
+
+  const cruzId = 'diag-cruz-'+Date.now();
+  let html = `<div id="${cruzId}" style="position:fixed;top:50px;right:16px;width:560px;background:#1a1a1a;border:2px solid #F26419;
+    border-radius:10px;padding:16px;z-index:9999;font-family:monospace;font-size:11px;color:#eee;
+    max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;font-weight:700;color:#F26419">🔬 Cruzamento Estoque × CAP — ${ym}</span>
+    <button onclick="document.getElementById('${cruzId}').remove()" style="background:none;border:1px solid #555;color:#aaa;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:14px">✕</button>
+  </div>`;
+
+  // Resumo
+  html += `<div style="background:#252525;border-radius:6px;padding:10px;margin-bottom:10px;border-left:3px solid #F26419">
+    <b style="color:#F26419">RESUMO DO MÊS ${ym}</b><br><br>
+    <b>CAP — lançamentos com comp=${ym}:</b> ${capMes.length} lançamentos · Total: <span style="color:#64B5F6">R$ ${totalCapMes.toFixed(2)}</span><br>
+    &nbsp;&nbsp;→ Com itens (NFP): ${capComItens.length} lanç · Total itens: <span style="color:#64B5F6">R$ ${totalCapItens.toFixed(2)}</span><br>
+    &nbsp;&nbsp;→ Sem itens (sintéticos grupo 4): ${capSemItens.length} lanç · Total: <span style="color:#64B5F6">R$ ${totalCapSint.toFixed(2)}</span><br><br>
+    <b>ESTOQUE — movimentos entrada ${ym}:</b> ${movsMes.length} movimentos · Total: <span style="color:#81C784">R$ ${totalEstoque.toFixed(2)}</span><br>
+    &nbsp;&nbsp;→ Vinculados ao CAP (capOrigemId): ${movsMes.length-movsOrfaos.length}<br>
+    &nbsp;&nbsp;→ <span style="color:${totalOrfaos>0?'#EF9A9A':'#81C784'}">Órfãos (sem capOrigemId): ${movsOrfaos.length} · R$ ${totalOrfaos.toFixed(2)}</span><br><br>
+    <b style="color:${Math.abs(totalEstoque-totalCapItens-totalCapSint)>0.05?'#EF9A9A':'#81C784'}">
+      DIFERENÇA (Estoque - CAP compras): R$ ${(totalEstoque - totalCapItens - totalCapSint).toFixed(2)}
+    </b>
+  </div>`;
+
+  // Lista movimentos órfãos
+  if(movsOrfaos.length){
+    html += `<div style="color:#EF9A9A;font-weight:700;margin-bottom:6px">⚠️ MOVIMENTOS ÓRFÃOS NO ESTOQUE (sem vínculo ao CAP):</div>`;
+    const prods = S.g('eq-produtos')||[];
+    movsOrfaos.forEach(m=>{
+      const prod = prods.find(p=>p.id===m.prodId);
+      html += `<div style="background:#2a1a1a;border-radius:4px;padding:6px;margin-bottom:4px;border-left:2px solid #EF9A9A">
+        <b>${m.data}</b> · <b style="color:#eee">${prod?.nome||m.prodId}</b> · 
+        Qtd: ${m.qtd} · Total: <span style="color:#EF9A9A">R$ ${(m.total||0).toFixed(2)}</span><br>
+        ID: ${m.id} · obs: ${m.obs||'—'}
+      </div>`;
+    });
+  }
+
+  // Lista CAP de insumos/bebidas do mês
+  html += `<div style="color:#64B5F6;font-weight:700;margin-bottom:6px;margin-top:10px">📋 CAP — COMPRAS (grupo 4) comp=${ym}:</div>`;
+  [...capComItens,...capSemItens].forEach(l=>{
+    const fornNome = nomeFornById(l.forn)||l.forn||'—';
+    html += `<div style="background:#1a252a;border-radius:4px;padding:6px;margin-bottom:4px;border-left:2px solid #64B5F6">
+      <b>${l.comp?.slice(0,10)||'—'}</b> · ${l.cod||l.id} · <b style="color:#eee">${fornNome}</b><br>
+      Conta: ${l.conta||'—'} · Val: <span style="color:#64B5F6">R$ ${(l.val||0).toFixed(2)}</span>
+      ${l.itens?` · Itens: ${l.itens.length}`:'(sintético)'}
+    </div>`;
+  });
+
+  // CAP sem comp (problema de dados antigos)
+  const capSemComp = pagar.filter(l=>{
+    const grp = (l.conta||'').split('.')[0];
+    return (!l.comp || !l.comp.trim()) && grp==='4';
+  });
+  if(capSemComp.length){
+    html += `<div style="color:#FF8F00;font-weight:700;margin-bottom:6px;margin-top:10px">⚠️ CAP SEM COMP (dados antigos — podem aparecer em lugares errados):</div>`;
+    capSemComp.forEach(l=>{
+      html += `<div style="background:#2a2a1a;border-radius:4px;padding:6px;margin-bottom:4px;border-left:2px solid #FF8F00">
+        ${l.cod||l.id} · ${nomeFornById(l.forn)||l.forn||'—'} · venc: ${l.venc||'—'} · comp: <span style="color:#EF9A9A">VAZIO</span> · R$ ${(l.val||0).toFixed(2)}
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  const div = document.createElement('div'); div.innerHTML=html;
+  document.body.appendChild(div.firstChild);
+}
+window.diagCruzamentoMes = diagCruzamentoMes;
+
+
+function diagPorCodigo(cod){
+  cod = (cod||'PAG-00023').trim();
+  const pagar   = S.g('pagar')||[];
+  const eqMovs  = S.g('eq-movimentos')||[];
+  const eqProds = S.g('eq-produtos')||[];
+
+  const lanc = pagar.find(p=>p.cod===cod || String(p.id)===cod);
+
+  const diagId = 'diag-cod-'+Date.now();
+  let html = `<div id="${diagId}" style="position:fixed;top:60px;left:20px;width:560px;background:#1a1a1a;border:2px solid #F26419;
+    border-radius:10px;padding:16px;z-index:9999;font-family:monospace;font-size:11px;color:#eee;
+    max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;font-weight:700;color:#F26419">🔍 Diagnóstico: ${cod}</span>
+    <button onclick="document.getElementById('${diagId}').remove()" style="background:none;border:1px solid #555;color:#aaa;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:14px">✕</button>
+  </div>`;
+
+  if(!lanc){
+    html += `<div style="color:#EF9A9A">❌ Lançamento "${cod}" NÃO encontrado em pagar[]</div>`;
+  } else {
+    const grp = (lanc.conta||'').split('.')[0];
+    const isCompra = grp==='4';
+    
+    // Busca no estoque
+    const eqVinc = eqMovs.filter(m=>m.capOrigemId===lanc.cod || m.capOrigemId===String(lanc.id));
+    
+    html += `<div style="background:#252525;border-radius:6px;padding:10px;margin-bottom:10px;border-left:3px solid #F26419">
+      <b style="color:#F26419">DADOS DO LANÇAMENTO</b><br><br>
+      <b>Cod:</b> ${lanc.cod||'—'} &nbsp; <b>ID:</b> ${lanc.id}<br>
+      <b>Venc:</b> ${lanc.venc||'—'} &nbsp; <b>Comp:</b> <span style="color:${lanc.comp?'#81C784':'#EF9A9A'}">${lanc.comp||'VAZIO ⚠️'}</span><br>
+      <b>Forn:</b> ${lanc.forn||'—'}<br>
+      <b>Desc:</b> ${lanc.desc||'—'}<br>
+      <b>Conta:</b> ${lanc.conta||'—'} (grupo ${grp}) ${isCompra?'<span style="color:#81C784">✓ É compra (grupo 4)</span>':'<span style="color:#aaa">Não é compra</span>'}<br>
+      <b>Val:</b> R$ ${(lanc.val||0).toFixed(2)}<br>
+      <b>Status:</b> ${lanc.status||'—'}<br>
+      <b>origemCaixa:</b> ${lanc.origemCaixa?'sim':'não'}<br>
+      <b>Itens:</b> ${lanc.itens?.length ? lanc.itens.map(i=>`${i.nome} (${i.qtd} x R$${i.preco} = R$${i.total})`).join(', ') : '<span style="color:#EF9A9A">NENHUM — lançamento sintético</span>'}<br>
+    </div>`;
+
+    html += `<div style="background:#252525;border-radius:6px;padding:10px;margin-bottom:10px;border-left:3px solid ${eqVinc.length?'#81C784':'#EF9A9A'}">
+      <b style="color:${eqVinc.length?'#81C784':'#EF9A9A'}">ESTOQUE — movimentos vinculados: ${eqVinc.length}</b><br>`;
+    
+    if(!eqVinc.length){
+      html += `<br>⚠️ Este lançamento NÃO gerou entrada no estoque.<br>`;
+      if(!lanc.itens?.length){
+        html += `Motivo: lançamento <b>sem itens detalhados</b> — o estoque só sincroniza lançamentos com produtos discriminados.<br>`;
+        html += `<br><b style="color:#FF8F00">IMPACTO:</b> Aparece no Rel. Contas a Pagar (CAP) mas NÃO entra no total do Estoque.<br>`;
+        html += `Isso explica a diferença de R$ ${(lanc.val||0).toFixed(2)} entre os dois relatórios.`;
+      }
+    } else {
+      eqVinc.forEach(m=>{
+        const prod = eqProds.find(p=>p.id===m.prodId);
+        html += `<br>• ${m.data} · ${prod?.nome||m.prodId} · Qtd: ${m.qtd} · R$ ${(m.total||0).toFixed(2)}`;
+      });
+    }
+    html += `</div>`;
+
+    // Orientação
+    if(isCompra && !lanc.itens?.length){
+      html += `<div style="background:#2a2a1a;border-radius:6px;padding:10px;border-left:3px solid #FF8F00">
+        <b style="color:#FF8F00">⚠️ DIAGNÓSTICO FINAL</b><br><br>
+        Este lançamento é uma <b>compra de bebidas (4.2)</b> no valor de <b>R$ ${(lanc.val||0).toFixed(2)}</b><br>
+        registrada <b>sem itens detalhados</b> (sintético).<br><br>
+        O Rel. Contas a Pagar conta R$ ${(lanc.val||0).toFixed(2)} neste lançamento.<br>
+        O Estoque NÃO conta esse valor porque não há produto discriminado.<br><br>
+        <b>Solução:</b> Editar o lançamento no CAP e adicionar os itens (produto, qtd, preço),<br>
+        depois clicar em <b>Sincronizar CAP</b> no módulo Estoque.
+      </div>`;
+    }
+  }
+
+  html += `</div>`;
+  const div = document.createElement('div'); div.innerHTML=html;
+  document.body.appendChild(div.firstChild);
+}
+window.diagPorCodigo = diagPorCodigo;
+
+// ══════════════════════════════════════
+// DIAGNÓSTICO — lançamento não aparece no DRE/Fluxo
+// ══════════════════════════════════════
+function diagLancamento(termo){
+  termo = (termo||'atacadao').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const pagar  = S.g('pagar')||[];
+  const movs   = S.g('caixa-mov')||[];
+  const eqMovs = S.g('eq-movimentos')||[];
+
+  // Busca no caixa-mov
+  const cxAchs = movs.filter(m=>{
+    const txt = ((m.forn||'')+(m.desc||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return txt.includes(termo);
+  });
+
+  // Busca no pagar (CAP)
+  const capAchs = pagar.filter(p=>{
+    const txt = ((p.forn||'')+(p.desc||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return txt.includes(termo);
+  });
+
+  let html = `<div style="position:fixed;top:60px;right:20px;width:520px;background:#1a1a1a;border:2px solid #F26419;border-radius:10px;padding:16px;z-index:9999;font-family:monospace;font-size:11px;color:#eee;max-height:80vh;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:13px;font-weight:700;color:#F26419">🔍 Diagnóstico: "${termo}"</span>
+    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:1px solid #555;color:#aaa;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:14px">✕</button>
+  </div>`;
+
+  html += `<div style="color:#64B5F6;margin-bottom:6px;font-weight:700">CAIXA-MOV (${cxAchs.length} encontrado(s)):</div>`;
+  if(!cxAchs.length){
+    html += `<div style="color:#EF9A9A">Nenhum lançamento encontrado no caixa-mov com "${termo}"</div>`;
+  } else {
+    cxAchs.forEach(m=>{
+      html += `<div style="background:#252525;border-radius:6px;padding:8px;margin-bottom:6px;border-left:3px solid ${m.capId?'#81C784':'#EF9A9A'}">
+        <b>ID:</b> ${m.id} &nbsp; <b>Data:</b> ${m.data||'—'} &nbsp; <b>Tipo:</b> ${m.tipo||'—'}<br>
+        <b>Forn:</b> ${m.forn||'—'} &nbsp; <b>Desc:</b> ${m.desc||'—'}<br>
+        <b>Valor:</b> ${m.valor||0} &nbsp; <b>Conta:</b> ${m.conta||'<span style="color:#EF9A9A">VAZIA</span>'}<br>
+        <b>capId:</b> <span style="color:${m.capId?'#81C784':'#EF9A9A'}">${m.capId||'NÃO GEROU CAP ⚠️'}</span><br>
+        <b>Itens:</b> ${m.itens?JSON.stringify(m.itens.map(i=>({conta:i.conta,total:i.total,nome:i.nome}))):'-'}
+      </div>`;
+    });
+  }
+
+  html += `<div style="color:#64B5F6;margin-bottom:6px;font-weight:700;margin-top:10px">CAP / PAGAR (${capAchs.length} encontrado(s)):</div>`;
+  if(!capAchs.length){
+    html += `<div style="color:#EF9A9A">⚠️ NENHUM CAP ENCONTRADO — o lançamento NÃO está em pagar[]<br>Isso explica por que não aparece no Fluxo e na DRE!</div>`;
+  } else {
+    capAchs.forEach(p=>{
+      const pc = getPC();
+      const pcConta = pc.find(x=>x.cod===p.conta&&x.tipo==='conta');
+      html += `<div style="background:#252525;border-radius:6px;padding:8px;margin-bottom:6px;border-left:3px solid #F26419">
+        <b>ID:</b> ${p.id} &nbsp; <b>Cod:</b> ${p.cod||'—'}<br>
+        <b>Venc:</b> <span style="color:${(p.venc||'').slice(0,7)==='2026-03'?'#81C784':'#EF9A9A'}">${p.venc||'—'}</span>
+        &nbsp; <b>Comp:</b> ${p.comp||'—'}<br>
+        <b>Val:</b> <span style="color:${p.val?'#81C784':'#EF9A9A'}">${p.val??'VAZIO ⚠️'}</span>
+        &nbsp; <b>Conta:</b> <span style="color:${p.conta?'#81C784':'#EF9A9A'}">${p.conta||'VAZIA ⚠️'}</span><br>
+        <b>Grupo:</b> <span style="color:${pcConta?.grupo==='4'?'#81C784':'#am'}">${pcConta?.grupo||'não encontrado no PC ⚠️'}</span>
+        &nbsp; <b>Status:</b> ${p.status||'—'}<br>
+        <b>origemCaixa:</b> ${p.origemCaixa?'sim':'não'}<br>
+        <b>Itens:</b> ${p.itens?JSON.stringify(p.itens.map(i=>({conta:i.conta,total:i.total}))):'-'}
+      </div>`;
+    });
+  }
+
+  html += `<div style="margin-top:10px;color:#aaa;font-size:10px">
+    Total em pagar[]: ${pagar.length} | Total em caixa-mov[]: ${movs.length}
+  </div></div>`;
+
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.body.appendChild(div.firstChild);
+}
+window.diagLancamento = diagLancamento;
 
 // Auto-backup silencioso a cada 30 minutos
 setInterval(()=>{
