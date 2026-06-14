@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="preto">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +21,34 @@
   --bl:#2196F3;--bl-p:rgba(33,150,243,0.12);
   --sw:240px;--th:58px;
 }
+/* ── TEMAS DE FUNDO ── */
+[data-tema="preto"]{
+  --dk:#141414;--dk2:#1E1E1E;--dk3:#252525;--dk4:#2E2E2E;--dk5:#333;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(242,100,25,0.25);
+  --tx:#F0F0F0;--tx2:#AAAAAA;--tx3:#666;
+}
+[data-tema="branco"]{
+  --dk:#F2F2F2;--dk2:#FFFFFF;--dk3:#EBEBEB;--dk4:#DCDCDC;--dk5:#CCCCCC;
+  --bd:rgba(0,0,0,0.10);--bd2:rgba(242,100,25,0.30);
+  --tx:#111111;--tx2:#2E2E2E;--tx3:#555555;
+}
+[data-tema="bege"]{
+  --dk:#D9CFC0;--dk2:#E8DFD0;--dk3:#CBBFAE;--dk4:#BAB09E;--dk5:#A89D8C;
+  --bd:rgba(0,0,0,0.13);--bd2:rgba(242,100,25,0.32);
+  --tx:#0F0A04;--tx2:#2E2318;--tx3:#5A4E3E;
+}
+/* Botão seletor de tema */
+.tema-btn{display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:11px;color:var(--tx2);transition:all 0.2s;position:relative;}
+.tema-btn:hover{border-color:var(--or);color:var(--or);}
+.tema-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.3);flex-shrink:0;}
+.tema-dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--dk2);border:1px solid var(--bd);border-radius:10px;padding:8px;z-index:9999;display:none;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.tema-dd.open{display:block;}
+.tema-op{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx2);transition:all 0.15s;}
+.tema-op:hover{background:rgba(242,100,25,0.1);color:var(--or);}
+.tema-op.ativo{color:var(--or);font-weight:500;}
+.tema-op .tema-dot{border-color:rgba(0,0,0,0.15);}
+.tema-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);padding:4px 10px 2px;}
+
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color:var(--tx);font-size:14px;}
 .rc-tab-ativo   { background:var(--or)!important; color:#fff!important; font-weight:500!important; }
@@ -447,6 +475,25 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div><div class="tb-t" id="pgt">Dashboard</div><div class="tb-s" id="pgs">Visão consolidada</div></div>
       <div class="tb-r">
         <span class="bdg" id="bdg-mes" title="Mês de referência atual do sistema"></span>
+        <!-- SELETOR DE TEMA -->
+        <div class="tema-btn" id="tema-btn" onclick="temaToggle(event)" title="Escolher tema de cores">
+          <i class="fa-solid fa-palette" style="font-size:11px"></i>
+          <span id="tema-label-atual">Tema</span>
+          <div class="tema-dot" id="tema-dot-atual" style="background:#141414;border-color:rgba(255,255,255,0.3)"></div>
+          <i class="fa-solid fa-chevron-down" style="font-size:9px;margin-left:2px"></i>
+          <div class="tema-dd" id="tema-dd" onclick="event.stopPropagation()">
+            <div class="tema-label">Paleta de Fundo</div>
+            <div class="tema-op" id="top-preto" onclick="temaSel('preto')">
+              <div class="tema-dot" style="background:#1E1E1E;border-color:rgba(255,255,255,0.3)"></div> Preto
+            </div>
+            <div class="tema-op" id="top-branco" onclick="temaSel('branco')">
+              <div class="tema-dot" style="background:#FFFFFF;border-color:rgba(0,0,0,0.2)"></div> Branco
+            </div>
+            <div class="tema-op" id="top-bege" onclick="temaSel('bege')">
+              <div class="tema-dot" style="background:#FDF8F0;border-color:rgba(0,0,0,0.2)"></div> Bege
+            </div>
+          </div>
+        </div>
         <button class="btn btn-p" id="btn-novo" onclick="novoLancamento()"><i class="fa-solid fa-plus"></i> <span id="btn-novo-txt">Novo Lançamento</span></button>
       </div>
     </div>
@@ -8312,23 +8359,24 @@ function dreCalc(totConta, receitasObj, pc){
   const sg  = (grp) => pc.filter(x=>x.tipo==='conta'&&x.grupo===grp).reduce((s,c)=>s+(totConta[c.cod]||0),0);
   const ssg = (sub) => pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sub).reduce((s,c)=>s+(totConta[c.cod]||0),0);
 
-  // ── RECEITA BRUTA ──
-  const totAlim    = receitasObj.totAlim;
-  const totMerc    = receitasObj.totMerc;
-  const totServ    = receitasObj.totServ || 0;
-  const totDesc    = receitasObj.totDesc || 0;
-  const totRec     = totAlim + totMerc + totServ - totDesc;
+  // ── GRUPO 1: RECEITAS OPERACIONAIS ──
+  const totAlim = receitasObj.totAlim;
+  const totMerc = receitasObj.totMerc;
+  const totServ = receitasObj.totServ || 0;
+  const totDesc = receitasObj.totDesc || 0;
+  const totRec  = totAlim + totMerc + totServ - totDesc;
 
-  // ── DEDUÇÕES ──
-  const totImp     = sg('2');   // Impostos e Taxas sobre faturamento
-  const recLiq     = totRec - totImp;
+  // ── GRUPO 2: IMPOSTOS E TAXAS ──
+  const totImp  = sg('2');
+  const recLiq  = totRec - totImp;
 
-  // ── CMV ──
-  // Tenta usar o CMV calculado pelo módulo de Estoque (EI + Compras - EF)
-  // Fallback: soma dos lançamentos do grupo 4 (apenas compras)
-  const totCMVLanc = sg('4'); // compras lançadas no grupo 4
+  // ── GRUPO 3: DESPESAS FINANCEIRAS OPERACIONAIS ──
+  const totFinOp = sg('3');
+
+  // ── GRUPO 4: CMV ──
+  const totCMVLanc = sg('4');
   let totCMV = totCMVLanc;
-  let _cmvMetodo = 'compras'; // 'compras' ou 'estoque'
+  let _cmvMetodo = 'compras';
   let _cmvTemInventario = false;
   try {
     if(typeof eqGetCMVMes === 'function' && typeof _dreYM !== 'undefined' && _dreYM){
@@ -8339,56 +8387,59 @@ function dreCalc(totConta, receitasObj, pc){
         _cmvTemInventario = eqCMV.temInventario;
       }
     }
-  } catch(e){ /* fallback para lançamentos */ }
+  } catch(e){}
   const lucroBruto = recLiq - totCMV;
 
-  // ── DESPESAS OPERACIONAIS ──
-  const totOp      = sg('5');
+  // ── GRUPO 5: DESPESAS OPERACIONAIS ──
+  const totOp  = sg('5');
+  const sgs5   = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').map(s=>({...s, total: ssg(s.cod)}));
 
-  // ── DESPESAS FINANCEIRAS OPERACIONAIS (taxas cartões, PIX etc) ──
-  const totFinOp   = sg('3');
+  // ── GRUPO 6: RESULTADO EBITDA (calculado) ──
+  const ebitda = lucroBruto - totFinOp - totOp;
 
-  // ── EBITDA ──
-  const ebitda     = lucroBruto - totOp - totFinOp;
+  // ── GRUPO 7: EBIT (calculado, sem depreciação separada nesta estrutura) ──
+  const ebit = ebitda;
 
-  // ── DEPRECIAÇÃO (grupo 6 — já deduzida no EBITDA p/ chegar ao EBIT) ──
-  // Depreciação fica em contas do grupo 6 mas é calculada no EBIT
-  const totDeprec  = sg('6');
+  // ── GRUPO 8: RECEITAS NÃO OPERACIONAIS ──
+  // lê todos subgrupos do grupo 8
+  const sgs8rec = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='8');
+  const totRecNaoOp = sgs8rec.reduce((s,sg8)=>s+ssg(sg8.cod),0) + pc.filter(x=>x.tipo==='conta'&&x.grupo==='8'&&!x.subgrupo).reduce((s,c)=>s+(totConta[c.cod]||0),0);
 
-  // ── EBIT ──
-  const ebit       = ebitda - totDeprec;
+  // ── GRUPO 9: DESPESAS NÃO OPERACIONAIS ──
+  const sgs9desp = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='9');
+  const totDespNaoOp = sgs9desp.reduce((s,sg9)=>s+ssg(sg9.cod),0) + pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&!x.subgrupo).reduce((s,c)=>s+(totConta[c.cod]||0),0);
 
-  // ── RESULTADO FINANCEIRO (grupo 8) ──
-  const totRecFin  = ssg('8.1');  // receitas financeiras (+)
-  const totDespFin = ssg('8.2');  // despesas financeiras com dívidas (−)
+  // ── GRUPO 10: LUCRO LÍQUIDO DO EXERCÍCIO (calculado) ──
+  const lucroLiq = ebit + totRecNaoOp - totDespNaoOp;
+
+  // ── GRUPO 11: RESULTADO FINANCEIRO ──
+  const sgs11rec  = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='11'&&x.cod.includes('.1'));
+  const sgs11desp = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='11'&&x.cod.includes('.2'));
+  const totRecFin  = sgs11rec.reduce((s,s11)=>s+ssg(s11.cod),0);
+  const totDespFin = sgs11desp.reduce((s,s11)=>s+ssg(s11.cod),0);
   const resFinanceiro = totRecFin - totDespFin;
 
-  // ── RESULTADO ANTES DO IRPJ E CSLL ──
-  const lucroAntesIR = ebit + resFinanceiro;
+  // ── GRUPO 12: IMPOSTOS SOBRE O LUCRO ──
+  const totIR = sg('12');
 
-  // ── IMPOSTOS SOBRE O LUCRO (grupo 9) ──
-  const totIR      = sg('9');
+  // ── GRUPO 13: RESULTADO LÍQUIDO APÓS IMPOSTOS (calculado) ──
+  const resLiqAposIR = lucroLiq + resFinanceiro - totIR;
 
-  // ── RESULTADO OPERACIONAL LÍQUIDO APÓS IMPOSTOS (grupo 10 — calculado) ──
-  const resLiqAposIR = lucroAntesIR - totIR;
+  // ── GRUPO 14: RESULTADO NÃO OPERACIONAL ──
+  const sgs14rec  = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='14'&&x.cod.includes('.1'));
+  const sgs14desp = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='14'&&x.cod.includes('.2'));
+  const totEntNaoOp = sgs14rec.reduce((s,s14)=>s+ssg(s14.cod),0);
+  const totSaiNaoOp = sgs14desp.reduce((s,s14)=>s+ssg(s14.cod),0);
+  const resNaoOp = totEntNaoOp - totSaiNaoOp;
 
-  // ── RESULTADO NÃO OPERACIONAL (grupo 11) ──
-  const totEntNaoOp  = ssg('11.1');  // receitas não operacionais (+)
-  const totSaiNaoOp  = ssg('11.2');  // despesas não operacionais (−)
-  const resNaoOp     = totEntNaoOp - totSaiNaoOp;
-
-  // ── RESULTADO FINAL (grupo 12 — calculado) ──
+  // ── GRUPO 15: RESULTADO FINAL DO EXERCÍCIO (calculado) ──
   const resultadoFinal = resLiqAposIR + resNaoOp;
 
   // legado
-  const totNaoOp   = resNaoOp;
-
-  // ── Subgrupos do grupo 5 para detalhamento ──
-  const sgs5 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='5').map(s=>({...s, total: ssg(s.cod)}));
-
-  // legado: lucroLiq = resultadoFinal para compatibilidade com dashboard/gráficos
-  const lucroLiq   = resultadoFinal;
-  const totFin     = totFinOp; // legado
+  const totDeprec = 0;
+  const totFin = totFinOp;
+  const totNaoOp = resNaoOp;
+  const lucroAntesIR = lucroLiq + resFinanceiro;
 
   return {
     totRec, totAlim, totMerc, totServ, totDesc, totImp, totFinOp, totCMV, totCMVLanc, totOp,
@@ -8396,11 +8447,11 @@ function dreCalc(totConta, receitasObj, pc){
     _cmvMetodo, _cmvTemInventario,
     totRecFin, totDespFin, resFinanceiro, lucroAntesIR,
     totIR, resLiqAposIR,
+    totRecNaoOp, totDespNaoOp,
     totEntNaoOp, totSaiNaoOp, resNaoOp,
     resultadoFinal,
-    // legado
     totFin, totNaoOp, lucroLiq,
-    sgs5
+    sgs5, sgs8rec, sgs9desp, sgs11rec, sgs11desp, sgs14rec, sgs14desp
   };
 }
 
@@ -8509,36 +8560,37 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
       <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--or);white-space:nowrap">AV %</th>
     </tr></thead><tbody>`;
 
-  // Receitas
-  html += lGrp('(+)','RECEITAS OPERACIONAIS', D.totRec, '#64B5F6', 'rec_total');
+  // ── GRUPO 1: RECEITAS OPERACIONAIS ──
+  html += lGrp('(+)', pc.find(x=>x.tipo==='grupo'&&x.cod==='1')?.nome||'RECEITAS OPERACIONAIS', D.totRec, '#64B5F6', 'rec_total');
   if(D.totAlim>0) html+=lConta('Venda de Alimentação / Rodízio','1.1',D.totAlim,'var(--tx2)',20,'rec_alim');
   if(D.totMerc>0) html+=lConta('Venda de Mercadoria de Terceiros','1.2',D.totMerc,'var(--tx2)',20,'rec_merc');
   if((D.totServ||0)>0) html+=lConta('Venda de Serviços / Gorjetas','1.3',D.totServ,'var(--tx2)',20,'rec_serv');
   if(!D.totRec) html+=`<tr><td colspan="3" style="padding:5px 20px;font-size:11px;color:var(--tx3);font-style:italic">Nenhuma receita no período</td></tr>`;
+  if(D.totDesc>0) html+=lConta('(–) Descontos Concedidos','1.4',D.totDesc,'#F48FB1',20,'rec_desc');
 
-  // Descontos Concedidos
-  if(D.totDesc>0) html+=lConta('(–) Descontos Concedidos','1.4', D.totDesc,'#F48FB1',20,'rec_desc');
-
-  // Impostos
+  // ── GRUPO 2: IMPOSTOS E TAXAS ──
   if(D.totImp>0){
-    html += lGrp('(–)','IMPOSTOS E TAXAS', D.totImp, '#EF9A9A', 'grp_2');
+    html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='2')?.nome||'IMPOSTOS E TAXAS', D.totImp, '#EF9A9A', 'grp_2');
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='2'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
   }
 
-  html += lRes('= RECEITA BRUTA', D.recLiq, D.recLiq>=0?'dlp':'dlr', 'rec_total');
+  // ── GRUPO 3: DESPESAS FINANCEIRAS ──
+  if(D.totFinOp>0){
+    html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='3')?.nome||'DESPESAS FINANCEIRAS', D.totFinOp, '#EF9A9A', 'grp_3');
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
+  }
 
-  // CMV
-  html += lGrp('(–)','CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, '#EF9A9A', 'grp_4');
+  // ── GRUPO 4: CMV ──
+  html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='4')?.nome||'CMV — CUSTO DA MERCADORIA VENDIDA', D.totCMV, '#EF9A9A', 'grp_4');
   if(D._cmvMetodo==='estoque' && window._dreYM){
-    // Detalhamento do estoque: EI + Compras − EF
     try{
       const eqCMVdet = eqGetCMVMes(window._dreYM);
       if(eqCMVdet){
         if(eqCMVdet.totalEI > 0)
-          html += lConta('(+) Estoque Inicial','ei_cmv', eqCMVdet.totalEI,'#EF9A9A',20,'cmv_ei');
-        html += lConta('(+) Compras do Período','comp_cmv', eqCMVdet.totalCompras,'#EF9A9A',20,'cmv_comp');
+          html += lConta('(+) Estoque Inicial','ei_cmv',eqCMVdet.totalEI,'#EF9A9A',20,'cmv_ei');
+        html += lConta('(+) Compras do Período','comp_cmv',eqCMVdet.totalCompras,'#EF9A9A',20,'cmv_comp');
         if(eqCMVdet.temInventario && eqCMVdet.totalEF > 0)
-          html += lConta('(−) Estoque Final','ef_cmv', eqCMVdet.totalEF,'#81C784',20,'cmv_ef');
+          html += lConta('(−) Estoque Final','ef_cmv',eqCMVdet.totalEF,'#81C784',20,'cmv_ef');
         html += `<tr><td colspan="3" style="padding:2px 6px 8px">
           <span style="font-size:10px;background:rgba(76,175,80,0.12);color:#81C784;border:1px solid rgba(76,175,80,0.25);border-radius:4px;padding:2px 8px">
             <i class="fa-solid fa-boxes-stacked" style="margin-right:4px"></i>
@@ -8549,24 +8601,15 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
       pc.filter(x=>x.tipo==='conta'&&x.grupo==='4'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
     }
   } else {
-    // Fallback: mostra contas do grupo 4
     pc.filter(x=>x.tipo==='conta'&&x.grupo==='4'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
     html += `<tr><td colspan="3" style="padding:2px 6px 8px">
       <span style="font-size:10px;background:rgba(255,143,0,0.12);color:var(--am);border:1px solid rgba(255,143,0,0.25);border-radius:4px;padding:2px 8px">
-        <i class="fa-solid fa-receipt" style="margin-right:4px"></i>
-        CMV = Compras lançadas (sem dados do estoque)
+        <i class="fa-solid fa-receipt" style="margin-right:4px"></i>CMV = Compras lançadas (sem dados do estoque)
       </span></td></tr>`;
   }
-  html += lRes('= LUCRO BRUTO', D.lucroBruto, D.lucroBruto>=0?'dlp':'dlr', null);
 
-  // Despesas Financeiras
-  if(D.totFin>0){
-    html += lGrp('(–)','DESPESAS FINANCEIRAS', D.totFin, '#EF9A9A', 'grp_3');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='3'&&(totC[x.cod]||0)>0).forEach(c=>html+=lConta(c.nome,c.cod,totC[c.cod],'#EF9A9A',20,`cod_${c.cod}`));
-  }
-
-  // Despesas Operacionais
-  html += lGrp('(–)','DESPESAS OPERACIONAIS', D.totOp, '#EF9A9A', 'grp_5');
+  // ── GRUPO 5: DESPESAS OPERACIONAIS ──
+  html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='5')?.nome||'DESPESAS OPERACIONAIS', D.totOp, '#EF9A9A', 'grp_5');
   D.sgs5.forEach(sg=>{
     if(sg.total>0){
       html += lSg(sg.nome, sg.total, `sub_${sg.cod}`);
@@ -8574,56 +8617,103 @@ function renderDRE_Consolidado(pagar, receber, pc, regime, de, ate, labelRegime)
     }
   });
 
-  html += lRes('= EBITDA', D.ebitda, D.ebitda>=0?'deb':'dlr', null);
+  // ── GRUPO 6: RESULTADO EBITDA (calculado) ──
+  html += lRes('= '+(pc.find(x=>x.tipo==='grupo'&&x.cod==='6')?.nome||'RESULTADO EBITDA'), D.ebitda, D.ebitda>=0?'deb':'dlr', null);
 
-  // Depreciação (grupo 6)
-  if(D.totDeprec>0){
-    html += lGrp('(–)','DEPRECIAÇÃO / AMORTIZAÇÃO', D.totDeprec, '#EF9A9A', 'grp_6');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='6'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
+  // ── GRUPO 7: EBIT (calculado) ──
+  html += lRes('= '+(pc.find(x=>x.tipo==='grupo'&&x.cod==='7')?.nome||'EBIT'), D.ebit, D.ebit>=0?'deb':'dlr', null);
+
+  // ── GRUPO 8: RECEITAS NÃO OPERACIONAIS ──
+  if(D.totRecNaoOp>0){
+    html += lGrp('(+)', pc.find(x=>x.tipo==='grupo'&&x.cod==='8')?.nome||'RECEITAS NÃO OPERACIONAIS', D.totRecNaoOp, '#81C784', 'grp_8');
+    // subgrupos do grupo 8
+    const sgs8 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='8');
+    if(sgs8.length){
+      sgs8.forEach(sg8=>{
+        const sgTot = pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg8.cod).reduce((s,c)=>s+(totC[c.cod]||0),0);
+        if(sgTot>0){
+          html += lSg(sg8.nome, sgTot, `sub_${sg8.cod}`);
+          pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg8.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',32,`cod_${cv.cod}`));
+        }
+      });
+    } else {
+      pc.filter(x=>x.tipo==='conta'&&x.grupo==='8'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',20,`cod_${cv.cod}`));
+    }
   }
 
-  html += lRes('= EBIT', D.ebit, D.ebit>=0?'deb':'dlr', null);
-
-  // Resultado Financeiro (grupo 11)
-  const temRecFin  = D.totRecFin > 0;
-  const temDespFin = D.totDespFin > 0;
-  if(temRecFin || temDespFin){
-    html += `<tr><td colspan="3" style="padding:8px 6px 4px;font-size:10px;font-weight:700;color:#64B5F6;text-transform:uppercase;letter-spacing:1px">(+/–) RESULTADO FINANCEIRO</td></tr>`;
-    if(temRecFin){
-      html += lGrp('(+)','Receitas Financeiras', D.totRecFin, '#81C784', 'grp_8_1');
-      pc.filter(x=>x.tipo==='conta'&&x.subgrupo==='8.1'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',32,`cod_${cv.cod}`));
-    }
-    if(temDespFin){
-      html += lGrp('(–)','Despesas Financeiras com Dívidas', D.totDespFin, '#EF9A9A', 'grp_8_2');
-      pc.filter(x=>x.tipo==='conta'&&x.subgrupo==='8.2'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`));
+  // ── GRUPO 9: DESPESAS NÃO OPERACIONAIS ──
+  if(D.totDespNaoOp>0){
+    html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='9')?.nome||'DESPESAS NÃO OPERACIONAIS', D.totDespNaoOp, '#EF9A9A', 'grp_9');
+    const sgs9 = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='9');
+    if(sgs9.length){
+      sgs9.forEach(sg9=>{
+        const sgTot = pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg9.cod).reduce((s,c)=>s+(totC[c.cod]||0),0);
+        if(sgTot>0){
+          html += lSg(sg9.nome, sgTot, `sub_${sg9.cod}`);
+          pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg9.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`));
+        }
+      });
+    } else {
+      pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
     }
   }
-  html += lRes(`= LUCRO ANTES DO IR ${D.lucroAntesIR>=0?'':'(PREJUÍZO)'}`, D.lucroAntesIR, D.lucroAntesIR>=0?'dlp':'dlr', null);
 
-  // Impostos sobre o Lucro (grupo 12)
+  // ── GRUPO 10: LUCRO LÍQUIDO DO EXERCÍCIO (calculado) ──
+  html += lRes('= '+(pc.find(x=>x.tipo==='grupo'&&x.cod==='10')?.nome||'LUCRO LÍQUIDO DO EXERCÍCIO'), D.lucroLiq, D.lucroLiq>=0?'dlp':'dlr', null);
+
+  // ── GRUPO 11: RESULTADO FINANCEIRO ──
+  if(D.totRecFin>0 || D.totDespFin>0){
+    html += `<tr><td colspan="3" style="padding:8px 6px 4px;font-size:10px;font-weight:700;color:#64B5F6;text-transform:uppercase;letter-spacing:1px">(+/–) ${pc.find(x=>x.tipo==='grupo'&&x.cod==='11')?.nome||'RESULTADO FINANCEIRO'}</td></tr>`;
+    if(D.totRecFin>0){
+      const sg11rec = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='11'&&x.cod.includes('.1'));
+      sg11rec.forEach(s=>{
+        const st=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod).reduce((a,c)=>a+(totC[c.cod]||0),0);
+        if(st>0){ html+=lSg(s.nome,st,`sub_${s.cod}`); pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',32,`cod_${cv.cod}`)); }
+      });
+      if(!sg11rec.length) pc.filter(x=>x.tipo==='conta'&&x.grupo==='11'&&x.natureza==='receita'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',20,`cod_${cv.cod}`));
+    }
+    if(D.totDespFin>0){
+      const sg11desp = pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='11'&&x.cod.includes('.2'));
+      sg11desp.forEach(s=>{
+        const st=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod).reduce((a,c)=>a+(totC[c.cod]||0),0);
+        if(st>0){ html+=lSg(s.nome,st,`sub_${s.cod}`); pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`)); }
+      });
+      if(!sg11desp.length) pc.filter(x=>x.tipo==='conta'&&x.grupo==='11'&&x.natureza==='despesa'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
+    }
+  }
+
+  // ── GRUPO 12: IMPOSTOS SOBRE O LUCRO ──
   if(D.totIR>0){
-    html += lGrp('(–)','RESULTADO ANTES DO IRPJ E CSLL', D.totIR, '#EF9A9A', 'grp_9');
-    pc.filter(x=>x.tipo==='conta'&&x.grupo==='9'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
+    html += lGrp('(–)', pc.find(x=>x.tipo==='grupo'&&x.cod==='12')?.nome||'IMPOSTOS SOBRE O LUCRO', D.totIR, '#EF9A9A', 'grp_12');
+    pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='12').forEach(sg12=>{
+      const st=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg12.cod).reduce((a,c)=>a+(totC[c.cod]||0),0);
+      if(st>0){ html+=lSg(sg12.nome,st,`sub_${sg12.cod}`); pc.filter(x=>x.tipo==='conta'&&x.subgrupo===sg12.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`)); }
+    });
+    pc.filter(x=>x.tipo==='conta'&&x.grupo==='12'&&!x.subgrupo&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',20,`cod_${cv.cod}`));
   }
 
-  html += lRes(`= RESULTADO LÍQUIDO APÓS IMPOSTOS`, D.resLiqAposIR, D.resLiqAposIR>=0?'dlp':'dlr', null);
+  // ── GRUPO 13: RESULTADO LÍQUIDO APÓS IMPOSTOS (calculado) ──
+  html += lRes('= '+(pc.find(x=>x.tipo==='grupo'&&x.cod==='13')?.nome||'RESULTADO LÍQUIDO APÓS IMPOSTOS'), D.resLiqAposIR, D.resLiqAposIR>=0?'dlp':'dlr', null);
 
-  // Resultado Não Operacional (grupo 14)
-  const temEntNaoOp = D.totEntNaoOp > 0;
-  const temSaiNaoOp = D.totSaiNaoOp > 0;
-  if(temEntNaoOp || temSaiNaoOp){
-    html += `<tr><td colspan="3" style="padding:8px 6px 4px;font-size:10px;font-weight:700;color:#64B5F6;text-transform:uppercase;letter-spacing:1px">(+/–) RESULTADO NÃO OPERACIONAL</td></tr>`;
-    if(temEntNaoOp){
-      html += lGrp('(+)','Receitas Não Operacionais', D.totEntNaoOp, '#81C784', 'grp_11_1');
-      pc.filter(x=>x.tipo==='conta'&&x.subgrupo==='11.1'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',32,`cod_${cv.cod}`));
+  // ── GRUPO 14: RESULTADO NÃO OPERACIONAL ──
+  if(D.totEntNaoOp>0 || D.totSaiNaoOp>0){
+    html += `<tr><td colspan="3" style="padding:8px 6px 4px;font-size:10px;font-weight:700;color:#64B5F6;text-transform:uppercase;letter-spacing:1px">(+/–) ${pc.find(x=>x.tipo==='grupo'&&x.cod==='14')?.nome||'RESULTADO NÃO OPERACIONAL'}</td></tr>`;
+    if(D.totEntNaoOp>0){
+      pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='14'&&x.cod.includes('.1')).forEach(s=>{
+        const st=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod).reduce((a,c)=>a+(totC[c.cod]||0),0);
+        if(st>0){ html+=lSg(s.nome,st,`sub_${s.cod}`); pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#81C784',32,`cod_${cv.cod}`)); }
+      });
     }
-    if(temSaiNaoOp){
-      html += lGrp('(–)','Despesas Não Operacionais', D.totSaiNaoOp, '#EF9A9A', 'grp_11_2');
-      pc.filter(x=>x.tipo==='conta'&&x.subgrupo==='11.2'&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`));
+    if(D.totSaiNaoOp>0){
+      pc.filter(x=>x.tipo==='subgrupo'&&x.grupo==='14'&&x.cod.includes('.2')).forEach(s=>{
+        const st=pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod).reduce((a,c)=>a+(totC[c.cod]||0),0);
+        if(st>0){ html+=lSg(s.nome,st,`sub_${s.cod}`); pc.filter(x=>x.tipo==='conta'&&x.subgrupo===s.cod&&(totC[x.cod]||0)>0).forEach(cv=>html+=lConta(cv.nome,cv.cod,totC[cv.cod],'#EF9A9A',32,`cod_${cv.cod}`)); }
+      });
     }
   }
 
-  html += lRes(D.resultadoFinal>=0?'= RESULTADO FINAL DO EXERCÍCIO':'= PREJUÍZO DO EXERCÍCIO', D.resultadoFinal, D.resultadoFinal>=0?'dlp':'dlr', null);
+  // ── GRUPO 15: RESULTADO FINAL DO EXERCÍCIO (calculado) ──
+  html += lRes('= '+(pc.find(x=>x.tipo==='grupo'&&x.cod==='15')?.nome||(D.resultadoFinal>=0?'RESULTADO FINAL DO EXERCÍCIO':'PREJUÍZO DO EXERCÍCIO')), D.resultadoFinal, D.resultadoFinal>=0?'dlp':'dlr', null);
   window._dreYM = ''; // limpa após renderização completa
   html += `</tbody></table>`;
   html += `<div style="margin-top:10px;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
@@ -10746,13 +10836,18 @@ function eqGetCMVMes(ym){
     }
   });
 
+  // CMV consolidado = EI + Compras − EF (fórmula correta, igual ao estoque)
+  const cmvFinalCalc = algumInventario
+    ? Math.max(0, totalEI + totalCompras - totalEF)
+    : totalCompras;
+
   return {
     totalCMV,
     totalCompras,
     totalEI,
     totalEF,
     temInventario: algumInventario,
-    cmvFinal: algumInventario ? totalCMV : totalCompras
+    cmvFinal: cmvFinalCalc
   };
 }
 window.eqGetCMVMes = eqGetCMVMes;
@@ -11532,8 +11627,10 @@ function excluirGrupo(cod){
   const g = pc.find(x=>x.cod===cod && x.tipo==='grupo');
   if(!g){ alert('Grupo não encontrado.'); return; }
   const temContas = pc.some(x=>x.tipo==='conta' && x.grupo===cod);
-  if(temContas){ alert('⚠️ Este grupo possui contas vinculadas.\nRemova as contas antes de excluir o grupo.'); return; }
-  if(!confirm(`Excluir o grupo "${g.nome}" (${cod})?\nEsta ação não pode ser desfeita.`)) return;
+  const msgGrupo = temContas
+    ? `⚠️ O grupo "${g.nome}" (${cod}) possui contas vinculadas.\nAo excluir o grupo, as contas ficarão sem grupo.\n\nDeseja excluir mesmo assim?`
+    : `Excluir o grupo "${g.nome}" (${cod})?\nEsta ação não pode ser desfeita.`;
+  if(!confirm(msgGrupo)) return;
   const plano = S.g('plano') || PC_INIT.map(x=>({...x}));
   S.s('plano', plano.filter(x=>!(x.cod===cod && x.tipo==='grupo')));
   renderPlano();
@@ -11604,8 +11701,10 @@ function excluirSubgrupo(cod){
   const sg = pc.find(x=>x.cod===cod && x.tipo==='subgrupo');
   if(!sg){ alert('Subgrupo não encontrado.'); return; }
   const temContas = pc.some(x=>x.tipo==='conta' && x.subgrupo===cod);
-  if(temContas){ alert('⚠️ Este subgrupo possui contas vinculadas.\nRemova as contas antes de excluir o subgrupo.'); return; }
-  if(!confirm(`Excluir o subgrupo "${sg.nome}" (${cod})?\nEsta ação não pode ser desfeita.`)) return;
+  const msgSub = temContas
+    ? `⚠️ O subgrupo "${sg.nome}" (${cod}) possui contas vinculadas.\nAo excluir o subgrupo, as contas perderão o vínculo.\n\nDeseja excluir mesmo assim?`
+    : `Excluir o subgrupo "${sg.nome}" (${cod})?\nEsta ação não pode ser desfeita.`;
+  if(!confirm(msgSub)) return;
   const plano = S.g('plano') || PC_INIT.map(x=>({...x}));
   S.s('plano', plano.filter(x=>!(x.cod===cod && x.tipo==='subgrupo')));
   renderPlano();
@@ -11628,8 +11727,7 @@ function renderPlano(){
         <span class="pc-g-count">${totalContas} contas <i class="fa-solid fa-chevron-down" style="font-size:10px;margin-left:6px"></i></span>
         <div class="ac-btns always-vis" style="margin-left:auto;margin-right:4px" onclick="event.stopPropagation()">
           <button class="ac-btn ac-edit" title="Editar grupo" onclick="editarGrupo('${g.cod}')"><i class="fa-solid fa-pen"></i></button>
-          ${totalContas===0?`<button class="ac-btn ac-del" title="Excluir grupo" onclick="excluirGrupo('${g.cod}')"><i class="fa-solid fa-trash-can"></i></button>`:
-          `<button class="ac-btn ac-del-off" title="Grupo possui contas — exclusão bloqueada" disabled><i class="fa-solid fa-lock" style="font-size:10px"></i></button>`}
+          <button class="ac-btn ac-del" title="Excluir grupo" onclick="excluirGrupo('${g.cod}')"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </div>
       <div class="pc-body">`;
@@ -11651,8 +11749,7 @@ function renderPlano(){
         <span>${sg.cod} — ${sg.nome}</span>
         <div class="ac-btns always-vis" style="opacity:1">
           <button class="ac-btn ac-edit" title="Editar subgrupo" onclick="editarSubgrupo('${sg.cod}')"><i class="fa-solid fa-pen"></i></button>
-          ${subTemContas?`<button class="ac-btn ac-del-off" title="Subgrupo possui contas — exclusão bloqueada" disabled><i class="fa-solid fa-lock" style="font-size:10px"></i></button>`:
-          `<button class="ac-btn ac-del" title="Excluir subgrupo" onclick="excluirSubgrupo('${sg.cod}')"><i class="fa-solid fa-trash-can"></i></button>`}
+          <button class="ac-btn ac-del" title="Excluir subgrupo" onclick="excluirSubgrupo('${sg.cod}')"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </div>`;
       scont.forEach(c=>{
@@ -16992,6 +17089,57 @@ function initAll(){
   } catch(e){ console.error('initAll error:', e); }
   finally{ setTimeout(()=>{ _initAllRunning = false; }, 500); }
 }
+
+// ══════════════════════════════════════
+// SISTEMA DE TEMAS
+// ══════════════════════════════════════
+const TEMAS = {
+  preto:  { label:'Preto', dot:'#1E1E1E', dotBorder:'rgba(255,255,255,0.3)' },
+  branco: { label:'Branco', dot:'#FFFFFF', dotBorder:'rgba(0,0,0,0.2)' },
+  bege:   { label:'Bege',   dot:'#FDF8F0', dotBorder:'rgba(0,0,0,0.2)' }
+};
+
+function temaAplicar(tema){
+  document.documentElement.setAttribute('data-tema', tema);
+  const t = TEMAS[tema];
+  const dotEl = document.getElementById('tema-dot-atual');
+  const lblEl = document.getElementById('tema-label-atual');
+  if(dotEl){ dotEl.style.background = t.dot; dotEl.style.borderColor = t.dotBorder; }
+  if(lblEl) lblEl.textContent = t.label;
+  // Marcar ativo
+  Object.keys(TEMAS).forEach(k=>{
+    const op = document.getElementById('top-'+k);
+    if(op) op.classList.toggle('ativo', k===tema);
+  });
+  // Persistir
+  try{ localStorage.setItem('fgp_tema', tema); }catch{}
+}
+
+function temaSel(tema){
+  temaAplicar(tema);
+  document.getElementById('tema-dd').classList.remove('open');
+}
+
+function temaToggle(e){
+  e.stopPropagation();
+  const dd = document.getElementById('tema-dd');
+  dd.classList.toggle('open');
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', ()=>{
+  const dd = document.getElementById('tema-dd');
+  if(dd) dd.classList.remove('open');
+});
+
+// Carregar tema salvo ao iniciar
+(function(){
+  try{
+    const saved = localStorage.getItem('fgp_tema') || 'preto';
+    temaAplicar(saved);
+  }catch{ temaAplicar('preto'); }
+})();
+
 </script>
 </body>
 </html>
