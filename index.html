@@ -2842,7 +2842,14 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
         <!-- input hidden mantido para retrocompatibilidade -->
         <div class="fg" style="margin-top:8px"><label>Conta Corrente / Banco <span style="font-size:10px;color:var(--tx3)">(origem do pagamento)</span></label><select id="mpp-banco"><option value="">— Selecione —</option></select></div>
-        <input type="hidden" id="mpp-conta" value="">
+        <!-- Conta do Plano — obrigatória quando não há itens discriminados -->
+        <div class="fg" style="margin-top:8px" id="mpp-conta-manual-wrap">
+          <label>Conta do Plano de Contas <span style="color:var(--rd);font-size:11px">★ Obrigatória</span> <span style="font-size:10px;color:var(--tx3)">(preenchida automaticamente pelos itens)</span></label>
+          <select id="mpp-conta" onchange="" style="border-color:rgba(242,100,25,0.4)">
+            <option value="">— Selecione a conta —</option>
+          </select>
+          <div style="font-size:10px;color:var(--tx3);margin-top:4px"><i class="fa-solid fa-circle-info" style="color:var(--or)"></i> Se adicionar itens acima, a conta será preenchida automaticamente.</div>
+        </div>
       </div>
 
       <!-- ITENS DO LANÇAMENTO -->
@@ -5100,12 +5107,21 @@ function savePagar(){
     alert('⚠️ Data de Competência não pode ser posterior à Data de Vencimento.\n\nCompetência: '+comp.split('-').reverse().join('/')+'\nVencimento: '+venc.split('-').reverse().join('/'));
     return;
   }
+
+  // ── VALIDAÇÃO: Conta do Plano de Contas obrigatória ──
+  const contaManual = document.getElementById('mp-conta')?.value||'';
+  const temContaItens = mpItens.length > 0 && mpItens.some(it=>it.conta);
+  if(!contaManual && !temContaItens){
+    alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nTodo lançamento precisa ter a Conta do Plano de Contas informada.\nEla é a base do DRE, Fluxo de Caixa e todos os relatórios.\n\nSelecione a conta no campo correspondente ou adicione itens com conta vinculada.');
+    document.getElementById('mp-conta')?.focus();
+    return;
+  }
   const reg   = comp ? 'competencia' : 'caixa';
   // Valor total = soma dos itens (se houver)
   const totalNF = mpItens.reduce((a,b)=>a+b.total,0);
   const val = totalNF > 0 ? totalNF : 0;
   // Deriva a conta automaticamente a partir dos itens (conta mais recorrente ou a do maior valor)
-  let contaAuto = '';
+  let contaAuto = document.getElementById('mp-conta')?.value||'';
   if(mpItens.length){
     const contaValores = {};
     mpItens.forEach(it=>{
@@ -5495,6 +5511,18 @@ function calcItemNFP(){
   document.getElementById('mpp-item-total').value=total>0?total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'';
 }
 
+function syncContaManualNFP(){
+  // Atualiza o select mpp-conta com a conta dominante dos itens
+  if(!mppItens.length) return;
+  const cv={};
+  mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
+  const cs=Object.entries(cv);
+  if(!cs.length) return;
+  const melhor=cs.sort((a,b)=>b[1]-a[1])[0][0];
+  const sel=document.getElementById('mpp-conta');
+  if(sel && melhor){ sel.value=melhor; sel.style.borderColor='rgba(76,175,80,0.5)'; }
+}
+
 function adicionarItemNFP(){
   const nome  = (document.getElementById('mpp-item-busca')?.value||'').trim();
   const conta = document.getElementById('mpp-item-conta-sel').value;
@@ -5518,12 +5546,14 @@ function adicionarItemNFP(){
   const banner = document.getElementById('mpp-item-sel-banner');
   if(banner) banner.style.display='none';
   renderItensNFP();
+  syncContaManualNFP();
 }
 
 
 function removerItemNFP(idx){
   mppItens.splice(idx,1);
   renderItensNFP();
+  syncContaManualNFP();
 }
 
 function renderItensNFP(){
@@ -5580,7 +5610,18 @@ function setTabPagar(tab){ /* painel único — sem alternância */ }
 
 function resetModalPagar(){
   mpItens=[]; mppItens=[];
+  // Sai do modo edição se estava ativo
+  if(typeof _mppEditId!=='undefined' && _mppEditId){
+    _mppEditId = null;
+    const mt = document.querySelector('#mod-pagar .mt span');
+    if(mt) mt.innerHTML = '<i class="fa-solid fa-file-invoice-dollar" style="color:var(--or);margin-right:8px"></i>Novo Lançamento — Contas a Pagar';
+    const btnSalvar = document.querySelector('#mod-pagar .bs');
+    if(btnSalvar){ btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Parcelas'; btnSalvar.onclick = ()=>saveParcelado(); }
+  }
   ['mpp-desc','mpp-comp'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}});
+  // Limpa e repopula select de conta
+  fillSelectContasPagar('mpp-conta');
+  const contaEl=document.getElementById('mpp-conta'); if(contaEl)contaEl.value='';
   // Limpa aviso de competência vs vencimento
   const aviso=document.getElementById('aviso-comp-venc'); if(aviso)aviso.remove();;
   fornLimpar('mpp-forn-busca','mpp-forn','mpp-forn-drop');
@@ -5734,6 +5775,63 @@ function saveParcelado(){
   const desc  =document.getElementById('mpp-desc').value;
   const comp  =document.getElementById('mpp-comp').value;
 
+  // ── MODO EDIÇÃO: atualiza lançamento existente ──
+  if(_mppEditId){
+    const arr = S.g('pagar')||[];
+    const idx = arr.findIndex(x=>x.id===_mppEditId);
+    if(idx===-1){ alert('Lançamento não encontrado.'); return; }
+
+    const totalNF = mppItens.reduce((a,b)=>a+b.total,0);
+    let contaAuto = document.getElementById('mpp-conta')?.value||'';
+    if(mppItens.length){
+      const cv={};
+      mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
+      const cs=Object.entries(cv);
+      if(cs.length)contaAuto=cs.sort((a,b)=>b[1]-a[1])[0][0];
+    }
+    if(!contaAuto){
+      alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nSelecione a conta no campo correspondente.');
+      document.getElementById('mpp-conta')?.focus();
+      return;
+    }
+
+    const venc1  = document.getElementById('mpp-venc-1')?.value||arr[idx].venc||'';
+    const val1   = parseFloat(document.getElementById('mpp-val-1')?.value)||arr[idx].val||0;
+    const forma1 = document.getElementById('mpp-forma-1')?.value||arr[idx].forma||'PIX';
+    const st1    = document.getElementById('mpp-st-1')?.value||arr[idx].status||'Pendente';
+    const dtpag1 = document.getElementById('mpp-dtpag-1')?.value||'';
+    const banco  = document.getElementById('mpp-banco')?.value||'';
+    const reg    = comp?'competencia':'caixa';
+
+    arr[idx] = {...arr[idx],
+      forn, desc,
+      nf: desc,
+      comp: comp||venc1,
+      venc: venc1,
+      val: val1,
+      forma: forma1,
+      status: st1,
+      dtpag: st1==='Pago'?(dtpag1||new Date().toISOString().slice(0,10)):dtpag1,
+      conta: contaAuto,
+      banco, contaCorrente: banco,
+      reg,
+      itens: mppItens.length ? [...mppItens] : undefined,
+      totalNF: totalNF||undefined,
+    };
+    S.s('pagar', arr);
+    _mppEditId = null;
+    // Restaura título e botão do modal
+    const mt = document.querySelector('#mod-pagar .mt span');
+    if(mt) mt.innerHTML = '<i class="fa-solid fa-file-invoice-dollar" style="color:var(--or);margin-right:8px"></i>Novo Lançamento — Contas a Pagar';
+    const btnSalvar = document.querySelector('#mod-pagar .bs');
+    if(btnSalvar){ btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Parcelas'; btnSalvar.onclick = ()=>saveParcelado(); }
+    closeMod('mod-pagar'); resetModalPagar(); renderPagar();
+    // Integra ao estoque
+    eqIntegrarDoCAP(arr[idx]);
+    showToast('✓ Lançamento atualizado com sucesso!','var(--gr)');
+    return;
+  }
+
   // ── VALIDAÇÃO: Competência não pode ser posterior ao vencimento ──
   if(comp){
     for(let i=1;i<=linhasQtd;i++){
@@ -5768,7 +5866,7 @@ function saveParcelado(){
   }
 
   const reg   =comp?'competencia':'caixa';
-  let contaAuto='';
+  let contaAuto=document.getElementById('mpp-conta')?.value||'';
   if(mppItens.length){
     const cv={};
     mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
@@ -5805,8 +5903,9 @@ function saveParcelado(){
   if(novasLinhas===0){alert('Preencha ao menos uma linha com data e valor.');return;}
   // Avisa se nenhum item tem conta classificada
   if(!contaAuto){
-    const confirmar = confirm('⚠️ Atenção!\n\nNenhum item deste lançamento possui Conta do Plano de Contas classificada.\n\nOs lançamentos sem conta não aparecem no DRE e nos relatórios financeiros.\n\nRecomenda-se classificar os itens com a conta correta.\n\nDeseja salvar mesmo assim?');
-    if(!confirmar) return;
+    alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nTodo lançamento precisa ter a Conta do Plano de Contas informada.\nEla é a base do DRE, Fluxo de Caixa e todos os relatórios.\n\nSelecione a conta no campo correspondente ou adicione itens com conta vinculada.');
+    document.getElementById('mpp-conta')?.focus();
+    return;
   }
   S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
 
@@ -8902,8 +9001,8 @@ function cxSalvarSaida(){
 
   if(!desc){alert('Informe a descrição / NF.');return;}
   if(!valor){alert('Informe o valor ou adicione itens ao lançamento.');return;}
-  if(!conta && !cxSaiItens.length){
-    alert('⚠️ Selecione a Conta do Plano de Contas ou adicione pelo menos um item com conta vinculada.\nEste campo é necessário para o DRE, Fluxo de Caixa e Relatório de Compras.');
+  if(!conta){
+    alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nTodo lançamento precisa ter a Conta do Plano de Contas informada.\nEla é a base do DRE, Fluxo de Caixa e todos os relatórios.\n\nSelecione a conta no campo correspondente ou adicione itens com conta vinculada.');
     document.getElementById('cx-sai-conta').focus();return;
   }
 
@@ -11856,51 +11955,92 @@ function renderInsumos(){
 // EDITAR LANÇAMENTOS
 // ══════════════════════════════════════
 
+// ID do lançamento em edição (null = novo lançamento)
+let _mppEditId = null;
+
 function editPagar(id){
   const arr=S.g('pagar')||[];
-  const c=arr.find(x=>x.id===id); if(!c)return;
-  document.getElementById('mep-id').value=id;
-  document.getElementById('mep-venc').value=c.venc||'';
-  document.getElementById('mep-comp').value=c.comp||'';
-  document.getElementById('mep-dtpag').value=c.dtpag||'';
-  document.getElementById('mep-desc').value=c.forn||c.desc||'';
-  document.getElementById('mep-nf').value=c.nf||c.desc||'';
-  fillSelectContasPagar('mep-conta');
-  document.getElementById('mep-conta').value=c.conta||'';
-  document.getElementById('mep-val').value=c.val||'';
-  document.getElementById('mep-forma').value=c.forma||'PIX';
-  fillSelectBancos('mep-banco');
-  document.getElementById('mep-banco').value=c.banco||'';
-  document.getElementById('mep-status').value=c.status||'Pendente';
-  onMepStatusChange();
+  const lanc=arr.find(x=>x.id===id); if(!lanc)return;
 
-  // Carregar itens da NF
-  const wrap = document.getElementById('mep-itens-wrap');
-  const body = document.getElementById('mep-itens-body');
-  const totalEl = document.getElementById('mep-total-nf');
-  if(wrap && body && c.itens && c.itens.length){
-    const R = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    body.innerHTML = c.itens.map((it,i) => `
-      <tr id="mep-row-${i}" style="border-bottom:1px solid var(--bd)">
-        <td style="padding:6px 8px;color:var(--tx)">${it.nome||'—'}</td>
-        <td style="padding:6px 8px;text-align:center;color:var(--tx2)">${(it.qtd||1).toString().replace('.',',')} ${it.un||'un'}</td>
-        <td style="padding:6px 8px;text-align:right;color:var(--tx2)">${R(it.custo||0)}</td>
-        <td style="padding:6px 8px;text-align:right;color:var(--or);font-weight:600">${R(it.total||0)}</td>
-        <td style="padding:4px 4px;text-align:center">
-          <button onclick="mepEditarItem(${i})" style="background:none;border:none;color:var(--bl);cursor:pointer;font-size:13px" title="Editar item"><i class="fa-solid fa-pen"></i></button>
-        </td>
-        <td style="padding:4px 4px;text-align:center">
-          <button onclick="mepExcluirItem(${i})" style="background:none;border:none;color:var(--rd);cursor:pointer;font-size:13px" title="Excluir item"><i class="fa-solid fa-trash-can"></i></button>
-        </td>
-      </tr>`).join('');
-    const total = c.itens.reduce((a,b)=>a+(b.total||0),0);
-    if(totalEl) totalEl.textContent = R(total);
-    wrap.style.display = 'block';
-  } else {
-    if(wrap) wrap.style.display = 'none';
+  // Reseta o modal de inclusão e marca modo edição
+  resetModalPagar();
+  _mppEditId = id;
+
+  // Atualiza título do modal para deixar claro que é edição
+  const mt = document.querySelector('#mod-pagar .mt span');
+  if(mt) mt.innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--bl);margin-right:8px"></i>Editar Lançamento — Contas a Pagar';
+
+  // ── Preenche cabeçalho ──
+  // Fornecedor
+  const fornBusca = document.getElementById('mpp-forn-busca');
+  const fornHid   = document.getElementById('mpp-forn');
+  if(fornBusca) fornBusca.value = lanc.forn||'';
+  if(fornHid)   fornHid.value   = lanc.forn||'';
+
+  // NF / Descrição
+  const descEl = document.getElementById('mpp-desc');
+  if(descEl) descEl.value = lanc.nf||lanc.desc||'';
+
+  // Competência
+  const compEl = document.getElementById('mpp-comp');
+  if(compEl) compEl.value = lanc.comp||'';
+
+  // Conta do Plano
+  fillSelectContasPagar('mpp-conta');
+  const contaEl = document.getElementById('mpp-conta');
+  if(contaEl){ contaEl.value = lanc.conta||''; }
+
+  // Banco
+  fillSelectBancos('mpp-banco');
+  const bancoEl = document.getElementById('mpp-banco');
+  if(bancoEl) bancoEl.value = lanc.banco||lanc.contaCorrente||'';
+
+  // ── Itens: carrega mppItens e renderiza ──
+  mppItens = lanc.itens ? lanc.itens.map(it=>({
+    nome:  it.nome||'',
+    qtd:   it.qtd||1,
+    un:    it.un||'un',
+    preco: it.preco||it.custo||0,
+    total: it.total||0,
+    conta: it.conta||lanc.conta||'',
+    tipo:  it.tipo||'',
+    cat:   it.cat||'',
+  })) : [];
+  renderItensNFP();
+  if(mppItens.length) syncContaManualNFP();
+
+  // ── Parcelas: gera 1 linha com venc e valor do lançamento ──
+  // Determina nº de parcelas
+  const nParc = lanc.totalParcelas||1;
+  const npSel = document.getElementById('mpp-nparcelas');
+  if(npSel){
+    // Tenta selecionar o valor correto; se não encontrar usa 1
+    const opt = [...npSel.options].find(o=>parseInt(o.value)===nParc);
+    if(opt) npSel.value = opt.value; else npSel.value='1';
+    gerarParcelasManual();
+  }
+  // Preenche a linha de parcela com os dados do lançamento
+  setTimeout(()=>{
+    const vencEl  = document.getElementById('mpp-venc-1');
+    const valEl   = document.getElementById('mpp-val-1');
+    const formaEl = document.getElementById('mpp-forma-1');
+    const stEl    = document.getElementById('mpp-st-1');
+    const dtpagEl = document.getElementById('mpp-dtpag-1');
+    if(vencEl)  vencEl.value  = lanc.venc||'';
+    if(valEl)   valEl.value   = lanc.val||'';
+    if(formaEl) formaEl.value = lanc.forma||'PIX';
+    if(stEl)    stEl.value    = lanc.status||'Pendente';
+    if(dtpagEl) dtpagEl.value = lanc.dtpag||'';
+  }, 50);
+
+  // Atualiza botão de salvar para modo edição
+  const btnSalvar = document.querySelector('#mod-pagar .bs');
+  if(btnSalvar){
+    btnSalvar.innerHTML = '<i class="fa-solid fa-check"></i> Salvar Alterações';
+    btnSalvar.onclick = () => saveParcelado();
   }
 
-  openMod('mod-editpagar');
+  openMod('mod-pagar');
 }
 
 function mepExcluirItem(idx){
