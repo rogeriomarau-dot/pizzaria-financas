@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Gestão Pro — Sistema Financeiro para Pizzarias</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --or:#F26419; --or2:#FF8C42; --or3:rgba(242,100,25,0.12);
+  --dk:#09090B; --dk2:#111115; --dk3:#18181E; --dk4:#1F1F27;
+  --tx:#F1EDE8; --tx2:#9A9390; --tx3:#5A5550;
+  --gr:#4CAF50; --rd:#FF4444; --bl:#64B5F6;
+  --bd:rgba(255,255,255,0.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--dk);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.65;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;line-height:1.1}
+a{color:inherit;text-decoration:none}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:99;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(9,9,11,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd)}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo-icon{width:34px;height:34px;background:var(--or);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff}
+.nav-brand-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--tx)}
+.nav-brand-text span{display:block;font-size:10px;font-weight:400;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
+.nav-cta{background:var(--or);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 22px;border-radius:8px;letter-spacing:0.5px;transition:all .2s}
+.nav-cta:hover{background:var(--or2);transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 40px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:900px;background:radial-gradient(circle,rgba(242,100,25,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--or3);border:1px solid rgba(242,100,25,0.3);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:600;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:24px}
+.hero-eyebrow i{font-size:10px}
+.hero h1{font-size:clamp(36px,4vw,58px);font-weight:800;color:var(--tx);margin-bottom:20px;letter-spacing:-1px}
+.hero h1 em{font-style:normal;color:var(--or)}
+.hero-sub{font-size:18px;color:var(--tx2);margin-bottom:36px;max-width:480px;line-height:1.7}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--or);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:16px 28px;border-radius:10px;transition:all .25s;border:none;cursor:pointer}
+.btn-primary:hover{background:var(--or2);transform:translateY(-2px);box-shadow:0 16px 40px rgba(242,100,25,0.3)}
+.btn-secondary{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--tx2);font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;padding:16px 28px;border-radius:10px;border:1px solid var(--bd);transition:all .25s}
+.btn-secondary:hover{border-color:var(--or);color:var(--or)}
+.hero-stats{display:flex;gap:32px}
+.hero-stat{text-align:left}
+.hero-stat .num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--or)}
+.hero-stat .lbl{font-size:12px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
+
+/* ── MOCKUP DRE ── */
+.mockup-wrap{position:relative}
+.mockup-device{background:var(--dk2);border:1px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.6);transform:perspective(1200px) rotateY(-8deg) rotateX(3deg)}
+.mockup-bar{background:var(--dk3);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#FF5F57} .dot-y{background:#FEBC2E} .dot-g{background:#28C840}
+.mockup-topbar{background:var(--dk3);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd)}
+.mockup-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--tx)}
+.mockup-badge{background:var(--or);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px}
+.dre-table{width:100%;font-size:11px;padding:12px}
+.dre-row{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px}
+.dre-row:hover{background:rgba(255,255,255,0.03)}
+.dre-row.grp{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;border-top:1px solid var(--bd);margin-top:4px;padding-top:10px}
+.dre-row.res{background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.15);border-radius:6px;margin:6px 0;font-family:'Syne',sans-serif;font-weight:700}
+.dre-row.sub{padding-left:24px;font-size:10px;color:var(--tx2)}
+.dre-rec{color:#64B5F6} .dre-dep{color:#FF4444} .dre-res{color:#4CAF50}
+.dre-av{font-size:10px;color:var(--or);font-weight:600;min-width:50px;text-align:right}
+.badge-float{position:absolute;bottom:-20px;right:-20px;background:var(--dk3);border:1px solid var(--bd);border-radius:12px;padding:14px 18px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.badge-float .val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#4CAF50}
+.badge-float .lbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
+
+/* ── SECTION BASE ── */
+section{padding:100px 40px}
+.container{max-width:1200px;margin:0 auto}
+.section-label{display:inline-block;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--or);margin-bottom:12px}
+.section-title{font-size:clamp(28px,3vw,44px);font-weight:800;color:var(--tx);margin-bottom:16px;letter-spacing:-0.5px}
+.section-sub{font-size:17px;color:var(--tx2);max-width:560px;line-height:1.7}
+
+/* ── PROBLEMA ── */
+.problema-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:56px}
+.problema-lista{display:flex;flex-direction:column;gap:16px}
+.dor-item{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;background:var(--dk2);border:1px solid var(--bd);border-radius:12px;transition:all .2s}
+.dor-item:hover{border-color:rgba(255,68,68,0.3);background:rgba(255,68,68,0.04)}
+.dor-icon{width:36px;height:36px;background:rgba(255,68,68,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#FF4444;font-size:14px}
+.dor-text{font-size:14px;color:var(--tx2);line-height:1.6}
+.dor-text strong{color:var(--tx);display:block;margin-bottom:2px}
+.problema-destaque{background:linear-gradient(135deg,var(--dk3),var(--dk2));border:1px solid rgba(242,100,25,0.2);border-radius:16px;padding:40px;position:sticky;top:100px}
+.prob-quote{font-size:22px;font-family:'Syne',sans-serif;font-weight:700;color:var(--tx);line-height:1.4;margin-bottom:20px}
+.prob-quote em{color:var(--or);font-style:normal}
+.prob-autor{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:24px;border-top:1px solid var(--bd)}
+.prob-avatar{width:48px;height:48px;background:var(--or);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#fff}
+.prob-nome{font-weight:700;font-size:14px;color:var(--tx)}
+.prob-cargo{font-size:12px;color:var(--tx3)}
+
+/* ── MÓDULOS ── */
+.modulos{background:var(--dk2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.modulos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:16px;overflow:hidden;margin-top:56px}
+.mod-item{background:var(--dk2);padding:32px;transition:all .2s;cursor:default}
+.mod-item:hover{background:var(--dk3)}
+.mod-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:20px}
+.mod-icon.azul{background:rgba(100,181,246,0.1);color:#64B5F6}
+.mod-icon.verde{background:rgba(76,175,80,0.1);color:#4CAF50}
+.mod-icon.laranja{background:rgba(242,100,25,0.1);color:var(--or)}
+.mod-icon.roxo{background:rgba(149,117,205,0.1);color:#9575CD}
+.mod-icon.amarelo{background:rgba(255,183,77,0.1);color:#FFB74D}
+.mod-icon.vermelho{background:rgba(255,68,68,0.1);color:#FF4444}
+.mod-nome{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--tx);margin-bottom:8px}
+.mod-desc{font-size:13px;color:var(--tx2);line-height:1.6}
+.mod-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(242,100,25,0.1);color:var(--or);padding:3px 8px;border-radius:4px;margin-top:12px}
+
+/* ── SCREENSHOTS ── */
+.screens-scroll{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:56px}
+.screen-card{background:var(--dk2);border:1px solid var(--bd);border-radius:16px;overflow:hidden;transition:all .3s}
+.screen-card:hover{border-color:rgba(242,100,25,0.3);transform:translateY(-4px)}
+.screen-card.featured{grid-column:1/-1}
+.screen-bar{background:var(--dk3);padding:8px 12px;display:flex;align-items:center;gap:8px}
+.screen-title-bar{font-size:11px;color:var(--tx3);margin-left:4px;font-family:'DM Sans',sans-serif}
+.screen-body{padding:0}
+/* Mini DRE mockup */
+.mini-dre{padding:16px}
+.mini-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;font-size:11px;border-radius:4px}
+.mini-row.head{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--or);border-bottom:1px solid var(--bd);margin-bottom:4px;padding-bottom:8px}
+.mini-row.grp-rec{color:#64B5F6;font-weight:600}
+.mini-row.grp-dep{color:#FF4444;font-weight:600}
+.mini-row.grp-res{color:#4CAF50;font-weight:700;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.15);border-radius:6px;margin:4px 0;padding:7px 8px}
+.mini-row.sub{padding-left:18px;color:var(--tx2)}
+.mini-val{text-align:right;font-family:'DM Sans',sans-serif}
+.mini-av{font-size:10px;color:var(--or);min-width:44px;text-align:right}
+
+/* Mini FCX mockup */
+.mini-fcx{padding:16px}
+.fcx-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.fcx-kpi{background:var(--dk3);border-radius:8px;padding:10px;text-align:center}
+.fcx-kpi .k-lbl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.fcx-kpi .k-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.fcx-bar-wrap{display:flex;gap:6px;height:60px;align-items:flex-end;margin-top:8px}
+.fcx-bar{flex:1;border-radius:4px 4px 0 0;min-width:0}
+.fcx-week{font-size:9px;color:var(--tx3);text-align:center;margin-top:4px}
+
+/* Mini CMV */
+.mini-cmv{padding:16px}
+.cmv-formula{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0;flex-wrap:wrap}
+.cmv-pill{background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:10px 16px;text-align:center}
+.cmv-pill .p-lbl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
+.cmv-pill .p-val{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--tx)}
+.cmv-pill.ei .p-val{color:#64B5F6}
+.cmv-pill.comp .p-val{color:#64B5F6}
+.cmv-pill.ef .p-val{color:#4CAF50}
+.cmv-pill.res .p-val{color:#FF4444}
+.cmv-op{font-size:20px;color:var(--tx3)}
+.cmv-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:6px;padding:6px 12px;font-size:11px;color:#4CAF50;font-weight:600;margin-top:8px}
+
+/* ── PARA QUEM ── */
+.paraquem-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
+.sim-lista,.nao-lista{background:var(--dk2);border-radius:16px;padding:32px}
+.sim-lista{border:1px solid rgba(76,175,80,0.2)}
+.nao-lista{border:1px solid rgba(255,68,68,0.15)}
+.lista-titulo{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.lista-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;font-size:14px;color:var(--tx2)}
+.lista-item i{margin-top:2px;flex-shrink:0}
+
+/* ── CONSULTOR ── */
+.consultor{background:var(--dk2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.consultor-grid{display:grid;grid-template-columns:auto 1fr;gap:64px;align-items:center;margin-top:56px}
+.consultor-avatar{width:220px;height:280px;background:linear-gradient(135deg,var(--dk3),var(--dk4));border:1px solid var(--bd);border-radius:20px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;flex-shrink:0}
+.avatar-init{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;color:var(--or)}
+.avatar-sub{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:2px}
+.consultor-nome{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--tx);margin-bottom:8px}
+.consultor-cargo{font-size:15px;color:var(--or);font-weight:600;margin-bottom:20px;letter-spacing:0.5px}
+.consultor-bio{font-size:16px;color:var(--tx2);line-height:1.8;margin-bottom:28px;max-width:540px}
+.creds{display:flex;flex-direction:column;gap:10px}
+.cred-item{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--tx2)}
+.cred-item i{color:var(--or);width:16px}
+
+/* ── PROCESSO ── */
+.processo-steps{display:flex;gap:0;margin-top:56px;position:relative}
+.processo-steps::before{content:'';position:absolute;top:28px;left:28px;right:28px;height:1px;background:linear-gradient(90deg,var(--or),rgba(242,100,25,0.2));z-index:0}
+.step{flex:1;text-align:center;position:relative;z-index:1;padding:0 16px}
+.step-num{width:56px;height:56px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;margin:0 auto 16px;box-shadow:0 0 0 6px var(--dk),0 0 0 8px rgba(242,100,25,0.2)}
+.step-nome{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--tx);margin-bottom:8px}
+.step-desc{font-size:12px;color:var(--tx2);line-height:1.6}
+
+/* ── CTA FINAL ── */
+.cta-final{background:linear-gradient(135deg,var(--dk2),var(--dk3));border-top:1px solid var(--bd);text-align:center;padding:100px 40px}
+.cta-final h2{font-size:clamp(32px,4vw,52px);font-weight:800;color:var(--tx);margin-bottom:16px;letter-spacing:-1px}
+.cta-final h2 em{color:var(--or);font-style:normal}
+.cta-final p{font-size:18px;color:var(--tx2);max-width:520px;margin:0 auto 40px;line-height:1.7}
+.cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-wa{background:#25D366;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;padding:18px 32px;border-radius:12px;display:inline-flex;align-items:center;gap:12px;transition:all .25s}
+.btn-wa:hover{background:#1ebe5a;transform:translateY(-3px);box-shadow:0 20px 50px rgba(37,211,102,0.3)}
+.btn-ig{background:transparent;color:var(--tx2);font-family:'Syne',sans-serif;font-weight:600;font-size:15px;padding:18px 28px;border-radius:12px;border:1px solid var(--bd);display:inline-flex;align-items:center;gap:10px;transition:all .25s}
+.btn-ig:hover{border-color:var(--or);color:var(--or)}
+.cta-aviso{margin-top:32px;font-size:13px;color:var(--tx3);display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* ── FOOTER ── */
+footer{background:var(--dk);border-top:1px solid var(--bd);padding:40px;text-align:center}
+.footer-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--or);margin-bottom:8px}
+.footer-links{display:flex;gap:24px;justify-content:center;margin:16px 0;font-size:13px;color:var(--tx3)}
+.footer-copy{font-size:12px;color:var(--tx3)}
+
+/* ── FLUTUANTE WA ── */
+.wa-float{position:fixed;bottom:28px;right:28px;z-index:99;width:58px;height:58px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;box-shadow:0 8px 32px rgba(37,211,102,0.4);transition:all .2s;text-decoration:none}
+.wa-float:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(37,211,102,0.5)}
+
+/* ── ANIMAÇÃO DE ENTRADA ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:16px 20px}
+  .hero-grid,.problema-grid,.consultor-grid,.paraquem-grid{grid-template-columns:1fr}
+  .mockup-wrap{display:none}
+  .modulos-grid{grid-template-columns:1fr 1fr}
+  .screens-scroll{grid-template-columns:1fr}
+  .processo-steps{flex-direction:column;gap:24px}
+  .processo-steps::before{display:none}
+  section{padding:64px 20px}
+  .hero{padding:100px 20px 60px}
+}
+@media(max-width:600px){
+  .modulos-grid{grid-template-columns:1fr}
+  .fcx-kpis{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ── PRICING CARDS ── */
+.price-card{background:var(--dk2);border:1px solid var(--bd);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:0;position:relative;transition:all .3s}
+.price-card:hover{border-color:rgba(242,100,25,0.3);transform:translateY(-4px)}
+.featured-plan{border-color:rgba(242,100,25,0.5);background:linear-gradient(135deg,rgba(242,100,25,0.05),var(--dk2));box-shadow:0 0 40px rgba(242,100,25,0.1)}
+.price-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.price-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--tx);margin-bottom:8px}
+.price-desc{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:20px;min-height:48px}
+.price-valor{font-family:'Syne',sans-serif;font-weight:800;font-size:44px;color:var(--tx);line-height:1;margin-bottom:4px}
+.price-currency{font-size:20px;vertical-align:top;margin-top:8px;display:inline-block;color:var(--tx2)}
+.price-per{font-size:16px;color:var(--tx2);font-weight:400}
+.price-itens{list-style:none;display:flex;flex-direction:column;gap:10px;margin:20px 0 28px;flex:1}
+.price-itens li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--tx2)}
+.price-itens li i{color:#4CAF50;font-size:11px;flex-shrink:0}
+.price-btn{display:block;text-align:center;background:var(--dk3);color:var(--tx);font-family:'Syne',sans-serif;font-weight:700;font-size:14px;padding:14px 20px;border-radius:10px;border:1px solid var(--bd);transition:all .2s;margin-top:auto}
+.price-btn:hover{background:var(--or);color:#fff;border-color:var(--or)}
+
+/* ── PAYMENT CARDS ── */
+.pay-card{background:var(--dk3);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center;transition:all .2s}
+.pay-card:hover{border-color:rgba(242,100,25,0.3)}
+.pay-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 12px}
+.pay-nome{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--tx);margin-bottom:6px}
+.pay-desc{font-size:12px;color:var(--tx2);line-height:1.6}
+
+@media(max-width:900px){
+  #tab-combos > div{grid-template-columns:1fr!important}
+  .formas-pay{grid-template-columns:repeat(2,1fr)!important}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo-icon">FG</div>
+    <div class="nav-brand-text">Finance Gestão Pro<span>Sistema Financeiro para Pizzarias</span></div>
+  </div>
+  <a href="https://wa.me/5551997301313?text=Olá%20Rogério!%20Quero%20conhecer%20o%20Finance%20Gestão%20Pro" target="_blank" class="nav-cta"><i class="fab fa-whatsapp"></i> Falar com o especialista</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid container">
+    <div>
+      <div class="reveal">
+        <div class="hero-eyebrow"><i class="fa-solid fa-pizza-slice"></i> Especialista em Pizzarias</div>
+        <h1>Chega de administrar sua pizzaria <em>no chute.</em></h1>
+        <p class="hero-sub">O único sistema financeiro desenvolvido por um consultor especialista em pizzarias — com DRE, CMV real, Fluxo de Caixa e resultado em tempo real.</p>
+        <div class="hero-ctas">
+          <a href="https://wa.me/5551997301313?text=Olá%20Rogério!%20Quero%20conhecer%20o%20Finance%20Gestão%20Pro" target="_blank" class="btn-primary">
+            <i class="fab fa-whatsapp"></i> Quero conhecer o sistema
+          </a>
+          <a href="#modulos" class="btn-secondary"><i class="fa-solid fa-play"></i> Ver como funciona</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num">+20</div><div class="lbl">Anos de experiência</div></div>
+          <div class="hero-stat"><div class="num">7</div><div class="lbl">Módulos integrados</div></div>
+          <div class="hero-stat"><div class="num">100%</div><div class="lbl">Foco em pizzarias</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOCKUP DRE -->
+    <div class="mockup-wrap reveal">
+      <div class="mockup-device">
+        <div class="mockup-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <div class="mockup-topbar">
+          <span class="mockup-title">DRE — Demonstrativo de Resultado</span>
+          <span class="mockup-badge">Jun/2026</span>
+        </div>
+        <div class="dre-table">
+          <div class="mini-row head"><span>Descrição</span><span>Valor</span><span style="min-width:50px;text-align:right">AV%</span></div>
+          <div class="mini-row grp-rec"><span><i class="fa-solid fa-circle-arrow-up" style="font-size:9px;margin-right:6px"></i>(+) RECEITAS OPERACIONAIS</span><span class="mini-val dre-rec">R$ 94.350,00</span><span class="mini-av">100.0%</span></div>
+          <div class="mini-row sub"><span>Venda de Alimentação / Rodízio</span><span class="mini-val" style="color:var(--tx2)">R$ 78.200,00</span><span class="mini-av">82.9%</span></div>
+          <div class="mini-row sub"><span>Venda de Mercadoria / Bebidas</span><span class="mini-val" style="color:var(--tx2)">R$ 16.150,00</span><span class="mini-av">17.1%</span></div>
+          <div class="mini-row grp-dep" style="margin-top:8px"><span><i class="fa-solid fa-circle-arrow-down" style="font-size:9px;margin-right:6px"></i>(–) CMV — CUSTO MERCADORIA</span><span class="mini-val dre-dep">R$ 28.800,00</span><span class="mini-av">30.5%</span></div>
+          <div class="mini-row res"><span>= LUCRO BRUTO</span><span class="mini-val dre-res">R$ 65.550,00</span><span class="mini-av" style="color:#4CAF50">69.5%</span></div>
+          <div class="mini-row grp-dep"><span><i class="fa-solid fa-circle-arrow-down" style="font-size:9px;margin-right:6px"></i>(–) DESPESAS OPERACIONAIS</span><span class="mini-val dre-dep">R$ 42.100,00</span><span class="mini-av">44.6%</span></div>
+          <div class="mini-row sub"><span>› Despesas com Pessoal</span><span class="mini-val" style="color:var(--tx2)">R$ 24.500,00</span><span class="mini-av">26.0%</span></div>
+          <div class="mini-row sub"><span>› Despesas Administrativas</span><span class="mini-val" style="color:var(--tx2)">R$ 17.600,00</span><span class="mini-av">18.6%</span></div>
+          <div class="mini-row res" style="border-color:rgba(76,175,80,0.4);background:rgba(76,175,80,0.12)"><span>= RESULTADO EBITDA</span><span class="mini-val dre-res" style="font-size:14px;font-weight:800">R$ 23.450,00</span><span class="mini-av" style="color:#4CAF50;font-size:12px">24.9%</span></div>
+        </div>
+      </div>
+      <div class="badge-float">
+        <div class="val">+24,9%</div>
+        <div class="lbl">Margem EBITDA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema" style="background:var(--dk2);border-top:1px solid var(--bd)">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">O Problema</span>
+      <h2 class="section-title">Você reconhece alguma dessas situações?</h2>
+      <p class="section-sub">A maioria dos donos de pizzaria tem lucro escondido — ou prejuízo disfarçado. Sem números, você dirige às cegas.</p>
+    </div>
+    <div class="problema-grid">
+      <div class="problema-lista">
+        <div class="dor-item reveal"><div class="dor-icon"><i class="fa-solid fa-question"></i></div><div class="dor-text"><strong>Não sabe se o rodízio está dando lucro</strong>O dinheiro entra, mas você não consegue provar — e no final do mês parece que sumiu.</div></div>
+        <div class="dor-item reveal"><div class="dor-icon"><i class="fa-solid fa-boxes-stacked"></i></div><div class="dor-text"><strong>CMV descontrolado</strong>Você não sabe o custo real de cada pax do rodízio. Compra sem saber quanto ainda tem no estoque.</div></div>
+        <div class="dor-item reveal"><div class="dor-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div><div class="dor-text"><strong>Contas a pagar chegando de surpresa</strong>Boleto todo dia 15 e você descobre no dia 14 que não tem saldo. O Fluxo de Caixa resolve isso.</div></div>
+        <div class="dor-item reveal"><div class="dor-icon"><i class="fa-solid fa-chart-line"></i></div><div class="dor-text"><strong>Sem DRE, sem direção</strong>Você não tem um Demonstrativo de Resultado. Não sabe sua margem bruta, EBITDA, nem lucro líquido real.</div></div>
+        <div class="dor-item reveal"><div class="dor-icon"><i class="fa-solid fa-table-cells"></i></div><div class="dor-text"><strong>Planilha no Excel que ninguém atualiza</strong>Controle financeiro em planilha manual que para de funcionar no terceiro mês.</div></div>
+      </div>
+      <div class="problema-destaque reveal">
+        <div class="prob-quote">"<em>Vi pizzarias faturando R$100 mil por mês e fechando as portas</em> — por não saber o CMV real dos seus rodízios."</div>
+        <p style="font-size:14px;color:var(--tx2);line-height:1.7">Com 20 anos de experiência em consultoria financeira para restaurantes, desenvolvi o Finance Gestão Pro exatamente para resolver esse problema — com uma ferramenta que o próprio dono consegue operar.</p>
+        <div class="prob-autor">
+          <div class="prob-avatar">RM</div>
+          <div><div class="prob-nome">Rogério Muller</div><div class="prob-cargo">Consultor Financeiro · Especialista em Pizzarias</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MÓDULOS -->
+<section id="modulos" class="modulos">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">O Sistema</span>
+      <h2 class="section-title">7 módulos integrados — feitos para pizzarias</h2>
+      <p class="section-sub">Cada módulo foi desenhado a partir dos problemas reais que donos de pizzaria enfrentam todo mês.</p>
+    </div>
+    <div class="modulos-grid reveal">
+      <div class="mod-item">
+        <div class="mod-icon azul"><i class="fa-solid fa-chart-column"></i></div>
+        <div class="mod-nome">DRE — Demonstrativo de Resultado</div>
+        <div class="mod-desc">Veja em tempo real se o mês está em lucro ou prejuízo. Modo consolidado e mensal lado a lado com análise vertical.</div>
+        <span class="mod-tag">Controle total</span>
+      </div>
+      <div class="mod-item">
+        <div class="mod-icon verde"><i class="fa-solid fa-money-bill-wave"></i></div>
+        <div class="mod-nome">Fluxo de Caixa</div>
+        <div class="mod-desc">Analítico diário, semanal e consolidado. Veja entradas, saídas e saldo acumulado por conta bancária.</div>
+        <span class="mod-tag">Nunca mais surpresa</span>
+      </div>
+      <div class="mod-item">
+        <div class="mod-icon laranja"><i class="fa-solid fa-pizza-slice"></i></div>
+        <div class="mod-nome">CMV — Custo da Mercadoria</div>
+        <div class="mod-desc">Cálculo real: EI + Compras − EF. Sabe exatamente quanto custou cada pax do rodízio — por insumo e por produto.</div>
+        <span class="mod-tag">O diferencial</span>
+      </div>
+      <div class="mod-item">
+        <div class="mod-icon roxo"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="mod-nome">Controle de Estoque</div>
+        <div class="mod-desc">Estoque inicial, compras e estoque final integrados ao CMV. Custo médio ponderado por produto.</div>
+        <span class="mod-tag">Sem desperdício</span>
+      </div>
+      <div class="mod-item">
+        <div class="mod-icon amarelo"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="mod-nome">Contas a Pagar e Receber</div>
+        <div class="mod-desc">Gestão de vencimentos, regimes de caixa e competência, parcelamentos e conciliação bancária.</div>
+        <span class="mod-tag">Zero inadimplência</span>
+      </div>
+      <div class="mod-item">
+        <div class="mod-icon vermelho"><i class="fa-solid fa-chart-bar"></i></div>
+        <div class="mod-nome">Relatório de Vendas</div>
+        <div class="mod-desc">Ranking dos produtos mais vendidos, margem por item, evolução mensal e ranking de lucratividade.</div>
+        <span class="mod-tag">Decisões inteligentes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section id="sistema" style="background:var(--dk)">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Na Prática</span>
+      <h2 class="section-title">Veja o sistema em ação</h2>
+      <p class="section-sub">Dados reais. Interface limpa. Feita para quem não tem controller interno mas precisa tomar decisões financeiras todo dia.</p>
+    </div>
+    <div class="screens-scroll">
+      <!-- DRE grande -->
+      <div class="screen-card featured reveal">
+        <div class="screen-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="screen-title-bar">Finance Gestão Pro — DRE Consolidado · Jun/2026</span></div>
+        <div class="screen-body">
+          <div class="mini-dre">
+            <div class="mini-row head" style="font-size:13px"><span>Descrição</span><div style="display:flex;gap:48px"><span>Valor</span><span>AV%</span></div></div>
+            <div class="mini-row grp-rec"><span style="font-family:'Syne',sans-serif">(+) RECEITAS OPERACIONAIS</span><div style="display:flex;gap:48px"><span>R$ 94.350,00</span><span style="color:var(--or)">100%</span></div></div>
+            <div class="mini-row sub"><span>Venda de Alimentação / Rodízio</span><div style="display:flex;gap:48px"><span>R$ 78.200,00</span><span style="color:var(--tx3)">82.9%</span></div></div>
+            <div class="mini-row sub"><span>Venda de Mercadoria / Bebidas</span><div style="display:flex;gap:48px"><span>R$ 16.150,00</span><span style="color:var(--tx3)">17.1%</span></div></div>
+            <div class="mini-row grp-dep" style="margin-top:8px"><span style="font-family:'Syne',sans-serif">(–) CMV — CUSTO DA MERCADORIA VENDIDA</span><div style="display:flex;gap:48px"><span>R$ 28.800,00</span><span style="color:var(--or)">30.5%</span></div></div>
+            <div class="mini-row sub" style="padding-left:24px"><span>(+) Estoque Inicial</span><div style="display:flex;gap:48px"><span style="color:#64B5F6">R$ 12.400,00</span><span style="color:var(--tx3)">13.1%</span></div></div>
+            <div class="mini-row sub" style="padding-left:24px"><span>(+) Compras do Período</span><div style="display:flex;gap:48px"><span style="color:#64B5F6">R$ 18.600,00</span><span style="color:var(--tx3)">19.7%</span></div></div>
+            <div class="mini-row sub" style="padding-left:24px"><span>(–) Estoque Final</span><div style="display:flex;gap:48px"><span style="color:#4CAF50">R$ 2.200,00</span><span style="color:var(--tx3)">2.3%</span></div></div>
+            <div class="mini-row grp-res" style="margin-top:8px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.2);border-radius:8px;padding:10px 8px"><span style="font-family:'Syne',sans-serif;font-size:13px">= LUCRO BRUTO</span><div style="display:flex;gap:48px"><span style="font-size:14px;font-weight:800">R$ 65.550,00</span><span style="color:#4CAF50;font-weight:700">69.5%</span></div></div>
+            <div class="mini-row grp-dep" style="margin-top:8px"><span style="font-family:'Syne',sans-serif">(–) DESPESAS OPERACIONAIS</span><div style="display:flex;gap:48px"><span>R$ 42.100,00</span><span style="color:var(--or)">44.6%</span></div></div>
+            <div class="mini-row sub" style="color:#FF4444"><span>› Despesas com Pessoal</span><div style="display:flex;gap:48px"><span>R$ 24.500,00</span><span style="color:var(--tx3)">26.0%</span></div></div>
+            <div class="mini-row sub" style="color:#FF4444"><span>› Despesas Administrativas</span><div style="display:flex;gap:48px"><span>R$ 17.600,00</span><span style="color:var(--tx3)">18.6%</span></div></div>
+            <div class="mini-row grp-res" style="margin-top:8px;background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.3);border-radius:8px;padding:12px 8px"><span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800">= RESULTADO EBITDA</span><div style="display:flex;gap:48px"><span style="font-size:16px;font-weight:800;color:#4CAF50">R$ 23.450,00</span><span style="color:#4CAF50;font-weight:800;font-size:13px">24.9%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fluxo de Caixa -->
+      <div class="screen-card reveal">
+        <div class="screen-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="screen-title-bar">Fluxo de Caixa Semanal · Jun/2026</span></div>
+        <div class="mini-fcx">
+          <div class="fcx-kpis">
+            <div class="fcx-kpi"><div class="k-lbl">Saldo Inicial</div><div class="k-val" style="color:var(--tx);font-size:12px">R$38.200</div></div>
+            <div class="fcx-kpi"><div class="k-lbl">Entradas</div><div class="k-val" style="color:#64B5F6;font-size:12px">R$94.350</div></div>
+            <div class="fcx-kpi"><div class="k-lbl">Saídas</div><div class="k-val" style="color:#FF4444;font-size:12px">R$70.900</div></div>
+            <div class="fcx-kpi"><div class="k-lbl">Saldo Final</div><div class="k-val" style="color:#4CAF50;font-size:12px">R$61.650</div></div>
+          </div>
+          <div style="padding:12px;background:var(--dk3);border-radius:8px;font-size:11px">
+            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:4px;margin-bottom:4px">
+              <div style="color:var(--tx3);font-size:10px">Conta</div>
+              <div style="text-align:center;color:var(--tx3);font-size:10px">Sem 1</div>
+              <div style="text-align:center;color:var(--tx3);font-size:10px">Sem 2</div>
+              <div style="text-align:center;color:var(--tx3);font-size:10px">Sem 3</div>
+              <div style="text-align:center;color:var(--tx3);font-size:10px">Sem 4</div>
+              <div style="text-align:right;color:var(--tx3);font-size:10px">Total</div>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:4px;padding:4px 0;border-top:1px solid var(--bd);color:#64B5F6">
+              <div style="font-size:10px">(+) Receitas</div>
+              <div style="text-align:center">24.180</div><div style="text-align:center">22.900</div><div style="text-align:center">25.410</div><div style="text-align:center">21.860</div>
+              <div style="text-align:right;font-weight:700">94.350</div>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:4px;padding:4px 0;color:#FF4444">
+              <div style="font-size:10px">(–) Saídas</div>
+              <div style="text-align:center">18.200</div><div style="text-align:center">17.450</div><div style="text-align:center">19.800</div><div style="text-align:center">15.450</div>
+              <div style="text-align:right;font-weight:700">70.900</div>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr;gap:4px;padding:6px 4px;background:rgba(76,175,80,0.08);border-radius:4px;color:#4CAF50;font-weight:700;margin-top:4px">
+              <div style="font-size:10px">= Saldo Acum.</div>
+              <div style="text-align:center">44.180</div><div style="text-align:center">49.630</div><div style="text-align:center">55.240</div><div style="text-align:center">61.650</div>
+              <div style="text-align:right">61.650</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CMV -->
+      <div class="screen-card reveal">
+        <div class="screen-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="screen-title-bar">CMV — Custo da Mercadoria Vendida</span></div>
+        <div class="mini-cmv">
+          <div style="text-align:center;font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Fórmula do CMV Real</div>
+          <div class="cmv-formula">
+            <div class="cmv-pill ei"><div class="p-lbl">Estoque Inicial</div><div class="p-val">R$ 12.400</div></div>
+            <div class="cmv-op">+</div>
+            <div class="cmv-pill comp"><div class="p-lbl">Compras do Período</div><div class="p-val">R$ 18.600</div></div>
+            <div class="cmv-op">−</div>
+            <div class="cmv-pill ef"><div class="p-lbl">Estoque Final</div><div class="p-val">R$ 2.200</div></div>
+            <div class="cmv-op">=</div>
+            <div class="cmv-pill res"><div class="p-lbl">CMV Real</div><div class="p-val">R$ 28.800</div></div>
+          </div>
+          <div style="text-align:center"><div class="cmv-badge"><i class="fa-solid fa-check"></i> 30.5% sobre a receita — dentro da meta</div></div>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,0.03)">
+              <span style="color:var(--tx2)">Mussarela (kg)</span><span style="color:#64B5F6">18 kg × R$32 = R$576</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,0.03)">
+              <span style="color:var(--tx2)">Farinha de Trigo (kg)</span><span style="color:#64B5F6">40 kg × R$8,60 = R$344</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,0.03)">
+              <span style="color:var(--tx2)">Maminha (kg)</span><span style="color:#64B5F6">22 kg × R$39,90 = R$878</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUEM É -->
+<section style="background:var(--dk2);border-top:1px solid var(--bd)">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Para Quem É</span>
+      <h2 class="section-title">Este sistema foi feito para você?</h2>
+    </div>
+    <div class="paraquem-grid">
+      <div class="sim-lista reveal">
+        <div class="lista-titulo" style="color:#4CAF50"><i class="fa-solid fa-circle-check" style="color:#4CAF50"></i> É para você se...</div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Você tem uma pizzaria com rodízio, sushi ou massa</span></div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Seu faturamento é acima de R$ 30 mil/mês</span></div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Você sente que o dinheiro "some" mas não sabe por quê</span></div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Quer saber o CMV real, não estimado</span></div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Precisa de um DRE mensal para tomar decisões</span></div>
+        <div class="lista-item"><i class="fa-solid fa-check" style="color:#4CAF50"></i><span>Quer ter um consultor ao lado — não só um software</span></div>
+      </div>
+      <div class="nao-lista reveal">
+        <div class="lista-titulo" style="color:#FF4444"><i class="fa-solid fa-circle-xmark" style="color:#FF4444"></i> Não é para você se...</div>
+        <div class="lista-item"><i class="fa-solid fa-xmark" style="color:#FF4444"></i><span>Você ainda não tem uma operação estruturada</span></div>
+        <div class="lista-item"><i class="fa-solid fa-xmark" style="color:#FF4444"></i><span>Prefere continuar no achismo e na planilha manual</span></div>
+        <div class="lista-item"><i class="fa-solid fa-xmark" style="color:#FF4444"></i><span>Não tem interesse em entender os números do negócio</span></div>
+        <div class="lista-item"><i class="fa-solid fa-xmark" style="color:#FF4444"></i><span>Seu negócio é delivery puro (sistema específico em breve)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSULTOR -->
+<section class="consultor">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Quem Criou</span>
+      <h2 class="section-title">O especialista por trás do sistema</h2>
+    </div>
+    <div class="consultor-grid" style="grid-template-columns:1fr">
+      <div class="reveal">
+        <div class="consultor-nome">Rogério Muller</div>
+        <div class="consultor-cargo">Consultor Financeiro · Especialista em Pizzarias e Food Service</div>
+        <p class="consultor-bio">Com mais de 20 anos ajudando restaurantes e pizzarias a estruturarem suas finanças, desenvolvi o Finance Gestão Pro porque vi de perto o que acontece quando o dono não tem os números nas mãos: pizza boa, casa cheia — e prejuízo no final do mês.<br><br>Este sistema é o que eu uso com meus clientes. Agora ele está disponível para a sua pizzaria.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESSO -->
+<section style="background:var(--dk)">
+  <div class="container">
+    <div class="reveal" style="text-align:center">
+      <span class="section-label">Como Funciona</span>
+      <h2 class="section-title">Do primeiro contato ao controle total</h2>
+      <p class="section-sub" style="margin:0 auto">Em poucos dias você já tem o sistema rodando com os dados reais da sua pizzaria.</p>
+    </div>
+    <div class="processo-steps reveal" style="margin-top:64px">
+      <div class="step"><div class="step-num">1</div><div class="step-nome">Contato Inicial</div><div class="step-desc">Conversa de 15 min pelo WhatsApp para entender sua operação</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-nome">Diagnóstico Gratuito</div><div class="step-desc">Análise do momento financeiro atual da sua pizzaria</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-nome">Implantação</div><div class="step-desc">Configuração do sistema com os dados reais do seu negócio</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-nome">Treinamento</div><div class="step-desc">Capacitação da equipe para operar o sistema com autonomia</div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PLANOS E PREÇOS -->
+<section id="planos" style="background:var(--dk);border-top:1px solid var(--bd)">
+  <div class="container">
+    <div class="reveal" style="text-align:center">
+      <span class="section-label">Planos e Preços</span>
+      <h2 class="section-title">Comece com o que precisa.<br>Cresça no seu ritmo.</h2>
+      <p class="section-sub" style="margin:0 auto 16px">Escolha módulos avulsos ou um plano completo com desconto. Todos incluem implantação e treinamento.</p>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:100px;padding:8px 20px;font-size:13px;color:#4CAF50;font-weight:600;margin-bottom:48px">
+        <i class="fa-solid fa-tag"></i> Setup único R$197 incluso no primeiro mês de qualquer plano
+      </div>
+    </div>
+
+    <!-- TOGGLE -->
+    <div style="display:flex;justify-content:center;margin-bottom:40px">
+      <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:4px;display:inline-flex;gap:4px">
+        <button onclick="showTab('modulos')" id="tab-btn-mod" style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 24px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;background:var(--or);color:#fff">Módulos Avulsos</button>
+        <button onclick="showTab('combos')" id="tab-btn-combo" style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;padding:10px 24px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;background:transparent;color:var(--tx2)">Planos Completos</button>
+      </div>
+    </div>
+
+    <!-- MÓDULOS AVULSOS -->
+    <div id="tab-modulos" class="reveal">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px">
+
+        <div class="price-card featured-plan">
+          <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--or);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 18px;border-radius:100px;white-space:nowrap;box-shadow:0 4px 12px rgba(242,100,25,0.4)">👉 COMECE POR AQUI</div>
+          <div class="price-icon" style="background:rgba(255,183,77,0.1);color:#FFB74D"><i class="fa-solid fa-file-invoice"></i></div>
+          <div class="price-name">Contas a Pagar e Receber</div>
+          <div class="price-desc">Gestão de vencimentos e parcelamentos completos. A base que alimenta todos os outros módulos.</div>
+          <div class="price-valor"><span class="price-currency">R$</span>97<span class="price-per">/mês</span></div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check"></i> Contas a Pagar</li>
+            <li><i class="fa-solid fa-check"></i> Contas a Receber</li>
+            <li><i class="fa-solid fa-check"></i> Controle de vencimentos</li>
+            <li><i class="fa-solid fa-check"></i> Parcelamentos</li>
+            <li><i class="fa-solid fa-check"></i> Histórico completo</li>
+          </ul>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto">
+            <a href="https://mpago.la/1ZZ8XFK" target="_blank" class="price-btn" style="margin-top:0;font-size:12px;padding:10px 16px">Etapa 1 · Implantação (R$197, único)</a>
+            <a href="https://mpago.la/2Xndizb" target="_blank" class="price-btn" style="margin-top:0;background:var(--or);color:#fff;border-color:var(--or)">Etapa 2 · Assinatura R$97/mês</a>
+          </div>
+        </div>
+
+        <div class="price-card">
+          <div class="price-icon" style="background:rgba(100,181,246,0.1);color:#64B5F6"><i class="fa-solid fa-chart-column"></i></div>
+          <div class="price-name">DRE</div>
+          <div class="price-desc">Demonstrativo de Resultado completo — Consolidado e Mensal lado a lado com análise vertical</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);margin:8px 0 4px"><i class="fa-solid fa-circle-info" style="color:var(--or)"></i> Recomendado após Contas a Pagar e Receber</div>
+          <div class="price-valor"><span class="price-currency">R$</span>97<span class="price-per">/mês</span></div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check"></i> DRE Consolidado e Mensal</li>
+            <li><i class="fa-solid fa-check"></i> Regime Caixa e Competência</li>
+            <li><i class="fa-solid fa-check"></i> Análise Vertical AV%</li>
+            <li><i class="fa-solid fa-check"></i> Drill-down por lançamento</li>
+            <li><i class="fa-solid fa-check"></i> Dashboard com semáforo</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20módulo%20DRE%20do%20Finance%20Gestão%20Pro" target="_blank" class="price-btn">Contratar módulo</a>
+        </div>
+
+        <div class="price-card">
+          <div class="price-icon" style="background:rgba(76,175,80,0.1);color:#4CAF50"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="price-name">Fluxo de Caixa</div>
+          <div class="price-desc">Controle diário, semanal e mensal de entradas e saídas por conta bancária</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);margin:8px 0 4px"><i class="fa-solid fa-circle-info" style="color:var(--or)"></i> Recomendado após Contas a Pagar e Receber</div>
+          <div class="price-valor"><span class="price-currency">R$</span>97<span class="price-per">/mês</span></div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check"></i> Modelo calendário incluso</li>
+            <li><i class="fa-solid fa-check"></i> Analítico diário</li>
+            <li><i class="fa-solid fa-check"></i> Semanal com semanas</li>
+            <li><i class="fa-solid fa-check"></i> Consolidado mensal</li>
+            <li><i class="fa-solid fa-check"></i> Saldo acumulado</li>
+            <li><i class="fa-solid fa-check"></i> Múltiplas contas bancárias</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20módulo%20Fluxo%20de%20Caixa%20do%20Finance%20Gestão%20Pro" target="_blank" class="price-btn">Contratar módulo</a>
+        </div>
+
+        <div class="price-card">
+          <div class="price-icon" style="background:rgba(242,100,25,0.1);color:var(--or)"><i class="fa-solid fa-pizza-slice"></i></div>
+          <div class="price-name">CMV + Estoque</div>
+          <div class="price-desc">Custo real: Estoque Inicial + Compras − Estoque Final</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);margin:8px 0 4px"><i class="fa-solid fa-circle-info" style="color:var(--or)"></i> Recomendado após Contas a Pagar e Receber</div>
+          <div class="price-valor"><span class="price-currency">R$</span>97<span class="price-per">/mês</span></div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check"></i> Fórmula EI + Compras − EF</li>
+            <li><i class="fa-solid fa-check"></i> Custo médio por produto</li>
+            <li><i class="fa-solid fa-check"></i> Controle de estoque</li>
+            <li><i class="fa-solid fa-check"></i> CMV % sobre receita</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20módulo%20CMV%20do%20Finance%20Gestão%20Pro" target="_blank" class="price-btn">Contratar módulo</a>
+        </div>
+
+        <div class="price-card" style="border-style:dashed;opacity:0.65">
+          <div class="price-icon" style="background:rgba(149,117,205,0.1);color:#9575CD"><i class="fa-solid fa-utensils"></i></div>
+          <div class="price-name">Fichas Técnicas</div>
+          <div class="price-desc">Custo real por receita — quanto custa cada pizza que sai do forno</div>
+          <div style="font-size:20px;font-weight:700;color:var(--tx3);margin:16px 0 4px">Em breve</div>
+          <ul class="price-itens" style="color:var(--tx3)">
+            <li><i class="fa-solid fa-clock"></i> Custo por ingrediente</li>
+            <li><i class="fa-solid fa-clock"></i> Rendimento por receita</li>
+            <li><i class="fa-solid fa-clock"></i> Margem por prato</li>
+            <li><i class="fa-solid fa-clock"></i> Integrado ao CMV</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20ser%20avisado%20quando%20lançar%20as%20Fichas%20Técnicas" target="_blank" class="price-btn" style="background:transparent;color:var(--tx3);border-color:var(--bd)">Avise-me no lançamento</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PLANOS COMPLETOS -->
+    <div id="tab-combos" class="reveal" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+
+        <div class="price-card">
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Essencial</div>
+          <div class="price-name">Para começar</div>
+          <div class="price-desc">DRE + Fluxo de Caixa + Contas a Pagar/Receber</div>
+          <div class="price-valor"><span class="price-currency">R$</span>197<span class="price-per">/mês</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-bottom:16px">De <span style="text-decoration:line-through">R$291/mês</span> — economia de R$94</div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Módulo DRE completo</li>
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Fluxo de Caixa (3 modos)</li>
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Contas a Pagar/Receber</li>
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Dashboard KPIs</li>
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Suporte via WhatsApp</li>
+            <li><i class="fa-solid fa-check" style="color:#64B5F6"></i> Setup + treinamento inclusos</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20Plano%20Essencial%20Finance%20Gestão%20Pro" target="_blank" class="price-btn">Contratar Essencial</a>
+        </div>
+
+        <div class="price-card featured-plan">
+          <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--or);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 18px;border-radius:100px;white-space:nowrap;box-shadow:0 4px 12px rgba(242,100,25,0.4)">⭐ MAIS ESCOLHIDO</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:12px">Profissional</div>
+          <div class="price-name">Controle total</div>
+          <div class="price-desc">Todos os módulos + reunião mensal de análise com o consultor</div>
+          <div class="price-valor" style="color:var(--or)"><span class="price-currency" style="color:var(--or)">R$</span>297<span class="price-per">/mês</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-bottom:16px">De <span style="text-decoration:line-through">R$485/mês</span> — economia de R$188</div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> Tudo do Essencial</li>
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> CMV + Controle de Estoque</li>
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> Relatório de Vendas</li>
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> Plano de Contas personalizado</li>
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> 1 reunião mensal (1h) com Rogério</li>
+            <li><i class="fa-solid fa-check" style="color:var(--or)"></i> Setup + treinamento inclusos</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20Plano%20Profissional%20Finance%20Gestão%20Pro" target="_blank" class="price-btn" style="background:var(--or);color:#fff;border-color:var(--or)">Contratar Profissional</a>
+        </div>
+
+        <div class="price-card">
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:12px">Premium</div>
+          <div class="price-name">Consultoria ativa</div>
+          <div class="price-desc">Sistema completo + presença ativa do consultor no mês a mês</div>
+          <div class="price-valor"><span class="price-currency">R$</span>447<span class="price-per">/mês</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-bottom:16px">De <span style="text-decoration:line-through">R$679/mês</span> — economia de R$232</div>
+          <ul class="price-itens">
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> Tudo do Profissional</li>
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> 2 reuniões mensais com Rogério</li>
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> Análise detalhada CMV e DRE</li>
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> Fichas Técnicas (quando lançar)</li>
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> Prioridade no suporte</li>
+            <li><i class="fa-solid fa-check" style="color:#4CAF50"></i> Acesso antecipado a novos módulos</li>
+          </ul>
+          <a href="https://wa.me/5551997301313?text=Quero%20o%20Plano%20Premium%20Finance%20Gestão%20Pro" target="_blank" class="price-btn">Contratar Premium</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FORMAS DE PAGAMENTO -->
+    <div class="reveal" style="margin-top:56px;background:var(--dk2);border:1px solid var(--bd);border-radius:20px;padding:40px">
+      <div style="text-align:center;margin-bottom:32px">
+        <span class="section-label">Formas de Pagamento</span>
+        <h3 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--tx);margin-top:8px">Pague como preferir</h3>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div class="pay-card">
+          <div class="pay-icon" style="background:rgba(37,211,102,0.1);color:#25D366"><i class="fa-brands fa-pix"></i></div>
+          <div class="pay-nome">PIX</div>
+          <div class="pay-desc">Instantâneo.<br><strong style="color:#4CAF50">5% de desconto</strong> à vista</div>
+        </div>
+        <div class="pay-card">
+          <div class="pay-icon" style="background:rgba(100,181,246,0.1);color:#64B5F6"><i class="fa-solid fa-barcode"></i></div>
+          <div class="pay-nome">Boleto Bancário</div>
+          <div class="pay-desc">Vencimento em 3 dias úteis. Gerado todo mês automaticamente</div>
+        </div>
+        <div class="pay-card">
+          <div class="pay-icon" style="background:rgba(242,100,25,0.1);color:var(--or)"><i class="fa-solid fa-credit-card"></i></div>
+          <div class="pay-nome">Cartão de Crédito</div>
+          <div class="pay-desc">Parcelado em até <strong style="color:var(--or)">12x sem juros</strong></div>
+        </div>
+        <div class="pay-card">
+          <div class="pay-icon" style="background:rgba(149,117,205,0.1);color:#9575CD"><i class="fa-solid fa-building-columns"></i></div>
+          <div class="pay-nome">Transferência</div>
+          <div class="pay-desc">TED/DOC. Confirmação em até 1 dia útil</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+        <div style="background:rgba(76,175,80,0.06);border:1px solid rgba(76,175,80,0.2);border-radius:12px;padding:20px;display:flex;align-items:center;gap:14px">
+          <div style="width:40px;height:40px;background:rgba(76,175,80,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#4CAF50;font-size:18px;flex-shrink:0"><i class="fa-solid fa-shield-halved"></i></div>
+          <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--tx);margin-bottom:2px">Garantia de 7 dias</div><div style="font-size:13px;color:var(--tx2)">Não gostou? 100% do valor devolvido sem burocracia</div></div>
+        </div>
+        <div style="background:rgba(100,181,246,0.06);border:1px solid rgba(100,181,246,0.2);border-radius:12px;padding:20px;display:flex;align-items:center;gap:14px">
+          <div style="width:40px;height:40px;background:rgba(100,181,246,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#64B5F6;font-size:18px;flex-shrink:0"><i class="fa-solid fa-lock"></i></div>
+          <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--tx);margin-bottom:2px">Pagamento 100% seguro</div><div style="font-size:13px;color:var(--tx2)">Seus dados financeiros protegidos em todas as transações</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<div class="cta-final">
+  <div class="reveal">
+    <h2>Pronto para saber de verdade<br>se sua pizzaria <em>dá lucro?</em></h2>
+    <p>Fale agora com o Rogério. O diagnóstico inicial é gratuito e sem compromisso.</p>
+    <div class="cta-btns">
+      <a href="https://wa.me/5551997301313?text=Olá%20Rogério!%20Quero%20um%20diagnóstico%20gratuito%20da%20minha%20pizzaria" target="_blank" class="btn-wa"><i class="fab fa-whatsapp" style="font-size:22px"></i> Quero o diagnóstico gratuito</a>
+      <a href="https://instagram.com/financegestaopro" target="_blank" class="btn-ig"><i class="fab fa-instagram"></i> @financegestaopro</a>
+    </div>
+    <div class="cta-aviso"><i class="fa-solid fa-shield-halved" style="color:var(--or)"></i> Sem contrato de longo prazo · Diagnóstico 100% gratuito</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Finance Gestão Pro</div>
+  <div class="footer-links">
+    <a href="https://instagram.com/financegestaopro">@financegestaopro</a>
+    <a href="https://instagram.com/rogeriomullerconsultorfinancas">@rogeriomullerconsultorfinancas</a>
+    <a href="https://financeconsultoria.pro">financeconsultoria.pro</a>
+  </div>
+  <div class="footer-copy">© 2026 · Rogério Muller Consultoria Financeira · WhatsApp: (51) 99730-1313</div>
+</footer>
+
+<!-- WA FLUTUANTE -->
+<a href="https://wa.me/5551997301313?text=Olá%20Rogério!%20Quero%20conhecer%20o%20Finance%20Gestão%20Pro" target="_blank" class="wa-float" title="Falar no WhatsApp"><i class="fab fa-whatsapp"></i></a>
+
+<script>
+
+function showTab(tab){
+  document.getElementById('tab-modulos').style.display = tab==='modulos' ? '' : 'none';
+  document.getElementById('tab-combos').style.display  = tab==='combos'  ? '' : 'none';
+  document.getElementById('tab-btn-mod').style.background   = tab==='modulos' ? 'var(--or)' : 'transparent';
+  document.getElementById('tab-btn-mod').style.color        = tab==='modulos' ? '#fff' : 'var(--tx2)';
+  document.getElementById('tab-btn-combo').style.background = tab==='combos'  ? 'var(--or)' : 'transparent';
+  document.getElementById('tab-btn-combo').style.color      = tab==='combos'  ? '#fff' : 'var(--tx2)';
+}
+
+// Reveal on scroll
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
