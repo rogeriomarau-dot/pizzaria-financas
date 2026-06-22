@@ -13083,7 +13083,7 @@ function eqRenderABC(rows, ym){
     const corClasse = classe==='A'?'var(--rd)':classe==='B'?'var(--am)':'var(--gr)';
     const bgClasse  = classe==='A'?'rgba(229,57,53,0.2)':classe==='B'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)';
     const vlLabel   = modo==='qtd'
-      ? `${val.toFixed(3).replace(/\.?0+$/,'')} un`
+      ? `${val.toFixed(3).replace(/\.?0+$/,'')} ${r.un||'un'}`
       : R(val);
     return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)">
       <span style="width:18px;height:18px;border-radius:3px;background:${bgClasse};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${corClasse};flex-shrink:0">${classe}</span>
@@ -14218,15 +14218,14 @@ function resetModalInsumo(){
   if(catInput){ catInput.value = 'CMV_INSUMOS'; }
   const catLabel = document.getElementById('mins-cat-label');
   if(catLabel){ catLabel.textContent = 'Insumos'; }
-  // Gera código com a categoria definida
-  gerarCodigoInsumo();
   // Popula conta do plano
   fillSelectContasPlano('mins-conta');
   ['mins-un','mins-nome','mins-custo'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('mins-conta').value='';
-  document.getElementById('mins-cod').value='';
+  // Gera código DEPOIS de limpar os campos (evita ser sobrescrito com '')
+  gerarCodigoInsumo();
   document.querySelector('#mod-insumo .mt span:first-child').innerHTML=
     '<i class="fa-solid fa-wheat-awn" style="color:var(--or);margin-right:8px"></i>Novo Insumo';
 }
