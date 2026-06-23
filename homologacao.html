@@ -14241,7 +14241,8 @@ function editInsumo(id){
   const catLabel = document.getElementById('mins-cat-label');
   if(catLabel) catLabel.textContent = catObj ? catObj.nome : (ins.cat||'Insumos');
   gerarCodigoInsumo();
-  document.getElementById('mins-cod').value=ins.cod||'';
+  // Se o insumo foi salvo sem código, mantém o gerado automaticamente
+  if(ins.cod) document.getElementById('mins-cod').value=ins.cod;
   document.getElementById('mins-un').value=ins.un||'';
   document.getElementById('mins-nome').value=ins.nome||'';
   document.getElementById('mins-custo').value=ins.custo||'';
