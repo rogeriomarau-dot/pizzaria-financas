@@ -13076,10 +13076,11 @@ function eqRenderABC(rows, ym){
   let acum = 0;
   const itens = sorted.map((r,i)=>{
     const val = modo==='qtd' ? (r.cmvQtd||0) : (r.cmvVal||0);
-    acum += val;
     const pct     = total>0 ? val/total*100 : 0;
+    // Classifica com base no acumulado ANTES de somar o item atual
+    const classe   = acum/total*100 < 80 ? 'A' : acum/total*100 < 95 ? 'B' : 'C';
+    acum += val;
     const pctAcum = total>0 ? acum/total*100 : 0;
-    const classe   = pctAcum<=80?'A':pctAcum<=95?'B':'C';
     const corClasse = classe==='A'?'var(--rd)':classe==='B'?'var(--am)':'var(--gr)';
     const bgClasse  = classe==='A'?'rgba(229,57,53,0.2)':classe==='B'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)';
     const vlLabel   = modo==='qtd'
