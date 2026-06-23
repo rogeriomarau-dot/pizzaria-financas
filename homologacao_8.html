@@ -1842,7 +1842,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <th style="text-align:right;color:#EF9A9A">− Est. Final R$</th>
             <th class="sortable" onclick="eqSortCol('cmvQtd',this)" style="text-align:right;color:var(--or);cursor:pointer">= CMV Qtd <i class="fa-solid sort-icon"></i></th>
             <th class="sortable" onclick="eqSortCol('cmvVal',this)" style="text-align:right;color:var(--or);cursor:pointer">CMV R$ <i class="fa-solid sort-icon"></i></th>
-            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Último Preço <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Pr. Médio <i class="fa-solid sort-icon"></i></th>
             <th style="text-align:center">Status</th>
             <th></th>
           </tr>
@@ -3640,7 +3640,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <th>Produto</th><th>Categoria</th><th>Unid.</th>
           <th style="text-align:right;color:#81C784">Qtd Sistema</th>
           <th style="text-align:right;color:var(--or)">Qtd Real (Contagem) *</th>
-          <th style="text-align:right">Custo Médio</th>
+          <th style="text-align:right">Pr. Médio</th>
           <th style="text-align:right;color:var(--or)">Valor Est. Final</th>
         </tr></thead>
         <tbody id="tb-eq-inv"></tbody>
@@ -8516,7 +8516,7 @@ function renderDashboardConsolidado(){
   // Mês anterior ao período para comparação
   const [yFirst,mFirst]=meses[0].split('-').map(Number);
   const mesAntD=new Date(yFirst,mFirst-2,1);
-  const ymAnt=mesAntD.toISOString().slice(0,7);
+  const ymAnt=mesAntD.getFullYear()+'-'+String(mesAntD.getMonth()+1).padStart(2,'0');
   const ant=dbCalcMes(ymAnt);
 
   cons.cmvPct    = cons.fat>0?cons.totCMV/cons.fat*100:0;
@@ -12593,7 +12593,8 @@ function eqCustoMedioPorMes(prodId, movs, ym){
   const [yBase, mBase] = ym.split('-').map(Number);
   for(let i=0; i<=12; i++){
     const d = new Date(yBase, mBase-1-i, 1);
-    const ymTry = d.toISOString().slice(0,7);
+    // Usar formatação local para evitar bug de fuso horário com toISOString() (UTC)
+    const ymTry = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     const compras = movs.filter(m=>
       m.prodId===prodId &&
       m.tipo==='entrada' &&
@@ -12614,7 +12615,7 @@ function eqCalcProduto(prodId, ym, movs, inventarios){
   const [y,m] = ym.split('-').map(Number);
   // Mês anterior para pegar estoque inicial
   const mesAntD = new Date(y, m-2, 1);
-  const mesAnt = mesAntD.toISOString().slice(0,7);
+  const mesAnt = mesAntD.getFullYear()+'-'+String(mesAntD.getMonth()+1).padStart(2,'0');
 
   // ── Estoque Inicial ──
   // 1º prioridade: EI explícito lançado via botão "Est. Inicial"
@@ -13520,19 +13521,22 @@ function eqCalcInvTotal(input, prodId){
   const elErr = document.getElementById('eq-inv-err-'+prodId);
   if(!elErr) return;
 
-  // Validação 1: sem base (EI=0 e Compras=0)
-  if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
-    elErr.textContent = '⚠ Revise os lançamentos de Estoque Inicial e Compras';
-    elErr.style.display='block';
-    input.style.borderColor='var(--rd)';
-    return;
-  }
-  // Validação 2: EF > disponível
-  if(cm>0 && efVal > dispVal + 0.005){
-    elErr.textContent = `⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(dispVal)})`;
-    elErr.style.display='block';
-    input.style.borderColor='var(--rd)';
-    return;
+  // Só valida em R$ se o produto tem custo médio conhecido
+  if(cm > 0){
+    // Validação 1: sem base (EI=0 e Compras=0)
+    if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
+      elErr.textContent = '⚠ Revise os lançamentos de Estoque Inicial e Compras';
+      elErr.style.display='block';
+      input.style.borderColor='var(--rd)';
+      return;
+    }
+    // Validação 2: EF R$ > disponível R$
+    if(efVal > dispVal + 0.005){
+      elErr.textContent = `⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(dispVal)})`;
+      elErr.style.display='block';
+      input.style.borderColor='var(--rd)';
+      return;
+    }
   }
   // OK
   elErr.style.display='none';
@@ -13570,21 +13574,24 @@ function eqSalvarInventario(){
 
     const elErr = document.getElementById('eq-inv-err-'+prodId);
 
-    // Val. 1: sem base
-    if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
-      const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
-      erros.push(nomeProd+': revise os lançamentos de Estoque Inicial e Compras');
-      if(elErr){ elErr.textContent='⚠ Revise os lançamentos de Estoque Inicial e Compras'; elErr.style.display='block'; }
-      inp.style.borderColor='var(--rd)';
-      return;
-    }
-    // Val. 2: EF > disponível
-    if(cm>0 && efVal > calc.disponivelVal + 0.005){
-      const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
-      erros.push(nomeProd+`: EF (${R(efVal)}) maior que EI + Compras (${R(calc.disponivelVal)})`);
-      if(elErr){ elErr.textContent=`⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(calc.disponivelVal)})`; elErr.style.display='block'; }
-      inp.style.borderColor='var(--rd)';
-      return;
+    // Só valida em R$ se o produto tem custo médio conhecido
+    if(cm > 0){
+      // Val. 1: sem base (EI R$ = 0 e Compras R$ = 0)
+      if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
+        const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
+        erros.push(nomeProd+': revise os lançamentos de Estoque Inicial e Compras');
+        if(elErr){ elErr.textContent='⚠ Revise os lançamentos de Estoque Inicial e Compras'; elErr.style.display='block'; }
+        inp.style.borderColor='var(--rd)';
+        return;
+      }
+      // Val. 2: EF R$ > disponível R$
+      if(efVal > calc.disponivelVal + 0.005){
+        const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
+        erros.push(nomeProd+`: EF (${R(efVal)}) maior que EI + Compras (${R(calc.disponivelVal)})`);
+        if(elErr){ elErr.textContent=`⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(calc.disponivelVal)})`; elErr.style.display='block'; }
+        inp.style.borderColor='var(--rd)';
+        return;
+      }
     }
     // OK
     if(elErr) elErr.style.display='none';
