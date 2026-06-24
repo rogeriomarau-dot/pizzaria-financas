@@ -176,6 +176,153 @@ th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort
 .page{display:none;}
 .page.act{display:block;}
 
+/* ── IMPRESSÃO ── */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 14mm; }
+
+  /* Esconde sidebar, topbar e todo o resto */
+  .sb, .tb, .no-print { display: none !important; }
+
+  /* Reset do layout */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    font-size: 11px !important;
+  }
+
+  #app { display: block !important; height: auto !important; overflow: visible !important; }
+  .ma  { display: block !important; height: auto !important; overflow: visible !important; }
+  .ca  { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
+
+  /* Esconde todas as páginas exceto a marcada */
+  .page { display: none !important; }
+  .page.print-target {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Esconde filtros, botões e controles */
+  .print-target .btn,
+  .print-target .btn-sm,
+  .print-target .btn-p,
+  .print-target button,
+  .print-target .mp-nav,
+  .print-target .mp-wrap,
+  .print-target .ms-wrap,
+  .print-target .kg,
+  .print-target .fg,
+  .print-target .no-print { display: none !important; }
+
+  /* Oculta área de filtros especificamente (primeiro .cd direto da página) */
+  #page-rel-pagar > .cd:first-of-type,
+  #page-rel-compras > .cd:first-of-type { display: none !important; }
+
+  /* Garante que todos os .cd apareçam */
+  .print-target .cd { display: block !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin-bottom: 8px !important; }
+
+  /* Cabeçalho padrão de impressão */
+  .print-header {
+    display: block !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid #333 !important;
+  }
+  .print-header .ph-empresa { font-size: 11px !important; color: #666 !important; margin: 0 0 2px 0 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+  .print-header h2           { font-size: 15px !important; color: #000 !important; margin: 0 0 3px 0 !important; font-weight: 700 !important; }
+  .print-header .ph-periodo  { font-size: 11px !important; color: #333 !important; margin: 0 !important; }
+  .print-header .ph-data     { font-size: 10px !important; color: #888 !important; margin: 0 !important; float: right !important; }
+
+  /* Tabelas — compactar colunas */
+  .print-target table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+  .print-target th {
+    font-size: 9px !important; padding: 3px 4px !important;
+    background: #f0f0f0 !important; color: #000 !important;
+    border: 1px solid #bbb !important; white-space: nowrap !important;
+    overflow: hidden !important; text-overflow: ellipsis !important;
+  }
+  .print-target td {
+    font-size: 9px !important; padding: 3px 4px !important;
+    border: 1px solid #ddd !important; color: #000 !important;
+    overflow: hidden !important; text-overflow: ellipsis !important;
+  }
+  .print-target tr { page-break-inside: avoid; }
+  .print-target thead { display: table-header-group; }
+
+  /* Título da seção */
+  .print-target .ct {
+    font-size: 12px !important; font-weight: 700 !important;
+    color: #000 !important; margin-bottom: 6px !important;
+    padding: 0 0 4px 0 !important; border-bottom: 1px solid #ccc !important;
+    background: none !important; display: block !important;
+  }
+
+  /* Scroll wrappers — liberar overflow */
+  .print-target .tw,
+  .print-target [style*="overflow"] {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Curva ABC — nova página + cabeçalho visível */
+  .print-target .g2 { display: block !important; }
+  .print-target .g2 > div { display: block !important; margin-bottom: 12px !important; }
+  .print-target #eq-abc-list { display: block !important; overflow: visible !important; max-height: none !important; }
+  /* Quebra de página antes da Curva ABC */
+  .print-target .abc-page-break {
+    display: block !important;
+    page-break-after: always !important;
+    break-after: always !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    visibility: hidden !important;
+  }
+  .print-target .abc-wrap {
+    display: block !important;
+    width: 100% !important;
+  }
+  .print-target .abc-print-header {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid #333 !important;
+  }
+  .print-target canvas { display: none !important; }
+
+  /* Rel. Contas a Pagar — larguras de colunas ajustadas para A4 paisagem */
+  #rp-tabela th:nth-child(1)  { width: 7% !important; }  /* Dt. Vencimento */
+  #rp-tabela th:nth-child(2)  { width: 7% !important; }  /* Dt. Competência */
+  #rp-tabela th:nth-child(3)  { width: 10% !important; } /* Conta Débito */
+  #rp-tabela th:nth-child(4)  { width: 8% !important; }  /* Categoria */
+  #rp-tabela th:nth-child(5)  { width: 16% !important; } /* Descrição */
+  #rp-tabela th:nth-child(6)  { width: 12% !important; } /* Fornecedor */
+  #rp-tabela th:nth-child(7)  { display: none !important; } /* N° Doc — ocultar */
+  #rp-tabela td:nth-child(7)  { display: none !important; }
+  #rp-tabela th:nth-child(8)  { width: 8% !important; text-align:right; }  /* Valor */
+  #rp-tabela th:nth-child(9)  { width: 9% !important; }  /* Forma Pagto */
+  #rp-tabela th:nth-child(10) { width: 7% !important; }  /* Dt. Pagamento */
+  #rp-tabela th:nth-child(11) { width: 6% !important; }  /* Atraso */
+  #rp-tabela th:nth-child(12) { width: 10% !important; } /* Conta Corrente */
+  #rp-tabela th:nth-child(13) { width: 7% !important; }  /* Status */
+
+  /* Fluxo de Caixa — analítico e calendário em folhas separadas */
+  #fcx-wrap { page-break-after: always !important; }
+  .print-target #fcx-wrap { display: block !important; overflow: visible !important; max-height: none !important; }
+  .print-target #fcx-blk  { min-width: unset !important; width: 100% !important; }
+}
+
 /* KPI */
 .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
 .kc{background:var(--dk2);border:1px solid var(--bd);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s;}
@@ -891,6 +1038,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- DRE -->
 <div class="page" id="page-dre">
+  <div class="print-header" style="display:none"></div>
 
   <!-- Barra de controles -->
   <div class="cd" style="margin-bottom:12px">
@@ -923,7 +1071,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="dreMesAtual()"><i class="fa-solid fa-calendar-day"></i> Mês Atual</button>
         <button class="btn btn-sm" onclick="dreAnoAtual()"><i class="fa-solid fa-calendar"></i> Ano Atual</button>
-        <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button class="btn btn-sm" onclick="imprimirDRE()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
   </div>
@@ -973,6 +1121,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <!-- FLUXO DE CAIXA -->
 <div class="page" id="page-fluxo">
 
+  <!-- Cabeçalho visível só na impressão -->
+  <div class="print-header" style="display:none">
+    <h2>Relatório de Fluxo de Caixa</h2>
+    <p id="fcx-print-mes"></p>
+  </div>
+
   <!-- Cabeçalho controles -->
   <div class="cd" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -1002,6 +1156,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
       <!-- KPIs rápidos -->
       <div id="fcx-kpis" style="display:flex;gap:10px;flex:1;justify-content:flex-end"></div>
+      <button class="btn btn-sm" onclick="imprimirFluxo()"><i class="fa-solid fa-print"></i> Imprimir</button>
     </div>
   </div>
 
@@ -1597,6 +1752,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- CONTAS A PAGAR -->
 <div class="page" id="page-pagar">
+  <div class="print-header" style="display:none"></div>
   <div class="kg" id="kpi-pg"></div>
   <div class="cd">
     <div class="ct">Contas a Pagar
@@ -1612,6 +1768,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           title="Lista todos os lançamentos de receita no localStorage — útil para encontrar lançamentos fantasmas">
           <i class="fa-solid fa-magnifying-glass-chart"></i> Auditar Receitas
         </button>
+        <button class="btn btn-sm" onclick="imprimirModuloPagar()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
     <div class="tw"><table><thead><tr>
@@ -1631,6 +1788,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- CONTAS A RECEBER -->
 <div class="page" id="page-receber">
+  <div class="print-header" style="display:none"></div>
   <div class="kg" id="kpi-rc"></div>
   <div class="cd">
     <div class="ct">Contas a Receber
@@ -1655,6 +1813,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </select>
 
         <!-- Botão de período -->
+        <button class="btn btn-sm" onclick="imprimirModuloReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
         <button id="rc-periodo-btn" onclick="rcTogglePicker()"
           style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
           <span style="display:flex;align-items:center;gap:6px">
@@ -1769,6 +1928,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- ESTOQUE -->
 <div class="page" id="page-estoque">
+  <div class="print-header" style="display:none"></div>
 
   <!-- Barra de controles -->
   <div class="cd" style="margin-bottom:12px">
@@ -1811,6 +1971,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="eqAbrirEstoqueInicial()" title="Lançar estoque inicial do primeiro mês"><i class="fa-solid fa-warehouse"></i> Est. Inicial</button>
         <button class="btn btn-sm" onclick="eqAbrirInventario()"><i class="fa-solid fa-clipboard-list"></i> Inventário</button>
+        <button class="btn btn-sm" onclick="imprimirEstoque()"><i class="fa-solid fa-print"></i> Imprimir</button>
         <button class="btn btn-sm" onclick="eqGerarListaCompras()"><i class="fa-solid fa-cart-shopping"></i> Lista de Compras</button>
         <button class="btn btn-sm" title="Importar lançamentos do Contas a Pagar para o Estoque" onclick="eqSincronizarCAP()"><i class="fa-solid fa-rotate"></i> Sincronizar CAP</button>
 
@@ -1853,8 +2014,11 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 
   <!-- Linha do CMV Total + Gráficos -->
-  <div class="g2">
-    <div class="cd">
+  <div class="abc-page-break" style="display:none"></div>
+  <div class="abc-wrap">
+    <div class="print-header abc-print-header" style="display:none"></div>
+    <div class="g2 abc-section">
+      <div class="cd">
       <div class="ct" style="display:flex;align-items:center;justify-content:space-between">
         <span>Curva ABC <span class="cs" id="eq-abc-per"></span></span>
         <div style="display:flex;gap:4px">
@@ -1867,6 +2031,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="cd">
       <div class="ct"><span id="eq-cat-titulo">Valor por Categoria</span> <span class="cs" id="eq-cat-per"></span></div>
       <div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div>
+    </div>
     </div>
   </div>
 
@@ -2368,6 +2533,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
   </div>
 
+  <!-- Cabeçalho visível só na impressão -->
+  <div class="print-header" style="display:none">
+    <h2>Relatório de Contas a Pagar</h2>
+    <p id="rp-print-mes">Competência: —</p>
+  </div>
+
   <!-- KPIs do relatório -->
   <div class="kg" id="kpi-rp" style="margin-bottom:12px"></div>
 
@@ -2411,6 +2582,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
      RELATÓRIO — COMPRAS / ESTOQUE DE PRODUTOS
 ═══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-rel-compras">
+  <div class="print-header" style="display:none"></div>
   <!-- Filtros -->
   <div class="cd" style="margin-bottom:12px">
     <div class="ct" style="margin-bottom:14px">
@@ -2584,7 +2756,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn btn-sm" onclick="limparFiltrosVendas()"><i class="fa-solid fa-eraser"></i> Limpar</button>
         <button class="btn btn-p btn-sm" onclick="gerarRelVendas()"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
         <button class="btn btn-sm" onclick="exportarRelVendas()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
-        <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button class="btn btn-sm" onclick="imprimirPagina('page-rel-vendas')"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
     <!-- Tabs tipo de filtro -->
@@ -3663,7 +3835,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div id="eq-lista-compras-body"></div>
     <div class="mf">
       <button class="bc" onclick="closeMod('mod-eq-compras')">Fechar</button>
-      <button class="bs" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right:6px"></i>Imprimir</button>
+      <button class="bs" onclick="imprimirPagina('mod-eq-compras')"><i class="fa-solid fa-print" style="margin-right:6px"></i>Imprimir</button>
     </div>
   </div>
 </div>
@@ -16175,7 +16347,60 @@ function exportarRelPagar(){
   a.click();
 }
 
-function imprimirRelPagar(){ window.print(); }
+// ── Impressão por página ──
+function getPrintEmpresa(){
+  return (document.getElementById('cn')?.textContent||'').trim() || 'Finance Gestão Pro';
+}
+
+function fmtYM(ym){
+  if(!ym) return '';
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const [y,m] = ym.split('-').map(Number);
+  return meses[m-1]+' '+y;
+}
+
+function fmtData(d){
+  if(!d) return '';
+  const [y,m,dia] = d.split('-');
+  return dia+'/'+m+'/'+y;
+}
+
+function buildPrintHeader(pageId, titulo, periodo){
+  const el = document.getElementById(pageId);
+  if(!el) return;
+  const empresa = getPrintEmpresa();
+  const agora   = new Date();
+  const dtImp   = agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const html = `
+    <span class="ph-data">Impresso em ${dtImp}</span>
+    <div class="ph-empresa">${empresa}</div>
+    <h2>${titulo}</h2>
+    <div class="ph-periodo">${periodo||''}</div>`;
+  // Atualiza apenas o primeiro .print-header direto da página (não o abc-print-header)
+  const ph = el.querySelector('.print-header:not(.abc-print-header)');
+  if(ph){ ph.style.display = ''; ph.innerHTML = html; }
+}
+
+function imprimirPagina(pageId, titulo, periodo){
+  const el = document.getElementById(pageId);
+  if(!el) return;
+  if(titulo) buildPrintHeader(pageId, titulo, periodo||'');
+  el.classList.add('print-target');
+  window.print();
+  el.classList.remove('print-target');
+}
+
+function imprimirRelPagar(){
+  const dtIni   = document.getElementById('rp-dt-ini')?.value || '';
+  const dtFim   = document.getElementById('rp-dt-fim')?.value || '';
+  const btnComp = document.getElementById('mp-comp-btn');
+  const comp    = btnComp?.textContent.trim() || '';
+  let partes = [];
+  if(dtIni || dtFim) partes.push('Vencimento: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...'));
+  if(comp && comp !== 'Todos os meses') partes.push('Competência: '+comp);
+  const periodo = partes.length > 0 ? partes.join('  |  ') : 'Todos os períodos';
+  imprimirPagina('page-rel-pagar', 'Relatório de Contas a Pagar', periodo);
+}
 
 // ══════════════════════════════════════
 // RELATÓRIO — COMPRAS / ESTOQUE
@@ -16682,7 +16907,83 @@ function exportarRelCompras(){
   a.click();
 }
 
-function imprimirRelCompras(){ window.print(); }
+function imprimirRelCompras(){ imprimirRelComprasCompleto(); }
+
+function imprimirDRE(){
+  const ym = _dbMes || '';
+  const periodo = ym ? fmtYM(ym) : '';
+  imprimirPagina('page-dre', 'DRE — Demonstrativo de Resultado', periodo);
+}
+
+function imprimirModuloPagar(){
+  const ym = document.getElementById('pg-mes')?.value || '';
+  const periodo = ym ? fmtYM(ym) : new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  imprimirPagina('page-pagar', 'Contas a Pagar', periodo);
+}
+
+function imprimirModuloReceber(){
+  // Pega o período exibido no botão de filtro
+  const labelPeriodo = document.getElementById('rc-periodo-label')?.textContent?.trim() || '';
+  const dtIni = document.getElementById('rc-dt-ini')?.value || '';
+  const dtFim = document.getElementById('rc-dt-fim')?.value || '';
+  let periodo = labelPeriodo;
+  if(dtIni || dtFim){
+    periodo = 'Período: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...');
+  }
+  imprimirPagina('page-receber', 'Contas a Receber', periodo);
+}
+
+function imprimirEstoque(){
+  const ym      = document.getElementById('eq-mes')?.value || '';
+  const periodo = ym ? fmtYM(ym) : '';
+  const empresa = getPrintEmpresa();
+  const agora   = new Date();
+  const dtImp   = agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  // Cabeçalho da primeira folha (tabela principal)
+  buildPrintHeader('page-estoque', 'Controle de Estoque', periodo);
+
+  // Cabeçalho da segunda folha (Curva ABC)
+  const abcHdr = document.querySelector('.abc-print-header');
+  if(abcHdr){
+    abcHdr.innerHTML = `
+      <span class="ph-data">Impresso em ${dtImp}</span>
+      <div class="ph-empresa">${empresa}</div>
+      <h2>Curva ABC — Análise de Consumo</h2>
+      <div class="ph-periodo">${periodo}</div>`;
+  }
+
+  // Remove display:none inline para o CSS de impressão funcionar
+  const abcHdrEl = document.querySelector('.abc-print-header');
+  if(abcHdrEl) abcHdrEl.style.display = '';
+  const abcBreak = document.querySelector('.abc-page-break');
+  if(abcBreak) abcBreak.style.display = '';
+
+  const el = document.getElementById('page-estoque');
+  if(!el) return;
+  el.classList.add('print-target');
+  window.print();
+  el.classList.remove('print-target');
+
+  // Restaura o none após imprimir
+  if(abcHdrEl) abcHdrEl.style.display = 'none';
+  if(abcBreak) abcBreak.style.display = 'none';
+}
+
+function imprimirRelComprasCompleto(){
+  const dtIni = document.getElementById('rcc-dt-ini')?.value || '';
+  const dtFim = document.getElementById('rcc-dt-fim')?.value || '';
+  let periodo = '';
+  if(dtIni || dtFim) periodo = 'Período: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...');
+  imprimirPagina('page-rel-compras', 'Relatório de Compras', periodo);
+}
+
+// Impressão especial do Fluxo de Caixa — popula mês no cabeçalho
+function imprimirFluxo(){
+  const elLabel = document.getElementById('fcx-mes-label');
+  const periodo = elLabel?.textContent.trim() || '';
+  imprimirPagina('page-fluxo', 'Relatório de Fluxo de Caixa', periodo);
+}
 
 
 
@@ -17494,7 +17795,7 @@ function gerarRelVendas(){
   let arr = Object.values(mapa);
 
   if(minRod > 0){
-    arr = arr.filter(x=> x.cat !== 'Rodízio' || x.qtd >= minRod);
+    arr = arr.filter(x=> !x.cat?.toLowerCase().includes('rod') || x.qtd >= minRod);
   }
 
   arr.sort((a,b)=> b.fat !== a.fat ? b.fat - a.fat : b.preco - a.preco);
@@ -17543,8 +17844,10 @@ function renderRelVendas(){
   if(kpiEl)     kpiEl.style.display='grid';
   if(grafWrap)  grafWrap.style.display='block';
   if(tabelaCard)tabelaCard.style.display='block';
-  // Rodízios
-  const rodArr   = arr.filter(x=>x.cat==='Rodízio');
+  // Rodízios — busca dinamicamente a categoria com 'rodiz' no nome
+  const _catsRv = getCatProdsVenda().filter(c=>c.st==='Ativo');
+  const catRodizio = _catsRv.find(c=>c.nome.toLowerCase().includes('rod'))?.nome || 'Rodízio';
+  const rodArr = arr.filter(x=> x.cat && x.cat.toLowerCase().includes('rod'));
   const rodQtd   = rodArr.reduce((a,b)=>a+b.qtd, 0);
   const rodFat   = rodArr.reduce((a,b)=>a+b.fat, 0);
   const rodTicket= rodQtd>0 ? rodFat/rodQtd : 0;
@@ -17569,7 +17872,15 @@ function renderRelVendas(){
 
   document.getElementById('rv-total-label').textContent = arr.length+' produtos · Faturamento: '+R(totalFat);
 
-  const catCor = {'Rodízio':'tg-or','Bebidas':'tg-bl','Cervejas':'tg-am','Drinks':'tg-gy','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  // Monta mapa de cores dinamicamente do cadastro de categorias
+  const _catsCadastro = getCatProdsVenda().filter(c=>c.st==='Ativo');
+  const catCor = {};
+  // Fallback com cores padrão para categorias comuns
+  const catCorFallback = {'Rodízio':'tg-or','Rodízios':'tg-or','Pizzas':'tg-rd','Pizza':'tg-rd',
+    'Bebidas':'tg-bl','Refrigerantes':'tg-bl','Cervejas':'tg-am','Drinks':'tg-gy',
+    'Combos':'tg-gr','Promoções':'tg-gr','Sobremesas':'tg-rd','Sucos':'tg-or',
+    'Outros':'tg-gy','Vinhos':'tg-pu'};
+  _catsCadastro.forEach(c=>{ catCor[c.nome] = c.cor||catCorFallback[c.nome]||'tg-gy'; });
 
   document.getElementById('rv-tbody').innerHTML = arr.map(p=>{
     const custo = p.custo||0;
