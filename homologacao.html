@@ -176,6 +176,133 @@ th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort
 .page{display:none;}
 .page.act{display:block;}
 
+/* ── IMPRESSÃO ── */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 14mm; }
+
+  /* Esconde sidebar, topbar e todo o resto */
+  .sb, .tb, .no-print { display: none !important; }
+
+  /* Reset do layout */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    font-size: 11px !important;
+  }
+
+  #app { display: block !important; height: auto !important; overflow: visible !important; }
+  .ma  { display: block !important; height: auto !important; overflow: visible !important; }
+  .ca  { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
+
+  /* Esconde todas as páginas exceto a marcada */
+  .page { display: none !important; }
+  .page.print-target {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Esconde filtros, botões e controles */
+  .print-target .btn,
+  .print-target .btn-sm,
+  .print-target .btn-p,
+  .print-target button,
+  .print-target .mp-nav,
+  .print-target .mp-wrap,
+  .print-target .ms-wrap,
+  .print-target .kg,
+  .print-target .fg,
+  .print-target .no-print { display: none !important; }
+
+  /* Oculta área de filtros especificamente (primeiro .cd direto da página) */
+  #page-rel-pagar > .cd:first-of-type,
+  #page-rel-compras > .cd:first-of-type { display: none !important; }
+
+  /* Garante que todos os .cd apareçam */
+  .print-target .cd { display: block !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin-bottom: 8px !important; }
+
+  /* Cabeçalho padrão de impressão */
+  .print-header {
+    display: block !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid #333 !important;
+  }
+  .print-header .ph-empresa { font-size: 11px !important; color: #666 !important; margin: 0 0 2px 0 !important; text-transform: uppercase !important; letter-spacing: 1px !important; }
+  .print-header h2           { font-size: 15px !important; color: #000 !important; margin: 0 0 3px 0 !important; font-weight: 700 !important; }
+  .print-header .ph-periodo  { font-size: 11px !important; color: #333 !important; margin: 0 !important; }
+  .print-header .ph-data     { font-size: 10px !important; color: #888 !important; margin: 0 !important; float: right !important; }
+
+  /* Tabelas — compactar colunas */
+  .print-target table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+  .print-target th {
+    font-size: 9px !important; padding: 3px 4px !important;
+    background: #f0f0f0 !important; color: #000 !important;
+    border: 1px solid #bbb !important; white-space: nowrap !important;
+    overflow: hidden !important; text-overflow: ellipsis !important;
+  }
+  .print-target td {
+    font-size: 9px !important; padding: 3px 4px !important;
+    border: 1px solid #ddd !important; color: #000 !important;
+    overflow: hidden !important; text-overflow: ellipsis !important;
+  }
+  .print-target tr { page-break-inside: avoid; }
+  .print-target thead { display: table-header-group; }
+
+  /* Título da seção */
+  .print-target .ct {
+    font-size: 12px !important; font-weight: 700 !important;
+    color: #000 !important; margin-bottom: 6px !important;
+    padding: 0 0 4px 0 !important; border-bottom: 1px solid #ccc !important;
+    background: none !important; display: flex !important;
+    align-items: center !important; gap: 6px !important;
+  }
+
+  /* Scroll wrappers — liberar overflow */
+  .print-target .tw,
+  .print-target [style*="overflow"] {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Curva ABC — nova página + cabeçalho visível */
+  .print-target .g2 { display: block !important; }
+  .print-target .g2 > div { display: block !important; margin-bottom: 12px !important; }
+  .print-target #eq-abc-list { display: block !important; overflow: visible !important; max-height: none !important; }
+  /* Curva ABC — segunda page (page-estoque-abc) usa o mesmo .print-header padrão */
+  .print-target canvas { display: none !important; }
+
+  /* Rel. Contas a Pagar — larguras de colunas ajustadas para A4 paisagem */
+  #rp-tabela th:nth-child(1)  { width: 7% !important; }  /* Dt. Vencimento */
+  #rp-tabela th:nth-child(2)  { width: 7% !important; }  /* Dt. Competência */
+  #rp-tabela th:nth-child(3)  { width: 10% !important; } /* Conta Débito */
+  #rp-tabela th:nth-child(4)  { width: 8% !important; }  /* Categoria */
+  #rp-tabela th:nth-child(5)  { width: 16% !important; } /* Descrição */
+  #rp-tabela th:nth-child(6)  { width: 12% !important; } /* Fornecedor */
+  #rp-tabela th:nth-child(7)  { display: none !important; } /* N° Doc — ocultar */
+  #rp-tabela td:nth-child(7)  { display: none !important; }
+  #rp-tabela th:nth-child(8)  { width: 8% !important; text-align:right; }  /* Valor */
+  #rp-tabela th:nth-child(9)  { width: 9% !important; }  /* Forma Pagto */
+  #rp-tabela th:nth-child(10) { width: 7% !important; }  /* Dt. Pagamento */
+  #rp-tabela th:nth-child(11) { width: 6% !important; }  /* Atraso */
+  #rp-tabela th:nth-child(12) { width: 10% !important; } /* Conta Corrente */
+  #rp-tabela th:nth-child(13) { width: 7% !important; }  /* Status */
+
+  /* Fluxo de Caixa — analítico e calendário em folhas separadas */
+  #fcx-wrap { page-break-after: always !important; }
+  .print-target #fcx-wrap { display: block !important; overflow: visible !important; max-height: none !important; }
+  .print-target #fcx-blk  { min-width: unset !important; width: 100% !important; }
+}
+
 /* KPI */
 .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
 .kc{background:var(--dk2);border:1px solid var(--bd);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s;}
@@ -342,6 +469,10 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 .rc-ms-item.sel .rc-ms-chk::after{content:'✓';font-size:10px;color:#fff;line-height:1}
 .rc-ms-item.sel{color:var(--tx)}
 
+#tb-eq-ini input[type=number]::-webkit-inner-spin-button,
+#tb-eq-ini input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#tb-eq-inv input[type=number]::-webkit-inner-spin-button,
+#tb-eq-inv input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 
 </head>
@@ -515,6 +646,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </button>
       <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(33,150,243,0.4);color:var(--bl)" onclick="cxCorrigirCAPsFaltantes()" title="Corrige lançamentos do caixa que não aparecem no DRE e Fluxo">
         <i class="fa-solid fa-wrench"></i> Corrigir CAPs do Caixa
+      </button>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(156,39,176,0.5);color:#CE93D8" onclick="corrigirContaItensCAP()" title="Corrige itens do CAP cuja conta diverge da conta principal do lançamento">
+        <i class="fa-solid fa-rotate"></i> Corrigir Conta dos Itens CAP
+      </button>
+      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(0,188,212,0.5);color:#80DEEA" onclick="sincronizarContaItensPagar()" title="Atualiza conta dos itens do CAP conforme cadastro atual de insumos/serviços">
+        <i class="fa-solid fa-arrows-rotate"></i> Sincronizar Contas c/ Cadastro
       </button>
       <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(76,175,80,0.4);color:var(--gr)" onclick="diagPorCodigo(prompt('Código do lançamento (ex: PAG-00023):','PAG-00023'))" title="Diagnóstico detalhado de um lançamento específico">
         <i class="fa-solid fa-stethoscope"></i> Diagnóstico por Código
@@ -887,6 +1024,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- DRE -->
 <div class="page" id="page-dre">
+  <div class="print-header" style="display:none"></div>
 
   <!-- Barra de controles -->
   <div class="cd" style="margin-bottom:12px">
@@ -919,7 +1057,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="dreMesAtual()"><i class="fa-solid fa-calendar-day"></i> Mês Atual</button>
         <button class="btn btn-sm" onclick="dreAnoAtual()"><i class="fa-solid fa-calendar"></i> Ano Atual</button>
-        <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button class="btn btn-sm" onclick="imprimirDRE()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
   </div>
@@ -969,6 +1107,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <!-- FLUXO DE CAIXA -->
 <div class="page" id="page-fluxo">
 
+  <!-- Cabeçalho visível só na impressão -->
+  <div class="print-header" style="display:none">
+    <h2>Relatório de Fluxo de Caixa</h2>
+    <p id="fcx-print-mes"></p>
+  </div>
+
   <!-- Cabeçalho controles -->
   <div class="cd" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -998,6 +1142,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
       <!-- KPIs rápidos -->
       <div id="fcx-kpis" style="display:flex;gap:10px;flex:1;justify-content:flex-end"></div>
+      <button class="btn btn-sm" onclick="imprimirFluxo()"><i class="fa-solid fa-print"></i> Imprimir</button>
     </div>
   </div>
 
@@ -1593,11 +1738,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- CONTAS A PAGAR -->
 <div class="page" id="page-pagar">
+  <div class="print-header" style="display:none"></div>
   <div class="kg" id="kpi-pg"></div>
   <div class="cd">
     <div class="ct">Contas a Pagar
       <div style="display:flex;align-items:center;gap:8px">
         <button class="btn btn-p btn-sm" onclick="resetModalPagar();openMod('mod-pagar')"><i class="fa-solid fa-plus"></i> Novo Lançamento</button>
+        <button class="btn btn-sm" onclick="abrirBaixaLote()"
+          style="border-color:rgba(76,175,80,0.5);color:#81C784"
+          title="Baixar múltiplos pagamentos de uma vez por período">
+          <i class="fa-solid fa-list-check"></i> Baixa em Lote
+        </button>
         <button class="btn btn-sm" onclick="diagDuplicidade()"
           style="border-color:rgba(255,143,0,0.4);color:var(--am)"
           title="Detecta lançamentos com itens E val simultâneos que causam dupla contagem no DRE">
@@ -1608,6 +1759,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           title="Lista todos os lançamentos de receita no localStorage — útil para encontrar lançamentos fantasmas">
           <i class="fa-solid fa-magnifying-glass-chart"></i> Auditar Receitas
         </button>
+        <button class="btn btn-sm" onclick="imprimirModuloPagar()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
     <div class="tw"><table><thead><tr>
@@ -1627,6 +1779,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- CONTAS A RECEBER -->
 <div class="page" id="page-receber">
+  <div class="print-header" style="display:none"></div>
   <div class="kg" id="kpi-rc"></div>
   <div class="cd">
     <div class="ct">Contas a Receber
@@ -1651,6 +1804,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </select>
 
         <!-- Botão de período -->
+        <button class="btn btn-sm" onclick="imprimirModuloReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
         <button id="rc-periodo-btn" onclick="rcTogglePicker()"
           style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
           <span style="display:flex;align-items:center;gap:6px">
@@ -1765,6 +1919,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- ESTOQUE -->
 <div class="page" id="page-estoque">
+  <div class="print-header" style="display:none"></div>
 
   <!-- Barra de controles -->
   <div class="cd" style="margin-bottom:12px">
@@ -1807,6 +1962,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="eqAbrirEstoqueInicial()" title="Lançar estoque inicial do primeiro mês"><i class="fa-solid fa-warehouse"></i> Est. Inicial</button>
         <button class="btn btn-sm" onclick="eqAbrirInventario()"><i class="fa-solid fa-clipboard-list"></i> Inventário</button>
+        <button class="btn btn-sm" onclick="imprimirEstoque()"><i class="fa-solid fa-print"></i> Imprimir</button>
         <button class="btn btn-sm" onclick="eqGerarListaCompras()"><i class="fa-solid fa-cart-shopping"></i> Lista de Compras</button>
         <button class="btn btn-sm" title="Importar lançamentos do Contas a Pagar para o Estoque" onclick="eqSincronizarCAP()"><i class="fa-solid fa-rotate"></i> Sincronizar CAP</button>
 
@@ -1838,7 +1994,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <th style="text-align:right;color:#EF9A9A">− Est. Final R$</th>
             <th class="sortable" onclick="eqSortCol('cmvQtd',this)" style="text-align:right;color:var(--or);cursor:pointer">= CMV Qtd <i class="fa-solid sort-icon"></i></th>
             <th class="sortable" onclick="eqSortCol('cmvVal',this)" style="text-align:right;color:var(--or);cursor:pointer">CMV R$ <i class="fa-solid sort-icon"></i></th>
-            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Último Preço <i class="fa-solid sort-icon"></i></th>
+            <th class="sortable" onclick="eqSortCol('custoMedio',this)" style="text-align:right;cursor:pointer">Pr. Médio <i class="fa-solid sort-icon"></i></th>
             <th style="text-align:center">Status</th>
             <th></th>
           </tr>
@@ -1848,23 +2004,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
   </div>
 
-  <!-- Linha do CMV Total + Gráficos -->
-  <div class="g2">
-    <div class="cd">
-      <div class="ct" style="display:flex;align-items:center;justify-content:space-between">
-        <span>Curva ABC <span class="cs" id="eq-abc-per"></span></span>
-        <div style="display:flex;gap:4px">
-          <button id="abc-tab-val" onclick="eqAbcModo('val')" style="padding:3px 10px;border:1px solid var(--or);border-radius:4px;background:var(--or);color:#fff;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">R$ Valor</button>
-          <button id="abc-tab-qtd" onclick="eqAbcModo('qtd')" style="padding:3px 10px;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Qtd</button>
-        </div>
-      </div>
-      <div id="eq-abc-list"></div>
-    </div>
-    <div class="cd">
-      <div class="ct"><span id="eq-cat-titulo">Valor por Categoria</span> <span class="cs" id="eq-cat-per"></span></div>
-      <div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div>
-    </div>
-  </div>
 
   <!-- Histórico de movimentações -->
   <div class="cd" style="margin-top:12px">
@@ -1890,6 +2029,27 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
   </div>
 
+</div>
+
+<!-- ESTOQUE — CURVA ABC (segunda folha de impressão) -->
+<div class="page" id="page-estoque-abc">
+  <div class="print-header" style="display:none"></div>
+  <div class="g2 abc-section">
+    <div class="cd">
+      <div class="ct" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Curva ABC <span class="cs" id="eq-abc-per"></span></span>
+        <div style="display:flex;gap:4px">
+          <button id="abc-tab-val" onclick="eqAbcModo('val')" style="padding:3px 10px;border:1px solid var(--or);border-radius:4px;background:var(--or);color:#fff;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">R$ Valor</button>
+          <button id="abc-tab-qtd" onclick="eqAbcModo('qtd')" style="padding:3px 10px;border:1px solid var(--bd);border-radius:4px;background:transparent;color:var(--tx2);font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Qtd</button>
+        </div>
+      </div>
+      <div id="eq-abc-list"></div>
+    </div>
+    <div class="cd">
+      <div class="ct"><span id="eq-cat-titulo">Valor por Categoria</span> <span class="cs" id="eq-cat-per"></span></div>
+      <div class="cw" style="height:220px"><canvas id="c-eq" role="img" aria-label="estoque"></canvas></div>
+    </div>
+  </div>
 </div>
 
 <!-- CMV -->
@@ -2249,6 +2409,47 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 .mp-clear{width:100%;margin-top:10px;background:transparent;border:1px solid var(--bd);color:var(--tx2);
   border-radius:5px;padding:6px;font-family:'Outfit',sans-serif;font-size:11px;cursor:pointer;transition:all 0.15s;}
 .mp-clear:hover{border-color:var(--rd);color:var(--rd);}
+#tb-eq-ini input[type=number]::-webkit-inner-spin-button,
+#tb-eq-ini input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── AUTOCOMPLETE CONTA DO PLANO DE CONTAS ── */
+.ac-conta-wrap{position:relative;width:100%;}
+.ac-conta-input{
+  width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;
+  padding:9px 32px 9px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;
+  outline:none;box-sizing:border-box;transition:border-color .2s;
+}
+.ac-conta-input:focus{border-color:var(--or);}
+.ac-conta-input.ac-erro{border-color:rgba(242,100,25,0.6);}
+.ac-conta-icon{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  color:var(--tx3);font-size:12px;pointer-events:none;
+}
+.ac-conta-drop{
+  display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;
+  background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;
+  box-shadow:0 8px 28px rgba(0,0,0,0.55);z-index:1200;
+  max-height:240px;overflow-y:auto;
+}
+.ac-conta-drop.ac-aberto{display:block;}
+.ac-conta-item{
+  padding:8px 12px;font-size:12px;font-family:'Outfit',sans-serif;
+  color:var(--tx);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background .12s;
+}
+.ac-conta-item:last-child{border-bottom:none;}
+.ac-conta-item:hover,.ac-conta-item.ac-selected{background:rgba(242,100,25,0.15);color:var(--or);}
+.ac-conta-item.ac-group{
+  padding:6px 12px;font-size:10px;color:var(--or);font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;cursor:default;
+  background:rgba(242,100,25,0.06);pointer-events:none;
+}
+.ac-conta-item.ac-sub{
+  padding:6px 12px 6px 20px;font-size:10px;color:var(--tx2);font-weight:600;
+  cursor:default;background:transparent;pointer-events:none;
+}
+.ac-conta-vazio{padding:12px;font-size:12px;color:var(--tx3);text-align:center;font-family:'Outfit',sans-serif;}
+.ac-conta-cod{font-size:10px;color:var(--tx3);margin-right:6px;font-weight:600;}
 </style>
 
 <div class="page" id="page-rel-pagar">
@@ -2362,6 +2563,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
   </div>
 
+  <!-- Cabeçalho visível só na impressão -->
+  <div class="print-header" style="display:none">
+    <h2>Relatório de Contas a Pagar</h2>
+    <p id="rp-print-mes">Competência: —</p>
+  </div>
+
   <!-- KPIs do relatório -->
   <div class="kg" id="kpi-rp" style="margin-bottom:12px"></div>
 
@@ -2379,13 +2586,13 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <table id="rp-tabela">
         <thead>
           <tr id="rp-thead">
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('venc')">Dt. Vencimento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-venc"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cod')">N° Doc. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cod"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('comp')">Dt. Competência <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-comp"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('venc')">Dt. Vencimento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-venc"></i></th>
             <th style="white-space:nowrap">Conta Débito</th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cat"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('desc')">Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-desc"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forn"></i></th>
-            <th style="white-space:nowrap">N° Doc.</th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('desc')">Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-desc"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelPagar('val')">Valor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-val"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forma')">Forma Pagto. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forma"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('dtpag')">Dt. Pagamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-dtpag"></i></th>
@@ -2405,6 +2612,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
      RELATÓRIO — COMPRAS / ESTOQUE DE PRODUTOS
 ═══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-rel-compras">
+  <div class="print-header" style="display:none"></div>
   <!-- Filtros -->
   <div class="cd" style="margin-bottom:12px">
     <div class="ct" style="margin-bottom:14px">
@@ -2547,16 +2755,16 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <table id="rc-tabela">
         <thead>
           <tr>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('lanc')">N° Lançamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-lanc"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('data')">Data Compra <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-data"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('nome')">Produto / Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-nome"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('contaNome')">Conta Plano <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-contaNome"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-cat"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-forn"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('nome')">Produto / Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-nome"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('un')">Unid. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-un"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('qtd')">Qtd. Comprada <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-qtd"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('preco')">Preço Unit. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-preco"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('total')">Total <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-total"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-forn"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('lanc')">N° Lançamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-lanc"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('contaNome')">Conta Plano <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-contaNome"></i></th>
           </tr>
         </thead>
         <tbody id="rc-tbody"></tbody>
@@ -2578,7 +2786,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn btn-sm" onclick="limparFiltrosVendas()"><i class="fa-solid fa-eraser"></i> Limpar</button>
         <button class="btn btn-p btn-sm" onclick="gerarRelVendas()"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
         <button class="btn btn-sm" onclick="exportarRelVendas()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
-        <button class="btn btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button class="btn btn-sm" onclick="imprimirPagina('page-rel-vendas')"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
     <!-- Tabs tipo de filtro -->
@@ -3189,6 +3397,45 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
       </div>
 
+      <!-- RECORRÊNCIA -->
+      <div style="background:var(--dk3);border-radius:8px;padding:12px 16px;margin-bottom:14px;border:1px solid var(--bd)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;gap:8px">
+              <input type="checkbox" id="mpp-recorrente" onchange="toggleRecorrencia()"
+                style="width:16px;height:16px;accent-color:var(--or);cursor:pointer">
+              <span style="font-size:12px;font-weight:600;color:var(--tx);text-transform:uppercase;letter-spacing:1px">
+                <i class="fa-solid fa-rotate" style="color:var(--or);margin-right:5px"></i>Lançamento Recorrente
+              </span>
+            </label>
+          </div>
+          <span style="font-size:10px;color:var(--tx3)">Repete mensalmente com a mesma data</span>
+        </div>
+        <div id="mpp-recorrencia-opts" style="display:none;margin-top:12px;border-top:1px solid var(--bd);padding-top:12px">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div class="fg" style="margin:0;flex:1;min-width:140px">
+              <label style="font-size:10px">Nº de Repetições <span style="color:var(--rd)">*</span></label>
+              <div style="display:flex;align-items:center;gap:6px">
+                <input type="number" id="mpp-recorr-qtd" min="2" max="36" value="12" placeholder="Ex: 12"
+                  style="width:80px;background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;font-weight:600;outline:none;text-align:center"
+                  onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'"
+                  oninput="atualizarPreviewRecorrencia()">
+                <span style="font-size:12px;color:var(--tx2)">meses</span>
+                <div style="display:flex;gap:4px;margin-left:4px">
+                  <button onclick="document.getElementById('mpp-recorr-qtd').value=12;atualizarPreviewRecorrencia()" 
+                    style="padding:4px 8px;background:var(--dk2);border:1px solid var(--bd);border-radius:4px;color:var(--tx2);font-size:11px;cursor:pointer;font-family:Outfit,sans-serif">12×</button>
+                  <button onclick="document.getElementById('mpp-recorr-qtd').value=24;atualizarPreviewRecorrencia()"
+                    style="padding:4px 8px;background:var(--dk2);border:1px solid var(--bd);border-radius:4px;color:var(--tx2);font-size:11px;cursor:pointer;font-family:Outfit,sans-serif">24×</button>
+                  <button onclick="document.getElementById('mpp-recorr-qtd').value=36;atualizarPreviewRecorrencia()"
+                    style="padding:4px 8px;background:var(--dk2);border:1px solid var(--bd);border-radius:4px;color:var(--tx2);font-size:11px;cursor:pointer;font-family:Outfit,sans-serif">36×</button>
+                </div>
+              </div>
+            </div>
+            <div id="mpp-recorr-preview" style="flex:1;min-width:200px;font-size:11px;color:var(--tx3);background:rgba(242,100,25,0.06);border:1px solid rgba(242,100,25,0.2);border-radius:6px;padding:8px 12px;line-height:1.7"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ITENS DO LANÇAMENTO -->
       <div style="background:var(--dk3);border-radius:8px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--bd)">
         <div style="font-size:10px;color:var(--or);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px"><i class="fa-solid fa-list-check" style="margin-right:5px"></i>Itens do Lançamento</div>
@@ -3634,7 +3881,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <th>Produto</th><th>Categoria</th><th>Unid.</th>
           <th style="text-align:right;color:#81C784">Qtd Sistema</th>
           <th style="text-align:right;color:var(--or)">Qtd Real (Contagem) *</th>
-          <th style="text-align:right">Custo Médio</th>
+          <th style="text-align:right">Pr. Médio</th>
           <th style="text-align:right;color:var(--or)">Valor Est. Final</th>
         </tr></thead>
         <tbody id="tb-eq-inv"></tbody>
@@ -3657,7 +3904,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div id="eq-lista-compras-body"></div>
     <div class="mf">
       <button class="bc" onclick="closeMod('mod-eq-compras')">Fechar</button>
-      <button class="bs" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right:6px"></i>Imprimir</button>
+      <button class="bs" onclick="imprimirPagina('mod-eq-compras')"><i class="fa-solid fa-print" style="margin-right:6px"></i>Imprimir</button>
     </div>
   </div>
 </div>
@@ -4021,6 +4268,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <select id="mep-status" onchange="onMepStatusChange()">
           <option value="Pendente">Pendente</option>
           <option value="Pago">Pago</option>
+          <option value="Baixado">Baixado</option>
           <option value="A Vencer">A Vencer</option>
           <option value="Vencida">Vencida</option>
         </select>
@@ -4051,6 +4299,94 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 <!-- BAIXA RÁPIDA -->
+<div class="mo" id="mod-baixa-lote">
+  <div class="mb" style="width:780px;max-width:96vw">
+    <div class="mt">
+      <span><i class="fa-solid fa-list-check" style="color:var(--gr);margin-right:8px"></i>Baixa em Lote — Contas a Pagar</span>
+      <span class="mc" onclick="closeMod('mod-baixa-lote')">✕</span>
+    </div>
+
+    <!-- Filtro de período -->
+    <div style="background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Filtrar por período de vencimento</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">De</label>
+          <input type="date" id="blote-ini"
+            style="background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">Até</label>
+          <input type="date" id="blote-fim"
+            style="background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <button class="btn btn-p btn-sm" onclick="filtrarBaixaLote()" style="padding:7px 16px">
+          <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+        </button>
+        <div id="blote-contador" style="font-size:12px;color:var(--tx3);margin-left:4px"></div>
+      </div>
+    </div>
+
+    <!-- Lista de títulos encontrados -->
+    <div id="blote-lista-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+        Lançamentos com status <strong style="color:#81C784">Pago</strong> aguardando confirmação de comprovante — serão marcados como <strong style="color:#64B5F6">Baixado</strong>
+      </div>
+      <div style="max-height:340px;overflow-y:auto;border:1px solid var(--bd);border-radius:8px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:var(--dk3);position:sticky;top:0">
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Código</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Vencimento</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Fornecedor / Descrição</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Valor</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Conta/Banco</th>
+            </tr>
+          </thead>
+          <tbody id="blote-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Totalizador -->
+      <div id="blote-total-wrap" style="display:flex;align-items:center;justify-content:space-between;background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:12px 16px;margin-top:12px">
+        <div>
+          <span style="font-size:12px;color:var(--tx2)">Total selecionado:</span>
+          <span id="blote-qtd" style="font-size:12px;color:var(--tx);font-weight:600;margin-left:6px"></span>
+          <span style="font-size:12px;color:var(--tx3);margin:0 4px">lançamento(s)</span>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:var(--gr)" id="blote-total-val"></div>
+      </div>
+
+      <!-- Data da baixa -->
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">📅 Data da Baixa</label>
+          <input type="date" id="blote-dtpag"
+            style="background:var(--dk3);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <div style="font-size:11px;color:var(--tx3)">Esta data será registrada como data de pagamento de todos os lançamentos do lote.</div>
+      </div>
+    </div>
+
+    <!-- Mensagem vazia -->
+    <div id="blote-vazio" style="display:none;text-align:center;padding:32px;color:var(--tx3);font-size:13px">
+      <i class="fa-solid fa-circle-check" style="font-size:28px;color:var(--gr);display:block;margin-bottom:10px"></i>
+      Nenhum lançamento com status <strong style="color:#81C784">Pago</strong> aguardando confirmação encontrado neste período.<br>
+      <span style="font-size:11px;color:var(--tx3)">Todos os títulos já foram Baixados ou estão Pendentes.</span>
+    </div>
+
+    <div class="mf" style="margin-top:16px">
+      <button class="bc" onclick="closeMod('mod-baixa-lote')">Cancelar</button>
+      <button id="blote-btn-baixar" class="bs" style="background:var(--gr);min-width:200px;display:none" onclick="confirmarBaixaLote()">
+        <i class="fa-solid fa-list-check"></i> Baixar Lote
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="mod-baixa">
   <div class="mb" style="width:420px">
     <div class="mt">
@@ -4620,7 +4956,7 @@ const R=(v)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const P=(v)=>v.toFixed(1)+'%';
 const fd=(s)=>{if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
 const today=()=>new Date().toLocaleDateString('pt-BR');
-function stTag(s){const m={Pago:'tg-gr',Recebido:'tg-gr',Vencida:'tg-rd',Vencido:'tg-rd',Pendente:'tg-am',Agendado:'tg-bl',Ativo:'tg-gr',Ativa:'tg-gr',Inativo:'tg-rd',Inativa:'tg-rd'};return`<span class="tg ${m[s]||'tg-gy'}">${s}</span>`;}
+function stTag(s){const m={Pago:'tg-gr',Baixado:'tg-bl',Recebido:'tg-gr',Vencida:'tg-rd',Vencido:'tg-rd',Pendente:'tg-am',Agendado:'tg-bl',Ativo:'tg-gr',Ativa:'tg-gr',Inativo:'tg-rd',Inativa:'tg-rd'};return`<span class="tg ${m[s]||'tg-gy'}">${s||'—'}</span>`;}
 function regTag(r){return r==='caixa'?'<span class="tg tg-bl">Caixa</span>':'<span class="tg tg-or">Competência</span>';}
 function natTag(n){const m={receita:'tg-gr',despesa:'tg-rd',reducao:'tg-am'};const l={receita:'Receita',despesa:'Despesa',reducao:'Redução'};return`<span class="tg ${m[n]||'tg-gy'}">${l[n]||n}</span>`;}
 
@@ -6759,6 +7095,15 @@ function resetModalPagar(){
   // Reset da aba de importação NF-e
   resetNFeImport();
   setTabPagar('manual');
+  // Reset recorrência
+  const ckRec = document.getElementById('mpp-recorrente');
+  if(ckRec) ckRec.checked = false;
+  const optsRec = document.getElementById('mpp-recorrencia-opts');
+  if(optsRec) optsRec.style.display = 'none';
+  const qtdRec = document.getElementById('mpp-recorr-qtd');
+  if(qtdRec) qtdRec.value = '12';
+  const prevRec = document.getElementById('mpp-recorr-preview');
+  if(prevRec) prevRec.innerHTML = '';
 }
 
 // ── Gera linhas manuais de parcelas ──
@@ -6798,7 +7143,7 @@ function gerarParcelasManual(){
     const formaOpts=formas.map(f=>`<option>${f}</option>`).join('');
     row.innerHTML=`
       <div style="text-align:center;font-size:12px;font-weight:600;color:var(--or);background:rgba(242,100,25,0.12);border-radius:4px;padding:8px 0">${label}</div>
-      <input type="date" id="mpp-venc-${i}" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'">
+      <input type="date" id="mpp-venc-${i}" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'" onchange="atualizarPreviewRecorrencia()">
       <input type="number" id="mpp-val-${i}" placeholder="0,00" step="0.01" min="0"
         style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%"
         onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'"
@@ -6807,7 +7152,7 @@ function gerarParcelasManual(){
         ${formaOpts}
       </select>
       <select id="mpp-st-${i}" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 6px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:11px;outline:none;width:100%">
-        <option value="Pendente">Pendente</option><option value="Pago">Pago</option><option value="Vencida">Vencida</option><option value="Agendado">Agendado</option>
+        <option value="Pendente">Pendente</option><option value="Pago">Pago</option><option value="Baixado">Baixado</option><option value="Vencida">Vencida</option><option value="Agendado">Agendado</option>
       </select>`;
     linhas.appendChild(row);
   }
@@ -6887,6 +7232,95 @@ function validarCompVenc(){
   }
 }
 
+
+// ══════════════════════════════════════
+// LANÇAMENTOS RECORRENTES — Contas a Pagar
+// ══════════════════════════════════════
+
+function toggleRecorrencia(){
+  const ck   = document.getElementById('mpp-recorrente');
+  const opts = document.getElementById('mpp-recorrencia-opts');
+  if(!opts) return;
+  opts.style.display = ck.checked ? 'block' : 'none';
+  if(ck.checked) atualizarPreviewRecorrencia();
+}
+
+function atualizarPreviewRecorrencia(){
+  const prevEl = document.getElementById('mpp-recorr-preview');
+  if(!prevEl) return;
+  const qtd  = parseInt(document.getElementById('mpp-recorr-qtd')?.value)||0;
+  const comp = document.getElementById('mpp-comp')?.value||'';
+  const venc1 = document.getElementById('mpp-venc-1')?.value||'';
+  const dataBase = venc1 || comp;
+  if(!qtd || qtd < 2){
+    prevEl.innerHTML = '<span style="color:var(--rd)">Informe pelo menos 2 repetições.</span>';
+    return;
+  }
+  if(!dataBase){
+    prevEl.innerHTML = '<i class="fa-solid fa-circle-info" style="color:var(--or);margin-right:4px"></i>Preencha a data de vencimento para ver o preview.';
+    return;
+  }
+  const [y,m,d] = dataBase.split('-').map(Number);
+  const datas = [];
+  for(let i=0; i<qtd; i++){
+    let mes = m + i;
+    let ano = y + Math.floor((mes-1)/12);
+    mes = ((mes-1)%12)+1;
+    const ultimoDia = new Date(ano, mes, 0).getDate();
+    const dia = Math.min(d, ultimoDia);
+    datas.push(`${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano}`);
+  }
+  const mostra = datas.length <= 4
+    ? datas.join(' · ')
+    : datas.slice(0,2).join(' · ') + ` · ... · ${datas[datas.length-1]}`;
+  prevEl.innerHTML = `<i class="fa-solid fa-rotate" style="color:var(--or);margin-right:5px"></i><strong style="color:var(--tx)">${qtd} lançamentos</strong> serão criados:<br>${mostra}`;
+}
+
+function gerarRecorrentes(base, qtd){
+  // base = objeto do lançamento base (já salvo como 1º da série)
+  // Gera os demais (a partir do 2º mês)
+  const arr = S.g('pagar')||[];
+  const [y,m,d] = (base.venc||base.comp).split('-').map(Number);
+  const recorrId = base.recorrId; // ID da série
+
+  for(let i=1; i<qtd; i++){
+    let mes = m + i;
+    let ano = y + Math.floor((mes-1)/12);
+    mes = ((mes-1)%12)+1;
+    const ultimoDia = new Date(ano, mes, 0).getDate();
+    const dia = Math.min(d, ultimoDia);
+    const novaData = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    // Competência: mesmo deslocamento relativo ao vencimento
+    let compMes = (base.comp ? base.comp.slice(5,7) : m);
+    let compAno = (base.comp ? base.comp.slice(0,4) : y);
+    const compBase = base.comp || base.venc;
+    const [cy,cm,cd] = compBase.split('-').map(Number);
+    let cMes = cm + i;
+    let cAno = cy + Math.floor((cMes-1)/12);
+    cMes = ((cMes-1)%12)+1;
+    const ultDiaC = new Date(cAno, cMes, 0).getDate();
+    const diaC = Math.min(cd, ultDiaC);
+    const novaComp = `${cAno}-${String(cMes).padStart(2,'0')}-${String(diaC).padStart(2,'0')}`;
+
+    arr.push({
+      ...base,
+      id: Date.now() + i,
+      cod: gerarCodigoPagar(),
+      venc: novaData,
+      comp: novaComp,
+      recorrIdx: i + 1,   // posição na série (1-based)
+      status: 'Pendente',
+      dtpag: '',
+      obs: (base.obs||'') + ` · Recorrência ${i+1}/${qtd}`,
+      // Itens apenas no lançamento base — os demais não geram movimentação de estoque
+      itens: undefined,
+      itensConsulta: base.itens ? [...base.itens] : undefined,
+      nfeChave: undefined,
+    });
+  }
+  S.s('pagar', arr);
+}
+
 function saveParcelado(){
   const nRaw=document.getElementById('mpp-nparcelas').value;
   if(nRaw===''||nRaw===null){alert('Selecione o número de parcelas.');return;}
@@ -6903,8 +7337,11 @@ function saveParcelado(){
     if(idx===-1){ alert('Lançamento não encontrado.'); return; }
 
     const totalNF = mppItens.reduce((a,b)=>a+b.total,0);
-    let contaAuto = document.getElementById('mpp-conta')?.value||'';
-    if(mppItens.length){
+    // Conta manual selecionada pelo usuário tem PRIORIDADE MÁXIMA
+    const contaManual = document.getElementById('mpp-conta')?.value||'';
+    let contaAuto = contaManual;
+    // Só usa conta dos itens se o usuário NÃO selecionou manualmente
+    if(!contaManual && mppItens.length){
       const cv={};
       mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
       const cs=Object.entries(cv);
@@ -6936,7 +7373,11 @@ function saveParcelado(){
       conta: contaAuto,
       banco, contaCorrente: banco,
       reg,
-      itens: mppItens.length ? [...mppItens] : undefined,
+      // Se conta foi alterada manualmente, atualiza também a conta dentro dos itens
+      itens: mppItens.length ? mppItens.map(it=>({
+        ...it,
+        conta: contaManual && it.conta !== contaManual ? contaManual : it.conta
+      })) : undefined,
       totalNF: totalNF||undefined,
       nfeChave: _nfeChaveAtual||arr[idx].nfeChave,
       fornNFeInfo: forn ? undefined : (_nfeFornInfo || arr[idx].fornNFeInfo),
@@ -6952,6 +7393,10 @@ function saveParcelado(){
     closeMod('mod-pagar'); resetModalPagar(); renderPagar();
     // Integra ao estoque
     eqIntegrarDoCAP(arr[idx]);
+    // Atualiza DRE, Fluxo e Dashboard para refletir a alteração imediatamente
+    if(typeof renderDRE==='function') renderDRE();
+    if(typeof renderFluxo==='function') renderFluxo();
+    if(typeof renderDashboard==='function') renderDashboard();
     showToast('✓ Lançamento atualizado com sucesso!','var(--gr)');
     return;
   }
@@ -6990,8 +7435,11 @@ function saveParcelado(){
   }
 
   const reg   =comp?'competencia':'caixa';
-  let contaAuto=document.getElementById('mpp-conta')?.value||'';
-  if(mppItens.length){
+  // Conta manual selecionada pelo usuário tem PRIORIDADE MÁXIMA
+  const contaManualNovo = document.getElementById('mpp-conta')?.value||'';
+  let contaAuto = contaManualNovo;
+  // Só usa conta dos itens se o usuário NÃO selecionou manualmente
+  if(!contaManualNovo && mppItens.length){
     const cv={};
     mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
     const cs=Object.entries(cv);
@@ -7035,11 +7483,40 @@ function saveParcelado(){
     document.getElementById('mpp-conta')?.focus();
     return;
   }
-  S.s('pagar',arr); closeMod('mod-pagar'); resetModalPagar(); renderPagar();
+  S.s('pagar',arr); 
+
+  // ── Recorrência: gera lançamentos dos meses seguintes ──
+  const ckRec = document.getElementById('mpp-recorrente');
+  if(ckRec && ckRec.checked){
+    const qtdRec = parseInt(document.getElementById('mpp-recorr-qtd')?.value)||0;
+    if(qtdRec >= 2){
+      // Pega o último lançamento inserido como base da série
+      const arrAtual = S.g('pagar')||[];
+      const baseRec  = arrAtual[arrAtual.length - novasLinhas]; // 1ª linha inserida
+      if(baseRec){
+        const recorrId = 'REC-' + Date.now();
+        // Marca todos os lançamentos desta série com recorrId
+        const idsNovos = arrAtual.slice(arrAtual.length - novasLinhas).map(l=>l.id);
+        idsNovos.forEach(id=>{ const lx=arrAtual.find(x=>x.id===id); if(lx) lx.recorrId=recorrId; lx.recorrTotal=qtdRec; lx.recorrIdx=lx.recorrIdx||1; });
+        S.s('pagar', arrAtual);
+        gerarRecorrentes({...baseRec, recorrId, recorrTotal:qtdRec, recorrIdx:1}, qtdRec);
+      }
+    }
+  }
+
+  closeMod('mod-pagar'); resetModalPagar(); renderPagar();
 
   // ── Integração automática CAP → Estoque (somente da 1ª parcela que tem itens) ──
-  const primLanc = arr.find(l=>l.itens && l.itens.length);
+  const arrFinal = S.g('pagar')||[];
+  const primLanc = arrFinal.find(l=>l.itens && l.itens.length);
   if(primLanc) eqIntegrarDoCAP(primLanc);
+
+  // Toast
+  const ckRecF = document.getElementById('mpp-recorrente');
+  const qtdRecF = parseInt(document.getElementById('mpp-recorr-qtd')?.value)||0;
+  if(ckRecF && ckRecF.checked && qtdRecF>=2){
+    showToast(`✓ ${qtdRecF} lançamentos recorrentes criados!`, 'var(--gr)');
+  }
 }
 // ── variável temporária de itens da comanda ──
 let _mrItens = [];
@@ -8510,7 +8987,7 @@ function renderDashboardConsolidado(){
   // Mês anterior ao período para comparação
   const [yFirst,mFirst]=meses[0].split('-').map(Number);
   const mesAntD=new Date(yFirst,mFirst-2,1);
-  const ymAnt=mesAntD.toISOString().slice(0,7);
+  const ymAnt=mesAntD.getFullYear()+'-'+String(mesAntD.getMonth()+1).padStart(2,'0');
   const ant=dbCalcMes(ymAnt);
 
   cons.cmvPct    = cons.fat>0?cons.totCMV/cons.fat*100:0;
@@ -9731,7 +10208,111 @@ function cxCorrigirCAPsFaltantes(){
     showToast('Todos os CAPs estão consistentes.','var(--bl)');
   }
 }
-window.cxCorrigirCAPsFaltantes = cxCorrigirCAPsFaltantes;
+// ── Sincroniza conta dos itens do CAP com o cadastro atual de insumos/serviços ──
+// Útil quando a conta de um insumo foi corrigida no cadastro mas os lançamentos
+// já gravados ainda têm a conta antiga dentro de lanc.itens[].conta
+function sincronizarContaItensPagar(){
+  const pagar    = S.g('pagar')||[];
+  const insumos  = S.g('insumos')||[];
+  const servicos = S.g('servicos')||[];
+  const produtos = S.g('produtos')||[];
+
+  // Monta índice: nome normalizado → conta atual do cadastro
+  const idxConta = {};
+  const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  insumos.forEach(i  => { if(i.conta) idxConta[norm(i.nome)] = i.conta; });
+  servicos.forEach(s => { if(s.conta) idxConta[norm(s.nome||s.desc||'')] = s.conta; });
+  produtos.forEach(p => { if(p.conta) idxConta[norm(p.n||p.nome||'')] = p.conta; });
+
+  let totalItensCorrigidos = 0;
+  let totalLancsAlterados  = 0;
+  const detalhes = [];
+
+  pagar.forEach(lanc => {
+    if(!lanc.itens || !lanc.itens.length) return;
+    let alterou = false;
+    lanc.itens = lanc.itens.map(it => {
+      const contaCad = idxConta[norm(it.nome)];
+      if(contaCad && it.conta !== contaCad){
+        detalhes.push(`${lanc.cod||lanc.id}: "${it.nome}" ${it.conta||'(vazio)'} → ${contaCad}`);
+        totalItensCorrigidos++;
+        alterou = true;
+        return {...it, conta: contaCad};
+      }
+      return it;
+    });
+    // Atualiza também a conta principal do lançamento se todos os itens corrigidos
+    // apontam para a mesma conta e a principal era de receita (grupo 1)
+    if(alterou){
+      totalLancsAlterados++;
+      const grpPrinc = (lanc.conta||'').split('.')[0];
+      if(grpPrinc === '1' || !lanc.conta){
+        const cv = {};
+        lanc.itens.forEach(it => { if(it.conta) cv[it.conta]=(cv[it.conta]||0)+(it.total||0); });
+        const dominante = Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
+        if(dominante) lanc.conta = dominante[0];
+      }
+    }
+  });
+
+  S.s('pagar', pagar);
+  if(typeof renderPagar==='function') renderPagar();
+  if(typeof renderDRE==='function') renderDRE();
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderDashboard==='function') renderDashboard();
+
+  if(totalItensCorrigidos === 0){
+    alert('✓ Nenhum item com conta divergente do cadastro encontrado.\nTodos os itens já estão sincronizados.');
+  } else {
+    alert(`✓ Sincronização concluída!\n\n${totalItensCorrigidos} item(ns) corrigido(s) em ${totalLancsAlterados} lançamento(s):\n\n${detalhes.slice(0,15).join('\n')}${detalhes.length>15?'\n...e mais '+(detalhes.length-15)+' item(ns)':''}\n\nDRE e Fluxo de Caixa foram atualizados.`);
+  }
+}
+window.sincronizarContaItensPagar = sincronizarContaItensPagar;
+
+// ── Corrige itens do CAP cuja conta diverge da conta principal do lançamento ──
+// Útil quando o item foi cadastrado com conta errada (ex: 1.1 em vez de 4.1)
+// e a conta principal já foi corrigida manualmente.
+function corrigirContaItensCAP(){
+  const pagar = S.g('pagar')||[];
+  let corrigidos = 0;
+  const detalhes = [];
+
+  pagar.forEach(lanc => {
+    if(!lanc.conta || !lanc.itens || !lanc.itens.length) return;
+    let alterou = false;
+    lanc.itens = lanc.itens.map(it => {
+      // Corrige se conta do item diverge da conta principal E a conta do item é do grupo 1 (receita)
+      const grpItem = (it.conta||'').split('.')[0];
+      const grpPrinc = lanc.conta.split('.')[0];
+      if(it.conta && it.conta !== lanc.conta && grpItem === '1' && grpPrinc !== '1'){
+        detalhes.push(`${lanc.cod}: item "${it.nome}" ${it.conta} → ${lanc.conta}`);
+        alterou = true;
+        corrigidos++;
+        return {...it, conta: lanc.conta};
+      }
+      return it;
+    });
+    if(alterou && lanc.itensConsulta && lanc.itensConsulta.length){
+      lanc.itensConsulta = lanc.itensConsulta.map(it => {
+        const grpItem = (it.conta||'').split('.')[0];
+        if(grpItem === '1') return {...it, conta: lanc.conta};
+        return it;
+      });
+    }
+  });
+
+  S.s('pagar', pagar);
+  renderPagar();
+  if(typeof renderDRE==='function') renderDRE();
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderDashboard==='function') renderDashboard();
+
+  if(corrigidos === 0){
+    alert('✓ Nenhum item com conta divergente encontrado.\nTodos os itens já estão com a conta correta.');
+  } else {
+    alert(`✓ ${corrigidos} item(ns) corrigido(s):\n\n${detalhes.join('\n')}\n\nDRE e Fluxo de Caixa foram atualizados.`);
+  }
+}
 
 // ══════════════════════════════════════
 // DIAGNÓSTICO DRE — AUDITORIA POR CONTA
@@ -10031,6 +10612,14 @@ function dreValorPorContaItem(lanc, cod){
   if(refItens){
     const totalItens = refItens.reduce((s,it)=>s+(it.total||0),0);
     if(totalItens > 0){
+      // Se conta principal está preenchida E todos os itens têm conta de receita (grupo 1),
+      // usa a conta principal — evita que itens cadastrados com conta errada (1.x) bloqueiem
+      // lançamentos de despesa cuja conta principal já foi corrigida manualmente.
+      const todosItemReceita = refItens.every(it=>(it.conta||'').split('.')[0]==='1');
+      const contaPrincDespesa = lanc.conta && lanc.conta.split('.')[0] !== '1';
+      if(todosItemReceita && contaPrincDespesa){
+        return lanc.conta === cod ? val : 0;
+      }
       const somaCod = refItens.filter(it=>it.conta===cod).reduce((s,it)=>s+(it.total||0),0);
       return somaCod>0 ? val*(somaCod/totalItens) : 0;
     }
@@ -11520,6 +12109,21 @@ function cxSalvarSaida(){
 
   if(!desc){alert('Informe a descrição / NF.');return;}
   if(!valor){alert('Informe o valor ou adicione itens ao lançamento.');return;}
+
+  // ── Alerta: item selecionado mas não adicionado com o botão + ──
+  const itemBuscaVal = (document.getElementById('cx-sai-item-busca')?.value||'').trim();
+  const itemContaHid = document.getElementById('cx-sai-item-conta')?.value||'';
+  if(itemBuscaVal && itemContaHid && !cxSaiItens.length){
+    const continuar = confirm(
+      '⚠️ Item selecionado mas não adicionado!\n\n' +
+      'Você selecionou "' + itemBuscaVal + '" mas não clicou no botão [+] para adicioná-lo ao lançamento.\n\n' +
+      'Deseja continuar sem adicionar o item?\n\n' +
+      '• OK = salvar sem o item (conta precisará ser selecionada manualmente)\n' +
+      '• Cancelar = voltar e adicionar o item'
+    );
+    if(!continuar) return;
+  }
+
   if(!conta){
     alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nTodo lançamento precisa ter a Conta do Plano de Contas informada.\nEla é a base do DRE, Fluxo de Caixa e todos os relatórios.\n\nSelecione a conta no campo correspondente ou adicione itens com conta vinculada.');
     document.getElementById('cx-sai-conta').focus();return;
@@ -11561,7 +12165,7 @@ function cxSalvarSaida(){
         forn, desc, conta, val:valor,
         forma:'Dinheiro',
         status:statusCAP,
-        reg:comp?'competencia':'caixa',
+        reg: (comp && comp !== data) ? 'competencia' : 'caixa',
         obs:obs||(resp?'Operador: '+resp:''),
         dtpag:statusCAP==='Pago'?data:undefined,
         contaCorrente:'Caixa', banco:'Caixa',
@@ -12042,6 +12646,34 @@ function _renderCxHistorico(){
   </tr>`).join('')}</tbody></table></div>`;
 }
 
+
+function excluirPagar(id){
+  const arr = S.g('pagar')||[];
+  const lanc = arr.find(x=>x.id===id);
+  if(!lanc){ renderPagar(); return; }
+
+  // Se é recorrente, pergunta se exclui só este ou a série toda
+  if(lanc.recorrId){
+    const serie = arr.filter(x=>x.recorrId===lanc.recorrId);
+    const resp = confirm(
+      `Este lançamento faz parte de uma série recorrente (${serie.length} lançamento(s) no total).\n\n` +
+      `Clique OK para excluir TODA A SÉRIE (${serie.length} lançamentos).\n` +
+      `Clique Cancelar para excluir APENAS ESTE lançamento.`
+    );
+    if(resp){
+      // Exclui toda a série
+      S.s('pagar', arr.filter(x=>x.recorrId!==lanc.recorrId));
+    } else {
+      // Exclui só este
+      S.s('pagar', arr.filter(x=>x.id!==id));
+    }
+  } else {
+    if(!confirm('Excluir este lançamento?')) return;
+    S.s('pagar', arr.filter(x=>x.id!==id));
+  }
+  renderPagar();
+}
+
 function renderPagar(){
   let arr=S.g('pagar')||[];
   const venc=arr.filter(x=>x.status==='Vencida').reduce((a,b)=>a+b.val,0);
@@ -12057,20 +12689,24 @@ function renderPagar(){
     const parcelaTag = c.totalParcelas
       ? `<span class="tg tg-gy" style="font-size:10px">${c.parcela}/${c.totalParcelas}</span> `
       : '';
+    const recorrTag = c.recorrId
+      ? `<span class="tg" style="font-size:9px;background:rgba(103,58,183,0.2);color:#CE93D8;margin-right:3px" title="Série: ${c.recorrIdx||'?'}/${c.recorrTotal||'?'}"><i class="fa-solid fa-rotate" style="font-size:8px"></i> ${c.recorrIdx||''}/${c.recorrTotal||''}</span> `
+      : '';
     return `<tr>
     <td style="color:var(--or);font-weight:600;font-size:11px">${c.cod||'—'}</td>
     <td>${fd(c.venc)}</td><td>${fd(c.comp)}</td>
-    <td style="color:var(--tx)">${parcelaTag}${nomeFornById(c.forn)||c.desc||'—'}</td>
+    <td style="color:var(--tx)">${recorrTag}${parcelaTag}${nomeFornById(c.forn)||c.desc||'—'}</td>
     <td style="font-size:11px;color:var(--or)">${nomeContaByCod(c.conta)}</td>
     <td>${regTag(c.reg)}</td>
     <td>${R(c.val)}</td><td><span class="tg tg-bl" style="font-size:10px">${c.contaCorrente||c.banco||'—'}</span></td><td>${stTag(c.status)}</td>
     <td><div class="ac-btns" style="opacity:1">
-      ${c.status!=='Pago'?`<button class="ac-btn" title="Dar Baixa" onclick="abrirBaixa(${c.id})"
-        style="background:rgba(76,175,80,0.15);color:#81C784;width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px"
-        onmouseover="this.style.background='rgba(76,175,80,0.35)'" onmouseout="this.style.background='rgba(76,175,80,0.15)'">
-        <i class="fa-solid fa-circle-check"></i></button>`:'<div style="width:26px"></div>'}
+      ${c.status!=='Baixado'?`<button class="ac-btn" title="${c.status==='Pago'?'Confirmar Baixa (comprovante)':'Dar Baixa'}" onclick="abrirBaixa(${c.id})"
+        style="background:${c.status==='Pago'?'rgba(33,150,243,0.15)':'rgba(76,175,80,0.15)'};color:${c.status==='Pago'?'#64B5F6':'#81C784'};width:26px;height:26px;border-radius:5px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px"
+        onmouseover="this.style.background='${c.status==='Pago'?'rgba(33,150,243,0.35)':'rgba(76,175,80,0.35)'}'"
+        onmouseout="this.style.background='${c.status==='Pago'?'rgba(33,150,243,0.15)':'rgba(76,175,80,0.15)'}'"
+        ><i class="fa-solid ${c.status==='Pago'?'fa-file-circle-check':'fa-circle-check'}"></i></button>`:'<div style="width:26px"></div>'}
       <button class="ac-btn ac-edit" title="Editar" onclick="editPagar(${c.id})"><i class="fa-solid fa-pen"></i></button>
-      <button class="ac-btn ac-del" title="Excluir" onclick="del('pagar',${c.id},renderPagar)"><i class="fa-solid fa-trash-can"></i></button>
+      <button class="ac-btn ac-del" title="Excluir" onclick="excluirPagar(${c.id})"><i class="fa-solid fa-trash-can"></i></button>
     </div></td>
   </tr>`;}).join('');
 }
@@ -12569,6 +13205,7 @@ function eqInitMes(){
 // Retorna o último preço unitário de compra do produto
 // Critério: mais recente por data; empate = maior id
 function eqCustoMedio(prodId, movs){
+  // Mantida para compatibilidade — retorna custo da última compra
   const entradas = movs
     .filter(m=>m.prodId===prodId && m.tipo==='entrada' && (m.custoUnit||0)>0)
     .sort((a,b)=>{
@@ -12579,12 +13216,36 @@ function eqCustoMedio(prodId, movs){
   return entradas.length > 0 ? (entradas[0].custoUnit||0) : 0;
 }
 
+// Custo médio ponderado das compras de um mês específico
+// Se não houver compras no mês, busca o mês anterior mais recente (até 12 meses atrás)
+function eqCustoMedioPorMes(prodId, movs, ym){
+  // Tenta o mês informado e vai recuando até encontrar compras
+  const [yBase, mBase] = ym.split('-').map(Number);
+  for(let i=0; i<=12; i++){
+    const d = new Date(yBase, mBase-1-i, 1);
+    // Usar formatação local para evitar bug de fuso horário com toISOString() (UTC)
+    const ymTry = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const compras = movs.filter(m=>
+      m.prodId===prodId &&
+      m.tipo==='entrada' &&
+      (m.custoUnit||0)>0 &&
+      (m.data||'').slice(0,7)===ymTry
+    );
+    if(compras.length>0){
+      const totalQtd = compras.reduce((a,b)=>a+(b.qtd||0),0);
+      const totalVal = compras.reduce((a,b)=>a+(b.total||0),0);
+      return totalQtd>0 ? totalVal/totalQtd : 0;
+    }
+  }
+  return 0;
+}
+
 // Calcula estoque de um produto num mês
 function eqCalcProduto(prodId, ym, movs, inventarios){
   const [y,m] = ym.split('-').map(Number);
   // Mês anterior para pegar estoque inicial
   const mesAntD = new Date(y, m-2, 1);
-  const mesAnt = mesAntD.toISOString().slice(0,7);
+  const mesAnt = mesAntD.getFullYear()+'-'+String(mesAntD.getMonth()+1).padStart(2,'0');
 
   // ── Estoque Inicial ──
   // 1º prioridade: EI explícito lançado via botão "Est. Inicial"
@@ -12619,18 +13280,26 @@ function eqCalcProduto(prodId, ym, movs, inventarios){
   const temInventario = invAtual !== undefined;
   const estoqueFinal = temInventario ? invAtual : 0;
 
+  // ── Custo médio ponderado do mês (com fallback para mês anterior) ──
+  const custoMedio = eqCustoMedioPorMes(prodId, movs, ym);
+
+  // ── Valores R$ ──
+  const estoqueInicialVal = estoqueInicial * custoMedio;
+  const estoqueFinalVal   = temInventario ? estoqueFinal * custoMedio : 0;
+
+  // ── Disponível R$ = EI R$ + Compras R$ (teto máximo do EF) ──
+  const disponivelVal = estoqueInicialVal + totalComprasVal;
+
   // ── CMV = EI + Compras − EF ──
-  // Sempre calcula: sem inventário EF = 0, com inventário EF = contagem física
-  const custoMedio = eqCustoMedio(prodId, movs);
   const cmvQtd = Math.max(0, estoqueInicial + totalComprasQtd - estoqueFinal);
   const cmvVal = custoMedio > 0 ? cmvQtd * custoMedio : 0;
 
   return {
-    estoqueInicial, temEI,
+    estoqueInicial, estoqueInicialVal, temEI,
     totalComprasQtd, totalComprasVal,
     totalSaidasQtd, estoqueDisp,
-    estoqueFinal, temInventario,
-    custoMedio,
+    estoqueFinal, estoqueFinalVal, temInventario,
+    custoMedio, disponivelVal,
     cmvQtd, cmvVal
   };
 }
@@ -13323,24 +13992,52 @@ function eqAbrirEstoqueInicial(){
   const tbEl = document.getElementById('tb-eq-ini');
   if(!tbEl){ openMod('mod-eq-inicial'); return; }
 
+  // Calcula mês anterior para buscar EF como fallback do EI
+  const [yI,mI] = ymInicial.split('-').map(Number);
+  const mesAntD = new Date(yI, mI-2, 1);
+  const mesAnt = mesAntD.toISOString().slice(0,7);
+
   tbEl.innerHTML = prods.map(p=>{
-    // Verifica se já existe EI salvo (chave especial 'ei-YYYY-MM')
+    // Verifica se já existe EI salvo explicitamente (chave 'ei-YYYY-MM')
     const eiKey = 'ei-'+ymInicial;
-    const eiVal = (inventarios[eiKey]||{})[p.id];
-    const valAtual = eiVal !== undefined ? eiVal : '';
+    const eiExplicito = (inventarios[eiKey]||{})[p.id];
+    // Fallback: EF (inventário) do mês anterior vira EI do mês atual
+    const efMesAnt = (inventarios[mesAnt]||{})[p.id];
+
+    // Valor a exibir no campo: EI explícito > EF mês anterior > vazio
+    const valAtual = eiExplicito !== undefined ? eiExplicito
+                   : efMesAnt    !== undefined ? efMesAnt
+                   : '';
+    // Indica visualmente quando o valor veio do EF do mês anterior
+    const veioDeFallback = eiExplicito === undefined && efMesAnt !== undefined;
+
+    const unProd = (p.un||'un').toLowerCase().trim();
+    const isDecimal = ['kg','g','mg','l','ml','lt','gr'].includes(unProd);
+    const stepVal = isDecimal ? 0.001 : 1;
+    const btnSt = `background:var(--dk3);border:1px solid rgba(33,150,243,0.4);color:#64B5F6;width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;padding:0`;
+    const corCampo = veioDeFallback ? '#A5D6A7' : '#64B5F6';
+    const borderCampo = veioDeFallback ? 'rgba(76,175,80,0.5)' : 'rgba(33,150,243,0.4)';
+    const titleCampo = veioDeFallback ? `title="Carry-forward: EF de ${mesAnt}"` : '';
+    const custoParaCalc = p.custoMedio>0 ? p.custoMedio : 0;
     return `<tr>
       <td style="color:var(--tx);font-weight:500">${p.nome}</td>
       <td>${eqCatBadge(p.cat)}</td>
       <td style="color:var(--tx3)">${p.un||'un'}</td>
       <td style="text-align:right">
-        <input type="number" data-prod="${p.id}" step="0.001" min="0" value="${valAtual}"
-          placeholder="0"
-          oninput="eqCalcIniTotal(this,'${p.id}')"
-          style="width:100px;background:var(--dk3);border:1px solid rgba(33,150,243,0.4);border-radius:5px;padding:5px 8px;color:#64B5F6;font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none">
+        <div style="display:inline-flex;align-items:center;gap:4px">
+          <button type="button" style="${btnSt}" onclick="eqIniStep('${p.id}',-${stepVal})">−</button>
+          <input type="number" id="eq-ini-inp-${p.id}" data-prod="${p.id}" step="${stepVal}" min="0" value="${valAtual}"
+            placeholder="0" ${titleCampo}
+            oninput="eqCalcIniTotal(this,'${p.id}')"
+            style="width:75px;background:var(--dk3);border:1px solid ${borderCampo};border-radius:5px;padding:5px 6px;color:${corCampo};font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none;-moz-appearance:textfield"
+            onwheel="this.blur()">
+          <button type="button" style="${btnSt}" onclick="eqIniStep('${p.id}',${stepVal})">+</button>
+        </div>
+        ${veioDeFallback?`<div style="font-size:10px;color:#81C784;text-align:right;margin-top:2px">↩ EF ${mesAnt}</div>`:''}
       </td>
-      <td style="text-align:right;color:var(--tx2)">${p.custoMedio>0?R(p.custoMedio):'—'}</td>
-      <td style="text-align:right;color:#64B5F6;font-weight:600" id="eq-ini-val-${p.id}">
-        ${eiVal!==undefined&&p.custoMedio>0?R(eiVal*p.custoMedio):'—'}
+      <td style="text-align:right;color:var(--tx2)">${custoParaCalc>0?R(custoParaCalc):'—'}</td>
+      <td style="text-align:right;color:${corCampo};font-weight:600" id="eq-ini-val-${p.id}">
+        ${valAtual!==''&&custoParaCalc>0?R(parseFloat(valAtual)*custoParaCalc):'—'}
       </td>
     </tr>`;
   }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--tx3)">Nenhum produto cadastrado. Sincronize o CAP primeiro.</td></tr>';
@@ -13355,6 +14052,15 @@ function eqCalcIniTotal(input, prodId){
   const cm = prod?.custoMedio||0;
   const el = document.getElementById('eq-ini-val-'+prodId);
   if(el) el.textContent = (qtd>0&&cm>0) ? R(qtd*cm) : '—';
+}
+
+function eqIniStep(prodId, delta){
+  const inp = document.getElementById("eq-ini-inp-"+prodId);
+  if(!inp) return;
+  const atual = parseFloat(inp.value)||0;
+  const novo = Math.max(0, Math.round((atual + delta) * 1000) / 1000);
+  inp.value = novo;
+  eqCalcIniTotal(inp, prodId);
 }
 
 function eqSalvarEstoqueInicial(){
@@ -13396,16 +14102,26 @@ function eqAbrirInventario(){
     const calc = eqCalcProduto(p.id, ym, movs, inventarios);
     const invAtual = (inventarios[ym]||{})[p.id];
     const valAtual = invAtual !== undefined ? invAtual : '';
+    const unProd = (p.un||'un').toLowerCase().trim();
+    const isDecimal = ['kg','g','mg','l','ml','lt','gr'].includes(unProd);
+    const stepVal = isDecimal ? 0.001 : 1;
+    const btnSt = `background:var(--dk3);border:1px solid rgba(242,100,25,0.4);color:var(--or);width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;padding:0`;
     return `<tr>
       <td style="color:var(--tx);font-weight:500">${p.nome}</td>
       <td>${eqCatBadge(p.cat)}</td>
       <td style="color:var(--tx3)">${p.un||'un'}</td>
       <td style="text-align:right;color:#81C784">${calc.estoqueDisp.toFixed(3).replace(/\.?0+$/,'')}</td>
       <td style="text-align:right">
-        <input type="number" data-prod="${p.id}" step="0.001" min="0" value="${valAtual}"
-          placeholder="${calc.estoqueDisp.toFixed(3).replace(/\.?0+$/,'')}"
-          oninput="eqCalcInvTotal(this,'${p.id}')"
-          style="width:100px;background:var(--dk3);border:1px solid rgba(242,100,25,0.4);border-radius:5px;padding:5px 8px;color:var(--or);font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none">
+        <div style="display:inline-flex;align-items:center;gap:4px">
+          <button type="button" style="${btnSt}" onclick="eqInvStep('${p.id}',-${stepVal})">−</button>
+          <input type="number" id="eq-inv-inp-${p.id}" data-prod="${p.id}" step="${stepVal}" min="0" value="${valAtual}"
+            placeholder="${calc.estoqueDisp.toFixed(3).replace(/\.?0+$/,'')}"
+            oninput="eqCalcInvTotal(this,'${p.id}')"
+            style="width:75px;background:var(--dk3);border:1px solid rgba(242,100,25,0.4);border-radius:5px;padding:5px 6px;color:var(--or);font-family:Outfit,sans-serif;font-size:12px;text-align:right;outline:none;-moz-appearance:textfield"
+            onwheel="this.blur()">
+          <button type="button" style="${btnSt}" onclick="eqInvStep('${p.id}',${stepVal})">+</button>
+        </div>
+        <div id="eq-inv-err-${p.id}" style="display:none;font-size:10px;color:var(--rd);margin-top:3px;max-width:220px;line-height:1.3"></div>
       </td>
       <td style="text-align:right;color:var(--tx2)">${calc.custoMedio>0?R(calc.custoMedio):'—'}</td>
       <td style="text-align:right;color:var(--or);font-weight:600" id="eq-inv-val-${p.id}">
@@ -13418,17 +14134,106 @@ function eqAbrirInventario(){
 }
 
 function eqCalcInvTotal(input, prodId){
-  const qtd = parseFloat(input.value)||0;
-  const movs = S.g('eq-movimentos')||[];
-  const cm = eqCustoMedio(prodId, movs);
-  const el = document.getElementById('eq-inv-val-'+prodId);
-  if(el) el.textContent = cm>0 ? R(qtd*cm) : '—';
+  const qtd    = parseFloat(input.value)||0;
+  const ym     = document.getElementById('eq-inv-mes').value;
+  const movs   = S.g('eq-movimentos')||[];
+  const invs   = S.g('eq-inventarios')||{};
+  const cm     = eqCustoMedioPorMes(prodId, movs, ym);
+  const efVal  = cm>0 ? qtd*cm : 0;
+
+  // Atualiza célula de valor
+  const elVal = document.getElementById('eq-inv-val-'+prodId);
+  if(elVal) elVal.textContent = cm>0 ? R(efVal) : '—';
+
+  // Busca calc para validação
+  const calc = eqCalcProduto(prodId, ym, movs, invs);
+  const dispVal = calc.disponivelVal;
+  const elErr = document.getElementById('eq-inv-err-'+prodId);
+  if(!elErr) return;
+
+  // Só valida em R$ se o produto tem custo médio conhecido
+  if(cm > 0){
+    // Validação 1: sem base (EI=0 e Compras=0)
+    if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
+      elErr.textContent = '⚠ Revise os lançamentos de Estoque Inicial e Compras';
+      elErr.style.display='block';
+      input.style.borderColor='var(--rd)';
+      return;
+    }
+    // Validação 2: EF R$ > disponível R$
+    if(efVal > dispVal + 0.005){
+      elErr.textContent = `⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(dispVal)})`;
+      elErr.style.display='block';
+      input.style.borderColor='var(--rd)';
+      return;
+    }
+  }
+  // OK
+  elErr.style.display='none';
+  input.style.borderColor='rgba(242,100,25,0.4)';
+}
+
+function eqInvStep(prodId, delta){
+  const inp = document.getElementById("eq-inv-inp-"+prodId);
+  if(!inp) return;
+  const atual = parseFloat(inp.value)||0;
+  const novo = Math.max(0, Math.round((atual + delta) * 1000) / 1000);
+  inp.value = novo;
+  eqCalcInvTotal(inp, prodId);
 }
 
 function eqSalvarInventario(){
   const ym = document.getElementById('eq-inv-mes').value;
   if(!ym){ alert('Selecione o mês.'); return; }
+
+  const movs  = S.g('eq-movimentos')||[];
+  const invs  = S.g('eq-inventarios')||{};
   const inputs = document.querySelectorAll('#tb-eq-inv input[data-prod]');
+
+  // ── Validação antes de salvar ──
+  let erros = [];
+  inputs.forEach(inp=>{
+    const prodId = inp.getAttribute('data-prod');
+    const val    = inp.value.trim();
+    if(val==='') return; // campo vazio = não lançado, ok
+
+    const qtd  = parseFloat(val)||0;
+    const calc = eqCalcProduto(prodId, ym, movs, invs);
+    const cm   = eqCustoMedioPorMes(prodId, movs, ym);
+    const efVal= cm>0 ? qtd*cm : 0;
+
+    const elErr = document.getElementById('eq-inv-err-'+prodId);
+
+    // Só valida em R$ se o produto tem custo médio conhecido
+    if(cm > 0){
+      // Val. 1: sem base (EI R$ = 0 e Compras R$ = 0)
+      if(calc.estoqueInicialVal===0 && calc.totalComprasVal===0){
+        const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
+        erros.push(nomeProd+': revise os lançamentos de Estoque Inicial e Compras');
+        if(elErr){ elErr.textContent='⚠ Revise os lançamentos de Estoque Inicial e Compras'; elErr.style.display='block'; }
+        inp.style.borderColor='var(--rd)';
+        return;
+      }
+      // Val. 2: EF R$ > disponível R$
+      if(efVal > calc.disponivelVal + 0.005){
+        const nomeProd = inp.closest('tr')?.querySelector('td')?.textContent||prodId;
+        erros.push(nomeProd+`: EF (${R(efVal)}) maior que EI + Compras (${R(calc.disponivelVal)})`);
+        if(elErr){ elErr.textContent=`⚠ EF (${R(efVal)}) não pode ser maior que EI + Compras (${R(calc.disponivelVal)})`; elErr.style.display='block'; }
+        inp.style.borderColor='var(--rd)';
+        return;
+      }
+    }
+    // OK
+    if(elErr) elErr.style.display='none';
+    inp.style.borderColor='rgba(242,100,25,0.4)';
+  });
+
+  if(erros.length>0){
+    showToast('⚠ Corrija os erros antes de salvar.','var(--rd)');
+    return;
+  }
+
+  // ── Salva ──
   const inventarios = S.g('eq-inventarios')||{};
   if(!inventarios[ym]) inventarios[ym]={};
   inputs.forEach(inp=>{
@@ -13806,12 +14611,14 @@ function renderForn(){
 // CATEGORIAS DE PRODUTOS
 // ══════════════════════════════════════
 const CAT_PROD_PADRAO = [
-  {id:1, cod:'CAT-01', nome:'Insumos',              conta:'', cor:'tg-or', st:'Ativo', obs:'Ingredientes e insumos de produção'},
-  {id:2, cod:'CAT-02', nome:'Bebidas',               conta:'', cor:'tg-bl', st:'Ativo', obs:'Bebidas em geral'},
-  {id:3, cod:'CAT-03', nome:'Material Descartável',  conta:'', cor:'tg-am', st:'Ativo', obs:'Embalagens, copos, talheres descartáveis'},
-  {id:4, cod:'CAT-04', nome:'Material de Limpeza',   conta:'', cor:'tg-gr', st:'Ativo', obs:'Produtos de limpeza e higiene'},
-  {id:5, cod:'CAT-05', nome:'Material de Expediente',conta:'', cor:'tg-gy', st:'Ativo', obs:'Papelaria e material administrativo'},
-  {id:6, cod:'CAT-06', nome:'Utensílios',            conta:'', cor:'tg-pu', st:'Ativo', obs:'Utensílios de cozinha e atendimento'},
+  {id:1, cod:'CAT-01', nome:'Insumos',                conta:'', cor:'tg-or', st:'Ativo', obs:'Ingredientes e insumos de produção'},
+  {id:2, cod:'CAT-02', nome:'Bebidas',                 conta:'', cor:'tg-bl', st:'Ativo', obs:'Bebidas em geral'},
+  {id:3, cod:'CAT-03', nome:'Material Descartável',    conta:'', cor:'tg-am', st:'Ativo', obs:'Embalagens, copos, talheres descartáveis'},
+  {id:4, cod:'CAT-04', nome:'Material de Limpeza',     conta:'', cor:'tg-gr', st:'Ativo', obs:'Produtos de limpeza e higiene'},
+  {id:5, cod:'CAT-05', nome:'Material de Expediente',  conta:'', cor:'tg-gy', st:'Ativo', obs:'Papelaria e material administrativo'},
+  {id:6, cod:'CAT-06', nome:'Utensílios',              conta:'', cor:'tg-pu', st:'Ativo', obs:'Utensílios de cozinha e atendimento'},
+  {id:7, cod:'CAT-07', nome:'Serviços e Impostos',     conta:'', cor:'tg-rd', st:'Ativo', obs:'Serviços contratados, impostos, taxas e tributos'},
+  {id:8, cod:'CAT-08', nome:'Imobilizado',             conta:'', cor:'tg-gy', st:'Ativo', obs:'Equipamentos, máquinas e bens duráveis'},
 ];
 
 // ── CATEGORIAS DE REVENDA (padrão) ──────────────────────────────
@@ -13828,6 +14635,27 @@ const CAT_PROD_VENDA_PADRAO = [
 
 function initCatProdVendaPadrao(){
   if(!(S.g('cat-produtos-venda')||[]).length) S.s('cat-produtos-venda', CAT_PROD_VENDA_PADRAO);
+}
+
+// Migração: garante que categorias de Serviços/Impostos e Imobilizado existam
+function migrarCatProdPadrao(){
+  const arr = S.g('cat-produtos')||[];
+  if(!arr.length) return; // será populado pelo initCatProdPadrao
+  const nomes = arr.map(c=>c.nome.toLowerCase());
+  let alterou = false;
+  const NOVAS = [
+    {id:7, cod:'CAT-07', nome:'Serviços e Impostos', conta:'', cor:'tg-rd', st:'Ativo', obs:'Serviços contratados, impostos, taxas e tributos'},
+    {id:8, cod:'CAT-08', nome:'Imobilizado',          conta:'', cor:'tg-gy', st:'Ativo', obs:'Equipamentos, máquinas e bens duráveis'},
+  ];
+  NOVAS.forEach(nova=>{
+    if(!nomes.includes(nova.nome.toLowerCase())){
+      // Garante ID único
+      const maxId = Math.max(0, ...arr.map(c=>c.id||0));
+      arr.push({...nova, id: Math.max(nova.id, maxId+1)});
+      alterou = true;
+    }
+  });
+  if(alterou) S.s('cat-produtos', arr);
 }
 
 function getCatProdsVenda(){ return S.g('cat-produtos-venda')||[]; }
@@ -14988,9 +15816,118 @@ function saveEditPagar(){
     status,
   };
   S.s('pagar',arr); closeMod('mod-editpagar'); renderPagar();
+  if(typeof renderDRE==='function') renderDRE();
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderDashboard==='function') renderDashboard();
 }
 
 // ── Baixa Rápida ──
+
+// ══════════════════════════════════════
+// BAIXA EM LOTE — Contas a Pagar
+// ══════════════════════════════════════
+
+function abrirBaixaLote(){
+  // Limpa estado anterior
+  document.getElementById('blote-ini').value = '';
+  document.getElementById('blote-fim').value = '';
+  document.getElementById('blote-dtpag').value = new Date().toISOString().slice(0,10);
+  document.getElementById('blote-contador').textContent = '';
+  document.getElementById('blote-lista-wrap').style.display = 'none';
+  document.getElementById('blote-vazio').style.display = 'none';
+  document.getElementById('blote-btn-baixar').style.display = 'none';
+  document.getElementById('blote-tbody').innerHTML = '';
+  openMod('mod-baixa-lote');
+}
+
+function filtrarBaixaLote(){
+  const ini = document.getElementById('blote-ini').value;
+  const fim = document.getElementById('blote-fim').value;
+  if(!ini || !fim){ alert('Informe o período completo (De e Até).'); return; }
+  if(ini > fim){ alert('A data inicial não pode ser maior que a data final.'); return; }
+
+  const arr = S.g('pagar')||[];
+
+  // Pagos (aguardando confirmação de comprovante) dentro do período de vencimento
+  const lote = arr.filter(c =>
+    c.status === 'Pago' &&
+    c.venc >= ini &&
+    c.venc <= fim
+  ).sort((a,b) => (a.venc||'').localeCompare(b.venc||''));
+
+  const listaWrap = document.getElementById('blote-lista-wrap');
+  const vazioEl   = document.getElementById('blote-vazio');
+  const btnBaixar = document.getElementById('blote-btn-baixar');
+  const contador  = document.getElementById('blote-contador');
+
+  if(!lote.length){
+    listaWrap.style.display = 'none';
+    vazioEl.style.display   = 'block';
+    btnBaixar.style.display = 'none';
+    contador.textContent    = '';
+    return;
+  }
+
+  vazioEl.style.display   = 'none';
+  listaWrap.style.display = 'block';
+  btnBaixar.style.display = 'inline-flex';
+
+  const total = lote.reduce((a,b) => a + (b.val||0), 0);
+  contador.textContent = `${lote.length} lançamento(s) encontrado(s)`;
+  document.getElementById('blote-qtd').textContent = lote.length;
+  document.getElementById('blote-total-val').textContent = R(total);
+
+  // Armazena IDs para a baixa
+  document._baixaLoteIds = lote.map(c => c.id);
+
+  document.getElementById('blote-tbody').innerHTML = lote.map(c => `
+    <tr style="border-bottom:1px solid var(--bd)">
+      <td style="padding:8px 10px;font-size:11px;color:var(--or);font-weight:600">${c.cod||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx)">${fd(c.venc)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${nomeFornById(c.forn)||c.desc||'—'}
+        ${c.totalParcelas?`<span style="font-size:10px;color:var(--tx3);margin-left:4px">${c.parcela}/${c.totalParcelas}</span>`:''}
+      </td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx);text-align:right;font-weight:500">${R(c.val||0)}</td>
+      <td style="padding:8px 10px;text-align:center">
+        <span class="tg tg-bl" style="font-size:10px">${c.contaCorrente||c.banco||'—'}</span>
+      </td>
+    </tr>`).join('');
+}
+
+function confirmarBaixaLote(){
+  const dtpag = document.getElementById('blote-dtpag').value;
+  if(!dtpag){ alert('Informe a data da baixa antes de confirmar.'); return; }
+
+  const ids = document._baixaLoteIds || [];
+  if(!ids.length){ alert('Nenhum lançamento selecionado.'); return; }
+
+  if(!confirm(`Confirma a baixa de ${ids.length} lançamento(s) com data ${fd(dtpag)}?\n\nEsta ação não pode ser desfeita.`)) return;
+
+  const arr = S.g('pagar')||[];
+  let baixados = 0;
+  ids.forEach(id => {
+    const idx = arr.findIndex(x => x.id === id);
+    if(idx > -1 && arr[idx].status === 'Pago'){
+      arr[idx] = { ...arr[idx], status: 'Baixado', dtpag };
+      baixados++;
+    }
+  });
+  S.s('pagar', arr);
+  closeMod('mod-baixa-lote');
+  renderPagar();
+  if(typeof renderDRE==='function') renderDRE();
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderDashboard==='function') renderDashboard();
+
+  // Toast de confirmação
+  const toast = document.createElement('div');
+  toast.textContent = `✓ ${baixados} lançamento(s) baixado(s) em ${fd(dtpag)}`;
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--gr);color:#fff;padding:12px 20px;border-radius:8px;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:opacity 0.4s';
+  document.body.appendChild(toast);
+  setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),400); }, 3200);
+}
+
 function abrirBaixa(id){
   const arr = S.g('pagar')||[];
   const c = arr.find(x=>x.id===id); if(!c) return;
@@ -15015,19 +15952,46 @@ function abrirBaixa(id){
   }
   document.getElementById('mbx-obs').value = '';
   // Monta resumo do título
-  const fornNome = nomeFornById(c.forn);
+  // Fornecedor: tenta pelo cadastro, senão usa desc ou indica não encontrado
+  const _fornObj = c.forn ? (S.g('fornecedores')||[]).find(x=>String(x.id)===String(c.forn)) : null;
+  const fornNome = _fornObj ? _fornObj.n
+    : (c.forn ? (c.desc||'⚠ Fornecedor não vinculado ao cadastro') : (c.desc||'—'));
   const atraso = calcAtraso(c.venc, c.status, c.dtpag);
   const atrasoTxt = atraso > 0
     ? `<span style="color:var(--rd);font-weight:600"> · ${atraso} dia(s) de atraso</span>` : '';
+  const isConfirmacao = c.status === 'Pago';
+  // Atualiza título do modal dinamicamente
+  const mtEl = document.querySelector('#mod-baixa .mt span:first-child');
+  if(mtEl) mtEl.innerHTML = isConfirmacao
+    ? '<i class="fa-solid fa-file-circle-check" style="color:#64B5F6;margin-right:8px"></i>Confirmar Baixa — Comprovante Recebido'
+    : '<i class="fa-solid fa-circle-check" style="color:var(--gr);margin-right:8px"></i>Dar Baixa — Confirmar Pagamento';
+
   document.getElementById('mbx-resumo').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:4px">
+    ${isConfirmacao ? '<div style="background:rgba(33,150,243,0.1);border:1px solid rgba(33,150,243,0.3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#64B5F6"><i class="fa-solid fa-circle-info" style="margin-right:6px"></i>Este título já foi marcado como <strong>Pago</strong>. Ao confirmar, o status mudará para <strong>Baixado</strong> — comprovante arquivado.</div>' : ''}
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--tx2)">N° Doc.</span>
+        <span style="color:var(--or);font-weight:600;font-size:11px">${c.ndoc||c.cod||'—'}</span>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--tx2)">Fornecedor</span>
         <span style="color:var(--tx);font-weight:500">${fornNome}</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">Descrição</span>
-        <span style="color:var(--tx)">${c.desc||'—'}</span>
+        <span style="color:var(--tx2)">Descrição / NF</span>
+        <span style="color:var(--tx)">${c.nf && c.nf!==c.desc ? c.nf+' — '+c.desc : (c.desc||'—')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--tx2)">Categoria</span>
+        <span style="color:var(--tx);font-size:11px">${resolverCatLancamento(c)||'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--tx2)">Conta Débito</span>
+        <span style="color:var(--tx);font-size:11px">${nomeContaByCod(c.conta)||'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--tx2)">Competência</span>
+        <span style="color:var(--tx)">${c.comp ? fd(c.comp) : '—'}</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--tx2)">Vencimento</span>
@@ -15035,9 +15999,14 @@ function abrirBaixa(id){
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd);padding-top:8px;margin-top:4px">
         <span style="color:var(--tx2);font-weight:600">Valor</span>
-        <span style="color:var(--gr);font-size:18px;font-weight:700">${R(c.val)}</span>
+        <span style="color:${isConfirmacao?'#64B5F6':'var(--gr)'};font-size:18px;font-weight:700">${R(c.val)}</span>
       </div>
     </div>`;
+  // Atualiza botão de confirmar
+  const btnConf = document.querySelector('#mod-baixa .bs');
+  if(btnConf) btnConf.innerHTML = isConfirmacao
+    ? '<i class="fa-solid fa-file-circle-check"></i> Confirmar Baixa'
+    : '<i class="fa-solid fa-circle-check"></i> Confirmar Pagamento';
   openMod('mod-baixa');
 }
 
@@ -15047,20 +16016,43 @@ function salvarBaixa(){
   const forma  = document.getElementById('mbx-forma').value;
   const cc     = document.getElementById('mbx-cc').value.trim();
   const obs    = document.getElementById('mbx-obs').value.trim();
-  if(!dtpag){ alert('Informe a data do pagamento.'); return; }
+  // ── Validações obrigatórias para baixa ──
+  if(!dtpag){
+    alert('⚠️ Campo obrigatório!\n\nInforme a Data do Pagamento antes de confirmar a baixa.');
+    document.getElementById('mbx-dtpag').focus();
+    return;
+  }
+  if(!forma){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Forma de Pagamento antes de confirmar a baixa.\n\nEx: Dinheiro, PIX, Cartão, Boleto...');
+    document.getElementById('mbx-forma').focus();
+    return;
+  }
+  if(!cc){
+    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta Corrente / Banco que originou o pagamento.\n\nEste campo é necessário para o correto lançamento no Fluxo de Caixa.');
+    document.getElementById('mbx-cc').focus();
+    return;
+  }
   const arr = S.g('pagar')||[];
   const idx = arr.findIndex(x=>x.id===id); if(idx===-1) return;
-  arr[idx] = { ...arr[idx], status:'Pago', dtpag, forma,
+  // Se já estava Pago → confirmação com comprovante → Baixado
+  // Se estava Pendente/Vencida/A Vencer → pagamento inicial → Pago
+  const novoStatus = arr[idx].status === 'Pago' ? 'Baixado' : 'Pago';
+  arr[idx] = { ...arr[idx], status: novoStatus, dtpag, forma,
     contaCorrente: cc||arr[idx].contaCorrente||'',
     banco: cc||arr[idx].banco||'',
     obs: obs || arr[idx].obs || '' };
   S.s('pagar', arr);
   closeMod('mod-baixa');
   renderPagar();
+  if(typeof renderDRE==='function') renderDRE();
+  if(typeof renderFluxo==='function') renderFluxo();
+  if(typeof renderDashboard==='function') renderDashboard();
   // Feedback visual
   const toast = document.createElement('div');
-  toast.textContent = '✓ Baixa registrada em '+fd(dtpag);
-  toast.style.cssText='position:fixed;bottom:24px;right:24px;background:var(--gr);color:#fff;padding:12px 20px;border-radius:8px;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:opacity 0.4s';
+  toast.textContent = novoStatus === 'Baixado'
+    ? '✓ Baixa confirmada com comprovante em '+fd(dtpag)
+    : '✓ Pagamento registrado em '+fd(dtpag);
+  toast.style.cssText='position:fixed;bottom:24px;right:24px;background:'+(novoStatus==='Baixado'?'#1565C0':'var(--gr)')+';color:#fff;padding:12px 20px;border-radius:8px;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:opacity 0.4s';
   document.body.appendChild(toast);
   setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),400); }, 2800);
 }
@@ -15536,6 +16528,7 @@ function initRelPagar(){
   msInit('status',[
     {v:'Pendente',l:'Pendente'},
     {v:'Pago',l:'Pago'},
+    {v:'Baixado',l:'Baixado'},
     {v:'A Vencer',l:'A Vencer'},
     {v:'Vencida',l:'Vencida'},
   ]);
@@ -15948,13 +16941,13 @@ function renderRelPagar(){
       ? `<span class="tg ${catCor}" style="font-size:10px">${catNome}</span>`
       : `<span style="color:var(--tx3)">—</span>`;
     return `<tr>
-      <td style="white-space:nowrap">${fd(c.venc)}</td>
+      <td style="color:var(--or);font-size:11px">${ndoc}</td>
       <td style="white-space:nowrap">${fd(c.comp||c.venc)}</td>
+      <td style="white-space:nowrap">${fd(c.venc)}</td>
       <td style="font-size:11px;color:var(--tx2)">${contaDebNome||'—'}</td>
       <td>${catBadge}</td>
-      <td style="color:var(--tx);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.desc||''}">${c.desc||'—'}</td>
       <td style="font-weight:500;white-space:nowrap">${fornNome}</td>
-      <td style="color:var(--tx3);font-size:11px">${ndoc}</td>
+      <td style="color:var(--tx);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.desc||''}">${c.desc||'—'}</td>
       <td style="text-align:right;font-weight:700;font-size:13px;color:var(--gr)">${R(c.val)}</td>
       <td><span class="tg tg-bl" style="font-size:10px">${c.forma||'—'}</span></td>
       <td style="white-space:nowrap;color:var(--tx2)">${dtpag||'—'}</td>
@@ -15967,19 +16960,19 @@ function renderRelPagar(){
   // 15 colunas no total (adicionada Categoria)
   document.getElementById('rp-tfoot').innerHTML=`
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
-      <td colspan="11" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
+      <td colspan="7" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--or)">${R(total)}</td>
-      <td></td>
+      <td colspan="5"></td>
     </tr>`;
 }
 
 function exportarRelPagar(){
   if(!rpDados.length){ alert('Nenhum dado para exportar. Aplique um filtro primeiro.'); return; }
-  const cab = ['Dt. Vencimento','Dt. Competência','Conta Débito','Categoria','Descrição','Fornecedor','N° Doc.','Valor','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Status'];
+  const cab = ['N° Doc.','Dt. Competência','Dt. Vencimento','Conta Débito','Categoria','Fornecedor','Descrição','Valor','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Status'];
   const linhas = rpDados.map(c=>[
     c.cod||'',
-    c.venc||'',
     c.comp||c.venc||'',
+    c.venc||'',
     nomeContaByCod(c.conta),
     c.contaCorrente||c.forma||'',
     resolverCatLancamento(c),
@@ -16000,7 +16993,60 @@ function exportarRelPagar(){
   a.click();
 }
 
-function imprimirRelPagar(){ window.print(); }
+// ── Impressão por página ──
+function getPrintEmpresa(){
+  return (document.getElementById('cn')?.textContent||'').trim() || 'Finance Gestão Pro';
+}
+
+function fmtYM(ym){
+  if(!ym) return '';
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const [y,m] = ym.split('-').map(Number);
+  return meses[m-1]+' '+y;
+}
+
+function fmtData(d){
+  if(!d) return '';
+  const [y,m,dia] = d.split('-');
+  return dia+'/'+m+'/'+y;
+}
+
+function buildPrintHeader(pageId, titulo, periodo){
+  const el = document.getElementById(pageId);
+  if(!el) return;
+  const empresa = getPrintEmpresa();
+  const agora   = new Date();
+  const dtImp   = agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const html = `
+    <span class="ph-data">Impresso em ${dtImp}</span>
+    <div class="ph-empresa">${empresa}</div>
+    <h2>${titulo}</h2>
+    <div class="ph-periodo">${periodo||''}</div>`;
+  // Atualiza apenas o primeiro .print-header direto da página (não o abc-print-header)
+  const ph = el.querySelector('.print-header:not(.abc-print-header)');
+  if(ph){ ph.style.display = ''; ph.innerHTML = html; }
+}
+
+function imprimirPagina(pageId, titulo, periodo){
+  const el = document.getElementById(pageId);
+  if(!el) return;
+  if(titulo) buildPrintHeader(pageId, titulo, periodo||'');
+  el.classList.add('print-target');
+  window.print();
+  el.classList.remove('print-target');
+}
+
+function imprimirRelPagar(){
+  const dtIni   = document.getElementById('rp-dt-ini')?.value || '';
+  const dtFim   = document.getElementById('rp-dt-fim')?.value || '';
+  const btnComp = document.getElementById('mp-comp-btn');
+  const comp    = btnComp?.textContent.trim() || '';
+  let partes = [];
+  if(dtIni || dtFim) partes.push('Vencimento: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...'));
+  if(comp && comp !== 'Todos os meses') partes.push('Competência: '+comp);
+  const periodo = partes.length > 0 ? partes.join('  |  ') : 'Todos os períodos';
+  imprimirPagina('page-rel-pagar', 'Relatório de Contas a Pagar', periodo);
+}
 
 // ══════════════════════════════════════
 // RELATÓRIO — COMPRAS / ESTOQUE
@@ -16284,24 +17330,26 @@ function rcMsBuildLanc(){
 }
 
 function rcMsBuildConta(){
-  const pagar = S.g('pagar')||[];
-  const contaSet = new Map();
-  pagar.forEach(lanc=>{
-    if(!lanc.itens || !lanc.itens.length) return;
-    lanc.itens.forEach(it=>{
-      if(!it.conta) return;
-      const contaNome = nomeContaByCod(it.conta)||it.conta;
-      const label = `${it.conta} — ${contaNome}`;
-      if(!contaSet.has(it.conta)) contaSet.set(it.conta, label);
-    });
-  });
   const drop = document.getElementById('rc-conta-drop');
   if(!drop) return;
-  const lista = [...contaSet.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const pc = getPC ? getPC() : [];
+
+  // Pega apenas as contas (tipo='conta'), ordena por código numérico
+  const contas = pc.filter(x=>x.tipo==='conta').sort((a,b)=>{
+    const pA=a.cod.split('.').map(Number);
+    const pB=b.cod.split('.').map(Number);
+    for(let i=0;i<Math.max(pA.length,pB.length);i++){
+      const d=(pA[i]||0)-(pB[i]||0);
+      if(d!==0)return d;
+    }
+    return 0;
+  });
+
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('conta')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todas)</span></div>`;
-  drop.innerHTML = todos + (lista.length===0
-    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta encontrada</div>'
-    : lista.map(([cod,lbl])=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${cod}"><span class="rc-ms-chk"></span><span>${lbl}</span></div>`).join(''));
+
+  drop.innerHTML = todos + (contas.length===0
+    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta no plano</div>'
+    : contas.map(c=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${c.cod}"><span class="rc-ms-chk"></span><span>${c.cod} — ${c.nome}</span></div>`).join(''));
 }
 
 function rcMsBuildProd(){
@@ -16462,43 +17510,42 @@ function renderRelCompras(){
   document.getElementById('rc-tbody').innerHTML = rcDados.map(it=>{
     const cor = catCor[it.cat]||'tg-gy';
     return `<tr>
+      <td style="color:var(--or);font-size:11px">${it.lanc}</td>
       <td style="white-space:nowrap">${fd(it.data)}</td>
-      <td style="color:var(--tx);font-weight:500">${it.nome}</td>
+      <td style="font-size:11px;color:var(--tx2)">${it.contaNome||'—'}</td>
       <td><span class="tg ${cor}" style="font-size:10px">${it.cat}</span></td>
+      <td style="white-space:nowrap">${it.forn}</td>
+      <td style="color:var(--tx);font-weight:500">${it.nome}</td>
       <td style="text-align:center"><span class="tg tg-gy">${it.un||'—'}</span></td>
       <td style="text-align:right;font-weight:500">${it.qtd%1===0?it.qtd:it.qtd.toFixed(3)}</td>
       <td style="text-align:right">${R(it.preco)}</td>
       <td style="text-align:right;font-weight:600;color:var(--gr)">${R(it.total)}</td>
-      <td style="white-space:nowrap">${it.forn}</td>
-      <td style="color:var(--or);font-size:11px">${it.lanc}</td>
-      <td style="font-size:11px;color:var(--tx2)">${it.contaNome||'—'}</td>
     </tr>`;
   }).join('');
 
   document.getElementById('rc-tfoot').innerHTML=`
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
-      <td colspan="4" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
+      <td colspan="7" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
       <td style="text-align:right;font-weight:700;color:var(--bl)">${totalQtd.toLocaleString('pt-BR',{maximumFractionDigits:2})}</td>
       <td></td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--or)">${R(totalVal)}</td>
-      <td colspan="3"></td>
     </tr>`;
 }
 
 function exportarRelCompras(){
   if(!rcDados.length){ alert('Nenhum dado para exportar.'); return; }
-  const cab = ['Data Compra','Produto','Categoria','Unidade','Qtd. Comprada','Preço Unit.','Total','Fornecedor','N° Lançamento','Conta Plano'];
+  const cab = ['N° Lançamento','Data Compra','Conta Plano','Categoria','Fornecedor','Produto','Unidade','Qtd. Comprada','Preço Unit.','Total'];
   const linhas = rcDados.map(it=>[
+    it.lanc||'',
     it.data,
-    (it.nome||'').replace(/;/g,' '),
+    (it.contaNome||'').replace(/;/g,' '),
     it.cat,
+    (it.forn||'').replace(/;/g,' '),
+    (it.nome||'').replace(/;/g,' '),
     it.un||'',
     String(it.qtd).replace('.',','),
     (it.preco||0).toFixed(2).replace('.',','),
-    (it.total||0).toFixed(2).replace('.',','),
-    (it.forn||'').replace(/;/g,' '),
-    it.lanc||'',
-    (it.contaNome||'').replace(/;/g,' ')
+    (it.total||0).toFixed(2).replace('.',',')
   ].join(';'));
   const csv = [cab.join(';'), ...linhas].join('\n');
   const a = document.createElement('a');
@@ -16507,7 +17554,72 @@ function exportarRelCompras(){
   a.click();
 }
 
-function imprimirRelCompras(){ window.print(); }
+function imprimirRelCompras(){ imprimirRelComprasCompleto(); }
+
+function imprimirDRE(){
+  const ym = _dbMes || '';
+  const periodo = ym ? fmtYM(ym) : '';
+  imprimirPagina('page-dre', 'DRE — Demonstrativo de Resultado', periodo);
+}
+
+function imprimirModuloPagar(){
+  const ym = document.getElementById('pg-mes')?.value || '';
+  const periodo = ym ? fmtYM(ym) : new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  imprimirPagina('page-pagar', 'Contas a Pagar', periodo);
+}
+
+function imprimirModuloReceber(){
+  // Pega o período exibido no botão de filtro
+  const labelPeriodo = document.getElementById('rc-periodo-label')?.textContent?.trim() || '';
+  const dtIni = document.getElementById('rc-dt-ini')?.value || '';
+  const dtFim = document.getElementById('rc-dt-fim')?.value || '';
+  let periodo = labelPeriodo;
+  if(dtIni || dtFim){
+    periodo = 'Período: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...');
+  }
+  imprimirPagina('page-receber', 'Contas a Receber', periodo);
+}
+
+function imprimirEstoque(){
+  const ym      = document.getElementById('eq-mes')?.value || '';
+  const periodo = ym ? fmtYM(ym) : '';
+
+  // Cabeçalho folha 1 — tabela de estoque
+  buildPrintHeader('page-estoque', 'Controle de Estoque', periodo);
+
+  // Cabeçalho folha 2 — Curva ABC (página separada, igual aos outros módulos)
+  buildPrintHeader('page-estoque-abc', 'Curva ABC — Análise de Consumo', periodo);
+
+  const el1 = document.getElementById('page-estoque');
+  const el2 = document.getElementById('page-estoque-abc');
+  if(!el1 || !el2) return;
+
+  el1.classList.add('print-target');
+  el2.classList.add('print-target');
+
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      el1.classList.remove('print-target');
+      el2.classList.remove('print-target');
+    }, 500);
+  }, 100);
+}
+
+function imprimirRelComprasCompleto(){
+  const dtIni = document.getElementById('rcc-dt-ini')?.value || '';
+  const dtFim = document.getElementById('rcc-dt-fim')?.value || '';
+  let periodo = '';
+  if(dtIni || dtFim) periodo = 'Período: '+(dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...');
+  imprimirPagina('page-rel-compras', 'Relatório de Compras', periodo);
+}
+
+// Impressão especial do Fluxo de Caixa — popula mês no cabeçalho
+function imprimirFluxo(){
+  const elLabel = document.getElementById('fcx-mes-label');
+  const periodo = elLabel?.textContent.trim() || '';
+  imprimirPagina('page-fluxo', 'Relatório de Fluxo de Caixa', periodo);
+}
 
 
 
@@ -17319,7 +18431,7 @@ function gerarRelVendas(){
   let arr = Object.values(mapa);
 
   if(minRod > 0){
-    arr = arr.filter(x=> x.cat !== 'Rodízio' || x.qtd >= minRod);
+    arr = arr.filter(x=> !x.cat?.toLowerCase().includes('rod') || x.qtd >= minRod);
   }
 
   arr.sort((a,b)=> b.fat !== a.fat ? b.fat - a.fat : b.preco - a.preco);
@@ -17368,8 +18480,10 @@ function renderRelVendas(){
   if(kpiEl)     kpiEl.style.display='grid';
   if(grafWrap)  grafWrap.style.display='block';
   if(tabelaCard)tabelaCard.style.display='block';
-  // Rodízios
-  const rodArr   = arr.filter(x=>x.cat==='Rodízio');
+  // Rodízios — busca dinamicamente a categoria com 'rodiz' no nome
+  const _catsRv = getCatProdsVenda().filter(c=>c.st==='Ativo');
+  const catRodizio = _catsRv.find(c=>c.nome.toLowerCase().includes('rod'))?.nome || 'Rodízio';
+  const rodArr = arr.filter(x=> x.cat && x.cat.toLowerCase().includes('rod'));
   const rodQtd   = rodArr.reduce((a,b)=>a+b.qtd, 0);
   const rodFat   = rodArr.reduce((a,b)=>a+b.fat, 0);
   const rodTicket= rodQtd>0 ? rodFat/rodQtd : 0;
@@ -17394,7 +18508,15 @@ function renderRelVendas(){
 
   document.getElementById('rv-total-label').textContent = arr.length+' produtos · Faturamento: '+R(totalFat);
 
-  const catCor = {'Rodízio':'tg-or','Bebidas':'tg-bl','Cervejas':'tg-am','Drinks':'tg-gy','Combos':'tg-gr','Sobremesas':'tg-rd','Outros':'tg-gy'};
+  // Monta mapa de cores dinamicamente do cadastro de categorias
+  const _catsCadastro = getCatProdsVenda().filter(c=>c.st==='Ativo');
+  const catCor = {};
+  // Fallback com cores padrão para categorias comuns
+  const catCorFallback = {'Rodízio':'tg-or','Rodízios':'tg-or','Pizzas':'tg-rd','Pizza':'tg-rd',
+    'Bebidas':'tg-bl','Refrigerantes':'tg-bl','Cervejas':'tg-am','Drinks':'tg-gy',
+    'Combos':'tg-gr','Promoções':'tg-gr','Sobremesas':'tg-rd','Sucos':'tg-or',
+    'Outros':'tg-gy','Vinhos':'tg-pu'};
+  _catsCadastro.forEach(c=>{ catCor[c.nome] = c.cor||catCorFallback[c.nome]||'tg-gy'; });
 
   document.getElementById('rv-tbody').innerHTML = arr.map(p=>{
     const custo = p.custo||0;
@@ -18197,16 +19319,21 @@ function dreDrillDown(tipo, label, cor){
       }catch(e){ console.warn('drill cmv estoque:', e); }
     }
   } else if((tipo==='cmv_41' || tipo==='cmv_42') && regime==='comp'){
-    // Compras de Insumos (4.1) / Compras de Bebidas (4.2) — mesmo cálculo do módulo de
-    // Estoque usado na linha do DRE, filtrado pela categoria correspondente
-    if(typeof eqMigrarCodigosProdutos==='function') try{ eqMigrarCodigosProdutos(); }catch(e){}
+    // Drill-down Compras de Insumos/Bebidas em regime Competência
+    // Parte 1: produtos do estoque calculados pelo módulo de Estoque
+    // Parte 2: lançamentos CAP com conta 4.1/4.2 não integrados ao estoque
+    if(typeof eqMigrarCodigosProdutos==='function') try{ eqMigrarCodigosProdutos(); }catch(e){};
     const ym = (de && ate && de===ate) ? de : (de||ate||'');
     const catAlvo = tipo==='cmv_41' ? 'Insumos' : 'Bebidas';
+    const codAlvo = tipo==='cmv_41' ? '4.1' : '4.2';
+    const capOrigensNoEstoque = new Set();
     if(ym){
       try{
         const prods = S.g('eq-produtos')||[];
         const movs  = S.g('eq-movimentos')||[];
         const inventarios = S.g('eq-inventarios')||{};
+        movs.filter(m=>m.tipo==='entrada'&&(m.data||'').slice(0,7)===ym)
+            .forEach(m=>{ if(m.capOrigemId) capOrigensNoEstoque.add(String(m.capOrigemId)); });
         prods.filter(p=>p.ativo!==false && p.cat===catAlvo).forEach(p=>{
           const r = eqCalcProduto(p.id, ym, movs, inventarios);
           const val = r.totalComprasVal;
@@ -18221,6 +19348,20 @@ function dreDrillDown(tipo, label, cor){
         });
       }catch(e){ console.warn('drill cmv 4.1/4.2:', e); }
     }
+    // Parte 2: lançamentos CAP com conta 4.1/4.2 não representados no estoque
+    console.log('[DRILL cmv_41] filtP total:', filtP.length,
+      'com conta '+codAlvo+':', filtP.filter(l=>l.conta===codAlvo).length,
+      'capOrigensNoEstoque:', [...capOrigensNoEstoque]);
+    filtP.filter(l=>l.conta===codAlvo).forEach(l=>{
+      console.log('[DRILL] lanc:', l.cod||l.id, 'conta:', l.conta,
+        'noEstoque:', capOrigensNoEstoque.has(String(l.cod||l.id)));
+    });
+    filtP.filter(l=>{
+      if(l.conta !== codAlvo) return false;
+      return !capOrigensNoEstoque.has(String(l.cod||l.id));
+    }).forEach(l=>{
+      lancs.push({...l, _valDRE: l.val||0});
+    });
   } else if(tipo==='cmv_41' || tipo==='cmv_42'){
     // Regime de Caixa: calcula proporcionalmente pelos itens de cada lançamento
     // (mesmo cálculo usado na linha do DRE) em vez do Estoque por data de competência
@@ -18675,6 +19816,18 @@ function renderFluxo(){
     // Lançamentos com itens: distribui por conta de cada item
     if(lanc.itens && lanc.itens.length){
       const totalItens = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+      // Se todos os itens têm conta de receita (grupo 1) mas conta principal é despesa,
+      // usa a conta principal — corrige insumos cadastrados com conta errada
+      const todosItemReceita = lanc.itens.every(it=>(it.conta||'').split('.')[0]==='1');
+      const contaPrincDespesa = lanc.conta && lanc.conta.split('.')[0] !== '1';
+      if(todosItemReceita && contaPrincDespesa){
+        const pcIt = pc.find(p=>p.cod===lanc.conta&&p.tipo==='conta');
+        const grp  = pcIt?.grupo||'5';
+        saiDia[dia][grp]=(saiDia[dia][grp]||0)+val;
+        saiDiaAnalitico[dia][lanc.conta]=(saiDiaAnalitico[dia][lanc.conta]||0)+val;
+        if(lanc.conta&&!contasUsadas[lanc.conta]) contasUsadas[lanc.conta]={nome:pcIt?.nome||lanc.conta,grupo:grp,subgrupo:pcIt?.subgrupo||''};
+        return;
+      }
       lanc.itens.forEach(it=>{
         const itVal = totalItens>0 ? val*(it.total||0)/totalItens : (it.total||0);
         if(!itVal) return;
@@ -19325,7 +20478,7 @@ function initAll(){
   const pzCompEl=document.getElementById('pz-comp-mes-sel'); if(pzCompEl) pzCompEl.value=_pzMes;
   eqInitMes();dbInitMes();renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
-  initCatProdPadrao(); renderCategoriasProd();
+  initCatProdPadrao(); migrarCatProdPadrao(); renderCategoriasProd();
   initCatProdVendaPadrao(); renderCatProdVenda();
   fillSelectCatProdVenda('mpv-cat');
   fillSelectCatVendaRel('rv-cat');
@@ -19426,6 +20579,510 @@ document.addEventListener('click', ()=>{
   }catch{ temaAplicar('preto'); }
 })();
 
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     BUSCA DINÂMICA NOS FILTROS MULTISELECT — Finance Gestão Pro
+     Adiciona campo de busca nos dropdowns rc-ms-drop e eq-cat-drop
+     sem tocar em nenhuma lógica existente.
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+.rc-ms-search{
+  padding:8px 10px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  position:sticky;top:0;z-index:2;
+  background:var(--dk2);
+}
+.rc-ms-search input{
+  width:100%;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);
+  border-radius:5px;padding:6px 28px 6px 10px;color:var(--tx);
+  font-family:'Outfit',sans-serif;font-size:12px;outline:none;box-sizing:border-box;
+  transition:border-color .15s;
+}
+.rc-ms-search input:focus{border-color:var(--or);}
+.rc-ms-search-icon{
+  position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  color:var(--tx3);font-size:11px;pointer-events:none;
+}
+.rc-ms-search-wrap{position:relative;}
+.rc-ms-item.rc-ms-hidden{display:none!important;}
+.rc-ms-sem-resultado{
+  padding:10px 14px;font-size:12px;color:var(--tx3);
+  font-family:'Outfit',sans-serif;text-align:center;display:none;
+}
+</style>
+<script>
+(function(){
+  'use strict';
+
+  function _norm(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+
+  // Injeta campo de busca num dropdown rc-ms-drop ou eq-cat-drop
+  function _injetarBusca(dropId, placeholder){
+    const drop = document.getElementById(dropId);
+    if(!drop || drop.dataset.buscaInited) return;
+    drop.dataset.buscaInited = '1';
+
+    // Monta o bloco de busca como primeiro filho (sticky no topo)
+    const buscaWrap = document.createElement('div');
+    buscaWrap.className = 'rc-ms-search rc-ms-search-wrap';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = placeholder || 'Buscar...';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-magnifying-glass rc-ms-search-icon';
+
+    buscaWrap.appendChild(input);
+    buscaWrap.appendChild(icon);
+
+    // Mensagem "sem resultado"
+    const semRes = document.createElement('div');
+    semRes.className = 'rc-ms-sem-resultado';
+    semRes.innerHTML = '<i class="fa-solid fa-magnifying-glass" style="margin-right:5px;opacity:.4"></i>Nenhum resultado';
+
+    // Insere ANTES do primeiro filho
+    drop.insertBefore(semRes, drop.firstChild);
+    drop.insertBefore(buscaWrap, drop.firstChild);
+
+    // Evento de filtro
+    input.addEventListener('input', () => {
+      const f = _norm(input.value);
+      let visiveis = 0;
+      // Itera todos os itens (exclui: sticky "Todos", separadores, o próprio semRes e buscaWrap)
+      Array.from(drop.children).forEach(child => {
+        if(child === buscaWrap || child === semRes) return;
+        // Item "todos/limpar" — mantém sempre visível
+        const isTodos = child.classList.contains('rc-ms-item') &&
+          (child.style.color === 'var(--or)' ||
+           (child.querySelector('span:last-child')?.textContent||'').toLowerCase().includes('todos') ||
+           (child.querySelector('span:last-child')?.textContent||'').toLowerCase().includes('limpar'));
+        if(isTodos){ child.classList.remove('rc-ms-hidden'); return; }
+
+        if(!f){
+          child.classList.remove('rc-ms-hidden');
+          visiveis++;
+          return;
+        }
+        const txt = _norm(child.querySelector('span:last-child')?.textContent || child.textContent);
+        if(txt.includes(f)){
+          child.classList.remove('rc-ms-hidden');
+          visiveis++;
+        } else {
+          child.classList.add('rc-ms-hidden');
+        }
+      });
+      semRes.style.display = (f && visiveis === 0) ? 'block' : 'none';
+    });
+
+    // Impede que clique no input feche o dropdown
+    input.addEventListener('click', e => e.stopPropagation());
+    buscaWrap.addEventListener('click', e => e.stopPropagation());
+
+    // Limpa busca quando o dropdown fecha
+    const _limparBusca = () => {
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+    };
+
+    // Observa quando o dropdown é ocultado para limpar a busca
+    const mo = new MutationObserver(() => {
+      const vis = drop.style.display !== 'none' && !drop.classList.contains('hidden');
+      if(!vis) _limparBusca();
+    });
+    mo.observe(drop, {attributes:true, attributeFilter:['style','class']});
+  }
+
+  // ── Patch no rcMsToggle para injetar busca na 1ª abertura ──
+  // Os drops de forn, prod, lanc, conta são populados dinamicamente (rcMsBuildX),
+  // então precisamos injetar APÓS a primeira build
+  const _rcKeys = ['cat','forn','prod','lanc','conta'];
+  const _rcPlaceholders = {
+    cat:   'Buscar categoria...',
+    forn:  'Buscar fornecedor...',
+    prod:  'Buscar produto...',
+    lanc:  'Buscar lançamento...',
+    conta: 'Buscar conta...',
+  };
+
+  // Patch rcMsToggle: injeta busca ao abrir
+  const _origRcToggle = window.rcMsToggle;
+  if(typeof _origRcToggle === 'function'){
+    window.rcMsToggle = function(key){
+      _origRcToggle.call(this, key);
+      // Após toggle, verifica se está aberto e injeta busca
+      const drop = document.getElementById('rc-'+key+'-drop');
+      if(drop && drop.style.display !== 'none'){
+        setTimeout(() => _injetarBusca('rc-'+key+'-drop', _rcPlaceholders[key]||'Buscar...'), 0);
+      }
+    };
+  }
+
+  // Patch rcMsBuildX: re-injeta busca após rebuild do conteúdo dinâmico
+  ['rcMsBuildForn','rcMsBuildProd','rcMsBuildLanc','rcMsBuildConta'].forEach(fn => {
+    const orig = window[fn];
+    if(typeof orig !== 'function') return;
+    window[fn] = function(...args){
+      orig.apply(this, args);
+      // descobre a key pelo nome da função
+      const key = fn.replace('rcMsBuild','').toLowerCase();
+      // remove flag para reinjetar (conteúdo mudou)
+      const drop = document.getElementById('rc-'+key+'-drop');
+      if(drop) drop.dataset.buscaInited = '';
+      setTimeout(() => _injetarBusca('rc-'+key+'-drop', _rcPlaceholders[key]||'Buscar...'), 0);
+    };
+  });
+
+  // ── eq-cat-drop (Estoque): patch no eqCatMsToggle ──
+  const _origEqToggle = window.eqCatMsToggle;
+  if(typeof _origEqToggle === 'function'){
+    window.eqCatMsToggle = function(...args){
+      _origEqToggle.apply(this, args);
+      const drop = document.getElementById('eq-cat-drop');
+      if(drop && drop.style.display !== 'none'){
+        setTimeout(() => _injetarBusca('eq-cat-drop', 'Buscar categoria...'), 0);
+      }
+    };
+  }
+
+  // ── eq-cat-drop: também injeta quando o Estoque inicializa (eqCatMsInit) ──
+  const _origEqInit = window.eqCatMsInit;
+  if(typeof _origEqInit === 'function'){
+    window.eqCatMsInit = function(...args){
+      _origEqInit.apply(this, args);
+      // Após init, drop pode ter sido reconstruído — reseta flag
+      const drop = document.getElementById('eq-cat-drop');
+      if(drop) drop.dataset.buscaInited = '';
+    };
+  }
+
+  // ── rc-cat-drop: já tem itens estáticos no HTML, injetar na 1ª abertura ──
+  // (rcMsToggle já foi patchado acima, então funciona automaticamente)
+
+  // ── ms-drop (Contas a Pagar): já tem busca nativa — nada a fazer ──
+
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AUTOCOMPLETE CONTA DO PLANO DE CONTAS — Finance Gestão Pro
+     Funciona como camada visual sobre o <select> original.
+     O <select> continua existindo (hidden) e mantém seu .value
+     para que todo código JS existente continue funcionando.
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  'use strict';
+
+  // ── Registro global: selectId → { input, drop, hidden } ──
+  const _acReg = {};
+
+  // ── Monta lista de contas a partir do select já populado ──
+  function _getOpcoesDoSelect(sel){
+    const lista = [];
+    Array.from(sel.children).forEach(node => {
+      if(node.tagName === 'OPTGROUP'){
+        lista.push({ tipo:'grupo', texto: node.label });
+        Array.from(node.children).forEach(o => {
+          if(o.disabled){
+            lista.push({ tipo:'sub', texto: o.textContent.trim() });
+          } else {
+            lista.push({ tipo:'conta', value: o.value, texto: o.textContent.trim() });
+          }
+        });
+      } else if(node.tagName === 'OPTION'){
+        if(node.disabled || !node.value) return;
+        lista.push({ tipo:'conta', value: node.value, texto: node.textContent.trim() });
+      }
+    });
+    return lista;
+  }
+
+  // ── Normaliza texto para busca (remove acentos, maiúsculas) ──
+  function _norm(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+
+  // ── Renderiza dropdown filtrado ──
+  function _renderDrop(id, filtro){
+    const r = _acReg[id]; if(!r) return;
+    const lista = _getOpcoesDoSelect(r.sel);
+    const f = _norm(filtro);
+    r.drop.innerHTML = '';
+    r.idx = -1;
+
+    // Filtra apenas contas (não grupos/subs) que batem com o filtro
+    const contasFiltradas = lista.filter(x => x.tipo === 'conta' && (
+      !f || _norm(x.texto).includes(f) || _norm(x.value).includes(f)
+    ));
+
+    if(!contasFiltradas.length){
+      r.drop.innerHTML = '<div class="ac-conta-vazio"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px;opacity:.5"></i>Nenhuma conta encontrada</div>';
+      r.drop.classList.add('ac-aberto');
+      return;
+    }
+
+    // Agrupa as contas filtradas pelo grupo delas (percorre lista original mantendo ordem)
+    let grupoAtual = null, subAtual = null;
+    lista.forEach(item => {
+      if(item.tipo === 'grupo'){ grupoAtual = item.texto; subAtual = null; return; }
+      if(item.tipo === 'sub'){   subAtual = item.texto; return; }
+      if(!contasFiltradas.find(c => c.value === item.value)) return;
+
+      // Imprime cabeçalho de grupo se mudou
+      if(grupoAtual && grupoAtual !== r._lastGrupo){
+        const g = document.createElement('div');
+        g.className = 'ac-conta-item ac-group';
+        g.textContent = grupoAtual;
+        r.drop.appendChild(g);
+        r._lastGrupo = grupoAtual;
+        r._lastSub = null;
+      }
+      // Imprime cabeçalho de subgrupo se mudou
+      if(subAtual && subAtual !== r._lastSub){
+        const s = document.createElement('div');
+        s.className = 'ac-conta-item ac-sub';
+        s.textContent = '▸ ' + subAtual;
+        r.drop.appendChild(s);
+        r._lastSub = subAtual;
+      }
+
+      const d = document.createElement('div');
+      d.className = 'ac-conta-item';
+      d.dataset.value = item.value;
+      // Destaca parte que bate com filtro
+      const txt = item.texto.trim();
+      if(f){
+        const ni = _norm(txt).indexOf(f);
+        if(ni >= 0){
+          d.innerHTML =
+            _esc(txt.slice(0,ni)) +
+            '<strong style="color:var(--or)">' + _esc(txt.slice(ni, ni+filtro.length)) + '</strong>' +
+            _esc(txt.slice(ni + filtro.length));
+        } else {
+          d.textContent = txt;
+        }
+      } else {
+        d.textContent = txt;
+      }
+      d.addEventListener('mousedown', e => { e.preventDefault(); _selecionar(id, item.value, txt); });
+      r.drop.appendChild(d);
+    });
+
+    r._lastGrupo = null; r._lastSub = null;
+    r.drop.classList.add('ac-aberto');
+  }
+
+  function _esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── Seleciona uma conta ──
+  function _selecionar(id, value, label){
+    const r = _acReg[id]; if(!r) return;
+    r.input.value = label || '';
+    r.sel.value = value;
+    // Dispara change no select original para manter compatibilidade com onchange existente
+    r.sel.dispatchEvent(new Event('change', {bubbles:true}));
+    _fechar(id);
+  }
+
+  function _fechar(id){
+    const r = _acReg[id]; if(!r) return;
+    r.drop.classList.remove('ac-aberto');
+    r._lastGrupo = null; r._lastSub = null;
+  }
+
+  // ── Navegação por teclado ──
+  function _navegar(id, dir){
+    const r = _acReg[id]; if(!r) return;
+    const items = Array.from(r.drop.querySelectorAll('.ac-conta-item:not(.ac-group):not(.ac-sub)'));
+    if(!items.length) return;
+    items.forEach(i => i.classList.remove('ac-selected'));
+    r.idx = Math.max(0, Math.min(items.length - 1, (r.idx||0) + dir));
+    items[r.idx].classList.add('ac-selected');
+    items[r.idx].scrollIntoView({block:'nearest'});
+  }
+
+  // ── API pública: inicializa o autocomplete em um select ──
+  window.initContaAutocomplete = function(selectId){
+    const sel = document.getElementById(selectId);
+    if(!sel || sel.dataset.acInited) return;
+
+    sel.dataset.acInited = '1';
+    sel.style.display = 'none';
+
+    // Cria wrapper
+    const wrap = document.createElement('div');
+    wrap.className = 'ac-conta-wrap';
+    wrap.setAttribute('data-ac-id', selectId);
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.appendChild(sel);
+
+    // Input visível
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'ac-conta-input';
+    input.placeholder = 'Digite para buscar a conta...';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+
+    // Ícone lupa
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-magnifying-glass ac-conta-icon';
+
+    // Dropdown
+    const drop = document.createElement('div');
+    drop.className = 'ac-conta-drop';
+
+    wrap.appendChild(input);
+    wrap.appendChild(icon);
+    wrap.appendChild(drop);
+
+    _acReg[selectId] = { sel, input, drop, idx:-1, _lastGrupo:null, _lastSub:null };
+
+    // Sincroniza valor inicial (se select já tiver valor ao abrir edição)
+    function _syncValorAtual(){
+      const val = sel.value;
+      if(val){
+        const opt = sel.querySelector(`option[value="${CSS.escape(val)}"]`);
+        if(opt) input.value = opt.textContent.trim();
+      } else {
+        input.value = '';
+      }
+    }
+    _syncValorAtual();
+
+    // Observa mudanças no select feitas por código externo (ex: mpp-conta preenchido automaticamente)
+    const mo = new MutationObserver(() => _syncValorAtual());
+    mo.observe(sel, {attributes:true, attributeFilter:['value']});
+    // Também observa via evento change disparado externamente
+    sel.addEventListener('change', () => { setTimeout(_syncValorAtual, 0); });
+
+    // Eventos do input
+    input.addEventListener('focus', () => {
+      input.select();
+      _renderDrop(selectId, input.value);
+    });
+
+    input.addEventListener('input', () => {
+      _renderDrop(selectId, input.value);
+    });
+
+    input.addEventListener('keydown', e => {
+      if(e.key === 'ArrowDown'){ e.preventDefault(); _navegar(selectId, 1); }
+      else if(e.key === 'ArrowUp'){ e.preventDefault(); _navegar(selectId, -1); }
+      else if(e.key === 'Enter'){
+        e.preventDefault();
+        const r = _acReg[selectId];
+        const sel2 = r.drop.querySelector('.ac-selected');
+        if(sel2) sel2.dispatchEvent(new MouseEvent('mousedown'));
+      }
+      else if(e.key === 'Escape'){ _fechar(selectId); input.blur(); }
+    });
+
+    input.addEventListener('blur', () => {
+      setTimeout(() => {
+        // Se o texto não corresponde a nenhuma conta, limpa
+        const r = _acReg[selectId];
+        if(!r.sel.value && input.value){
+          // verifica se digitou algo que não bateu com nenhuma opção
+          const txt = _norm(input.value);
+          const opts = Array.from(r.sel.options).filter(o => o.value);
+          const match = opts.find(o => _norm(o.textContent).includes(txt));
+          if(!match) { input.value = ''; }
+        }
+        _fechar(selectId);
+      }, 200);
+    });
+  };
+
+  // ── Patch nas funções fill existentes para inicializar autocomplete após popular ──
+  // Intercepta fillSelectContasPlano, fillSelectContasPagar, fillSelectContasReceita, fillSelectContas
+  // sem modificar as funções originais — apenas adiciona chamada ao initContaAutocomplete depois.
+
+  const _IDS_CONTA = [
+    'msrv-conta','mins-conta','mpr-conta','mepr-conta','mep-conta',
+    'mer-conta','mpv-conta','mpp-conta','mr-conta',
+    'cx-ent-conta','cx-sai-conta'
+  ];
+
+  // IDs de campos de conta que NÃO são plano de contas (evitar falsos positivos)
+  const _IDS_EXCLUIR = new Set(['mpp-banco','msc-grupo','mcc-grupo','mcc-sub','mpr-cat','mepr-cat','msrv-cat']);
+
+  function _patchFill(nomeFn){
+    const orig = window[nomeFn];
+    if(!orig || typeof orig !== 'function') return;
+    window[nomeFn] = function(selId, ...args){
+      orig.call(this, selId, ...args);
+      if(selId && !_IDS_EXCLUIR.has(selId)){
+        // Só inicializa se for um campo de conta do plano
+        const el = document.getElementById(selId);
+        if(el && el.tagName === 'SELECT'){
+          // Verifica se tem options com valor (conta real)
+          const temContas = Array.from(el.options).some(o => o.value && !o.disabled);
+          if(temContas) initContaAutocomplete(selId);
+          else {
+            // Pode ser que as contas ainda não existam; tenta sincronizar label se já inited
+            if(el.dataset.acInited) {
+              const reg = _acReg[selId];
+              if(reg && el.value){
+                const opt = el.querySelector(`option[value="${CSS.escape(el.value)}"]`);
+                if(opt) reg.input.value = opt.textContent.trim();
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  // Aplica patch nas funções fill de conta padrão (recebem selId como 1º argumento)
+  ['fillSelectContasPlano','fillSelectContasPagar','fillSelectContasReceita','fillSelectContas'].forEach(_patchFill);
+
+  // Patch especial para funções do Caixa Diário (IDs hardcoded, sem argumento selId)
+  function _patchCaixa(nomeFn, selId){
+    const orig = window[nomeFn];
+    if(!orig || typeof orig !== 'function') return;
+    window[nomeFn] = function(...args){
+      orig.apply(this, args);
+      setTimeout(() => initContaAutocomplete(selId), 50);
+    };
+  }
+  _patchCaixa('cxPopularContasSaida',  'cx-sai-conta');
+  _patchCaixa('cxPopularContasReceita','cx-ent-conta');
+
+  // ── Fecha dropdowns ao clicar fora ──
+  document.addEventListener('click', e => {
+    if(!e.target.closest('.ac-conta-wrap')){
+      Object.keys(_acReg).forEach(id => _fechar(id));
+    }
+  });
+
+  // ── nfe-conta-sobra: criado dinamicamente, intercepta via MutationObserver ──
+  const _observer = new MutationObserver(muts => {
+    muts.forEach(m => {
+      m.addedNodes.forEach(node => {
+        if(node.nodeType !== 1) return;
+        // Busca selects de conta dentro do nó adicionado
+        const sels = node.id === 'nfe-conta-sobra'
+          ? [node]
+          : Array.from(node.querySelectorAll ? node.querySelectorAll('select[id$="-conta"]') : []);
+        sels.forEach(s => {
+          if(s.id && !_IDS_EXCLUIR.has(s.id) && !s.dataset.acInited){
+            // Aguarda populate pelo código existente
+            setTimeout(() => { if(!s.dataset.acInited) initContaAutocomplete(s.id); }, 100);
+          }
+        });
+      });
+    });
+  });
+  _observer.observe(document.body, {childList:true, subtree:true});
+
+})();
 </script>
 </body>
 </html>
