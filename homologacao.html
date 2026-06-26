@@ -581,7 +581,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div id="lg-nome-cliente" style="display:none;margin-top:10px;margin-bottom:4px;font-family:'Playfair Display',serif;font-size:17px;color:var(--tx);font-weight:700"></div>
       <div class="lg-nicho">🍕 Pizzaria | Sushi | Massa</div>
     </div>
-    <div class="fg"><label>Usuário</label><input id="iu" type="text" placeholder="Seu usuário ou e-mail"></div>
+    <div class="fg"><label>Usuário</label><input id="iu" type="text" placeholder="Seu usuário ou e-mail" autofocus></div>
     <div class="fg"><label>Senha</label><input id="ip" type="password" placeholder="Sua senha"></div>
     <button class="btn-lg" onclick="login()">Entrar no Sistema</button>
     <div class="lg-hint">Demo: <span>demo@pizzaria.com</span> / <span>123456</span></div>
@@ -2785,17 +2785,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </div>
       </div>
     </div>
-    <!-- Filtro qtd mínima de rodízios -->
-    <div style="display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:end">
-      <div class="fg">
-        <label>Qtd Mínima de Rodízios</label>
-        <input type="number" id="rv-min-rodizios" min="0" placeholder="Ex: 50" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--tx3);padding-bottom:10px;line-height:1.5">
-        <i class="fa-solid fa-circle-info" style="color:var(--or);margin-top:2px;flex-shrink:0"></i>
-        <span>O <strong style="color:var(--tx);font-weight:600">Indicador de Rodízios</strong> conta todas as vendas dos produtos com categoria "Rodízio" — KPI fundamental para pizzarias.</span>
-      </div>
-    </div>
+
     </div><!-- fim rv-filtros-periodo -->
 
     <!-- Filtros por competência -->
@@ -2900,7 +2890,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <th class="rv-th" onclick="rvSortCol('nome',this)">Produto <i class="fa-solid fa-sort si"></i></th>
           <th class="rv-th" onclick="rvSortCol('cat',this)">Categoria <i class="fa-solid fa-sort si"></i></th>
           <th class="rv-th" style="text-align:center" onclick="rvSortCol('qtd',this)">Qtd Vendida <i class="fa-solid fa-sort si"></i></th>
-          <th style="text-align:center">Und.</th>
           <th class="rv-th" style="text-align:right" onclick="rvSortCol('preco',this)">Preço Unit. <i class="fa-solid fa-sort si"></i></th>
           <th class="rv-th" style="text-align:right" onclick="rvSortCol('custo',this)">Custo Unit. <i class="fa-solid fa-sort si"></i></th>
           <th class="rv-th" style="text-align:right" onclick="rvSortCol('fat',this)">Faturamento <i class="fa-solid fa-sort si"></i></th>
@@ -18179,7 +18168,6 @@ function rvSetTipoFiltro(tipo){
 
 function limparFiltrosVendas(){
   ['rv-dt-ini','rv-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  const mr=document.getElementById('rv-min-rodizios'); if(mr)mr.value='';
   const compMes=document.getElementById('rv-comp-mes'); if(compMes)compMes.value='';
   const compAno=document.getElementById('rv-comp-ano'); if(compAno)compAno.value='';
   rvLimparFiltrosMs();
@@ -18213,7 +18201,6 @@ function gerarRelVendas(){
     dtIni = document.getElementById('rv-dt-ini')?.value||'';
     dtFim = document.getElementById('rv-dt-fim')?.value||'';
   }
-  const minRod = parseInt(document.getElementById('rv-min-rodizios')?.value)||0;
 
   const vendas    = S.g('receber')||[];
   const prodVenda = S.g('prod-venda')||[];
@@ -18299,9 +18286,7 @@ function gerarRelVendas(){
 
   let arr = Object.values(mapa);
 
-  if(minRod > 0){
-    arr = arr.filter(x=> !x.cat?.toLowerCase().includes('rod') || x.qtd >= minRod);
-  }
+
 
   arr.sort((a,b)=> b.fat !== a.fat ? b.fat - a.fat : b.preco - a.preco);
   rvDados = arr;
@@ -18401,7 +18386,6 @@ function renderRelVendas(){
       <td style="color:var(--tx);font-weight:500">${p.nome}</td>
       <td><span class="tg ${catCor[_resolverCat(p.cat)]||'tg-gy'}">${_resolverCat(p.cat)}</span></td>
       <td style="text-align:center;font-size:14px;font-weight:700;color:var(--or)">${p.qtd.toLocaleString('pt-BR')}</td>
-      <td style="text-align:center;color:var(--tx2)">${p.un}</td>
       <td style="text-align:right;color:var(--tx2)">${R(p.preco)}</td>
       <td style="text-align:right;color:var(--tx2)">${custo>0?R(custo):'—'}</td>
       <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.fat)}</td>
@@ -18415,7 +18399,7 @@ function renderRelVendas(){
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
       <td colspan="2" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
       <td style="text-align:center;font-weight:700;font-size:13px;color:var(--or)">${totalQtd.toLocaleString('pt-BR')}</td>
-      <td></td><td></td><td></td>
+      <td></td><td></td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--gr)">${R(totalFat)}</td>
       <td></td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--gr)">${R(totalLucroFinal)}</td>
@@ -18571,12 +18555,12 @@ function buildChartsVendas(){
 
 function exportarRelVendas(){
   if(!rvDados.length){ alert('Nenhum dado para exportar. Aplique um filtro primeiro.'); return; }
-  const cab=['Produto','Categoria','Unidade','Qtd Vendida','Preço Unit.','Custo Unit.','Faturamento','Margem%','Lucro Total'];
+  const cab=['Produto','Categoria','Qtd Vendida','Preço Unit.','Custo Unit.','Faturamento','Margem%','Lucro Total'];
   const linhas = rvDados.map(p=>{
     const custo=p.custo||0;
     const margem=p.preco>0?((p.preco-custo)/p.preco*100).toFixed(1):'0';
     const lucroTot=(p.preco-custo)*p.qtd;
-    return [p.nome,p.cat,p.un,p.qtd,p.preco.toFixed(2).replace('.',','),custo.toFixed(2).replace('.',','),
+    return [p.nome,p.cat,p.qtd,p.preco.toFixed(2).replace('.',','),custo.toFixed(2).replace('.',','),
       p.fat.toFixed(2).replace('.',','),margem+'%',lucroTot.toFixed(2).replace('.',',')].join(';');
   });
   const csv=[cab.join(';'),...linhas].join('\n');
