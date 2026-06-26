@@ -324,7 +324,7 @@ th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 
 /* TABLE */
-.tw{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 220px);}
+.tw{overflow-x:auto;overflow-y:auto;max-height:var(--tw-max-h,calc(100vh - 220px));}
 table{width:100%;border-collapse:collapse;}
 th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--tx3);padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd);
   position:sticky;top:0;z-index:5;background:var(--dk2);box-shadow:0 1px 0 var(--bd);}
@@ -646,12 +646,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </button>
       <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(33,150,243,0.4);color:var(--bl)" onclick="cxCorrigirCAPsFaltantes()" title="Corrige lançamentos do caixa que não aparecem no DRE e Fluxo">
         <i class="fa-solid fa-wrench"></i> Corrigir CAPs do Caixa
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(156,39,176,0.5);color:#CE93D8" onclick="corrigirContaItensCAP()" title="Corrige itens do CAP cuja conta diverge da conta principal do lançamento">
-        <i class="fa-solid fa-rotate"></i> Corrigir Conta dos Itens CAP
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(0,188,212,0.5);color:#80DEEA" onclick="sincronizarContaItensPagar()" title="Atualiza conta dos itens do CAP conforme cadastro atual de insumos/serviços">
-        <i class="fa-solid fa-arrows-rotate"></i> Sincronizar Contas c/ Cadastro
       </button>
       <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(76,175,80,0.4);color:var(--gr)" onclick="diagPorCodigo(prompt('Código do lançamento (ex: PAG-00023):','PAG-00023'))" title="Diagnóstico detalhado de um lançamento específico">
         <i class="fa-solid fa-stethoscope"></i> Diagnóstico por Código
@@ -1737,7 +1731,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 <!-- CONTAS A PAGAR -->
-<div class="page" id="page-pagar">
+<div class="page" id="page-pagar" style="--tw-max-h:none">
   <div class="print-header" style="display:none"></div>
   <div class="kg" id="kpi-pg"></div>
   <div class="cd">
@@ -2411,45 +2405,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 .mp-clear:hover{border-color:var(--rd);color:var(--rd);}
 #tb-eq-ini input[type=number]::-webkit-inner-spin-button,
 #tb-eq-ini input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* ── AUTOCOMPLETE CONTA DO PLANO DE CONTAS ── */
-.ac-conta-wrap{position:relative;width:100%;}
-.ac-conta-input{
-  width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;
-  padding:9px 32px 9px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;
-  outline:none;box-sizing:border-box;transition:border-color .2s;
-}
-.ac-conta-input:focus{border-color:var(--or);}
-.ac-conta-input.ac-erro{border-color:rgba(242,100,25,0.6);}
-.ac-conta-icon{
-  position:absolute;right:10px;top:50%;transform:translateY(-50%);
-  color:var(--tx3);font-size:12px;pointer-events:none;
-}
-.ac-conta-drop{
-  display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;
-  background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;
-  box-shadow:0 8px 28px rgba(0,0,0,0.55);z-index:1200;
-  max-height:240px;overflow-y:auto;
-}
-.ac-conta-drop.ac-aberto{display:block;}
-.ac-conta-item{
-  padding:8px 12px;font-size:12px;font-family:'Outfit',sans-serif;
-  color:var(--tx);cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);
-  transition:background .12s;
-}
-.ac-conta-item:last-child{border-bottom:none;}
-.ac-conta-item:hover,.ac-conta-item.ac-selected{background:rgba(242,100,25,0.15);color:var(--or);}
-.ac-conta-item.ac-group{
-  padding:6px 12px;font-size:10px;color:var(--or);font-weight:700;
-  text-transform:uppercase;letter-spacing:1px;cursor:default;
-  background:rgba(242,100,25,0.06);pointer-events:none;
-}
-.ac-conta-item.ac-sub{
-  padding:6px 12px 6px 20px;font-size:10px;color:var(--tx2);font-weight:600;
-  cursor:default;background:transparent;pointer-events:none;
-}
-.ac-conta-vazio{padding:12px;font-size:12px;color:var(--tx3);text-align:center;font-family:'Outfit',sans-serif;}
-.ac-conta-cod{font-size:10px;color:var(--tx3);margin-right:6px;font-weight:600;}
 </style>
 
 <div class="page" id="page-rel-pagar">
@@ -2586,13 +2541,13 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <table id="rp-tabela">
         <thead>
           <tr id="rp-thead">
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cod')">N° Doc. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cod"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('comp')">Dt. Competência <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-comp"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('venc')">Dt. Vencimento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-venc"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('comp')">Dt. Competência <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-comp"></i></th>
             <th style="white-space:nowrap">Conta Débito</th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-cat"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forn"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('desc')">Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-desc"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forn"></i></th>
+            <th style="white-space:nowrap">N° Doc.</th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelPagar('val')">Valor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-val"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('forma')">Forma Pagto. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-forma"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelPagar('dtpag')">Dt. Pagamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rp-sort-dtpag"></i></th>
@@ -2755,16 +2710,16 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <table id="rc-tabela">
         <thead>
           <tr>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('lanc')">N° Lançamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-lanc"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('data')">Data Compra <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-data"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('contaNome')">Conta Plano <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-contaNome"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-cat"></i></th>
-            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-forn"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('nome')">Produto / Descrição <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-nome"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('cat')">Categoria <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-cat"></i></th>
             <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('un')">Unid. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-un"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('qtd')">Qtd. Comprada <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-qtd"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('preco')">Preço Unit. <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-preco"></i></th>
             <th style="cursor:pointer;white-space:nowrap;text-align:right" onclick="sortRelCompras('total')">Total <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-total"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('forn')">Fornecedor <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-forn"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('lanc')">N° Lançamento <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-lanc"></i></th>
+            <th style="cursor:pointer;white-space:nowrap" onclick="sortRelCompras('contaNome')">Conta Plano <i class="fa-solid fa-sort" style="font-size:9px;color:var(--tx3)" id="rc-sort-contaNome"></i></th>
           </tr>
         </thead>
         <tbody id="rc-tbody"></tbody>
@@ -3100,7 +3055,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <input type="hidden" id="mcp-id">
     <div class="fr">
       <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcp-cod" placeholder="Ex: CAT-01" readonly style="background:var(--dk4);cursor:default"></div>
-      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcp-nome" placeholder="Ex: Insumos, Bebidas, Descartáveis…"></div>
+      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcp-nome" placeholder="Ex: Insumos, Bebidas, Descartáveis…" oninput="this.value=toSentenceCase(this.value)"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Cor de Identificação</label>
@@ -3128,7 +3083,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <input type="hidden" id="mcpv-id">
     <div class="fr">
       <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcpv-cod" placeholder="Ex: RV-01" readonly style="background:var(--dk4);cursor:default"></div>
-      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcpv-nome" placeholder="Ex: Rodízio, Pizzas, Bebidas, Sobremesas…"></div>
+      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcpv-nome" placeholder="Ex: Rodízio, Pizzas, Bebidas, Sobremesas…" oninput="this.value=toSentenceCase(this.value)"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Cor de Identificação</label>
@@ -7337,11 +7292,8 @@ function saveParcelado(){
     if(idx===-1){ alert('Lançamento não encontrado.'); return; }
 
     const totalNF = mppItens.reduce((a,b)=>a+b.total,0);
-    // Conta manual selecionada pelo usuário tem PRIORIDADE MÁXIMA
-    const contaManual = document.getElementById('mpp-conta')?.value||'';
-    let contaAuto = contaManual;
-    // Só usa conta dos itens se o usuário NÃO selecionou manualmente
-    if(!contaManual && mppItens.length){
+    let contaAuto = document.getElementById('mpp-conta')?.value||'';
+    if(mppItens.length){
       const cv={};
       mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
       const cs=Object.entries(cv);
@@ -7373,11 +7325,7 @@ function saveParcelado(){
       conta: contaAuto,
       banco, contaCorrente: banco,
       reg,
-      // Se conta foi alterada manualmente, atualiza também a conta dentro dos itens
-      itens: mppItens.length ? mppItens.map(it=>({
-        ...it,
-        conta: contaManual && it.conta !== contaManual ? contaManual : it.conta
-      })) : undefined,
+      itens: mppItens.length ? [...mppItens] : undefined,
       totalNF: totalNF||undefined,
       nfeChave: _nfeChaveAtual||arr[idx].nfeChave,
       fornNFeInfo: forn ? undefined : (_nfeFornInfo || arr[idx].fornNFeInfo),
@@ -7393,10 +7341,6 @@ function saveParcelado(){
     closeMod('mod-pagar'); resetModalPagar(); renderPagar();
     // Integra ao estoque
     eqIntegrarDoCAP(arr[idx]);
-    // Atualiza DRE, Fluxo e Dashboard para refletir a alteração imediatamente
-    if(typeof renderDRE==='function') renderDRE();
-    if(typeof renderFluxo==='function') renderFluxo();
-    if(typeof renderDashboard==='function') renderDashboard();
     showToast('✓ Lançamento atualizado com sucesso!','var(--gr)');
     return;
   }
@@ -7435,11 +7379,8 @@ function saveParcelado(){
   }
 
   const reg   =comp?'competencia':'caixa';
-  // Conta manual selecionada pelo usuário tem PRIORIDADE MÁXIMA
-  const contaManualNovo = document.getElementById('mpp-conta')?.value||'';
-  let contaAuto = contaManualNovo;
-  // Só usa conta dos itens se o usuário NÃO selecionou manualmente
-  if(!contaManualNovo && mppItens.length){
+  let contaAuto=document.getElementById('mpp-conta')?.value||'';
+  if(mppItens.length){
     const cv={};
     mppItens.forEach(it=>{if(it.conta)cv[it.conta]=(cv[it.conta]||0)+it.total;});
     const cs=Object.entries(cv);
@@ -10208,111 +10149,7 @@ function cxCorrigirCAPsFaltantes(){
     showToast('Todos os CAPs estão consistentes.','var(--bl)');
   }
 }
-// ── Sincroniza conta dos itens do CAP com o cadastro atual de insumos/serviços ──
-// Útil quando a conta de um insumo foi corrigida no cadastro mas os lançamentos
-// já gravados ainda têm a conta antiga dentro de lanc.itens[].conta
-function sincronizarContaItensPagar(){
-  const pagar    = S.g('pagar')||[];
-  const insumos  = S.g('insumos')||[];
-  const servicos = S.g('servicos')||[];
-  const produtos = S.g('produtos')||[];
-
-  // Monta índice: nome normalizado → conta atual do cadastro
-  const idxConta = {};
-  const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-  insumos.forEach(i  => { if(i.conta) idxConta[norm(i.nome)] = i.conta; });
-  servicos.forEach(s => { if(s.conta) idxConta[norm(s.nome||s.desc||'')] = s.conta; });
-  produtos.forEach(p => { if(p.conta) idxConta[norm(p.n||p.nome||'')] = p.conta; });
-
-  let totalItensCorrigidos = 0;
-  let totalLancsAlterados  = 0;
-  const detalhes = [];
-
-  pagar.forEach(lanc => {
-    if(!lanc.itens || !lanc.itens.length) return;
-    let alterou = false;
-    lanc.itens = lanc.itens.map(it => {
-      const contaCad = idxConta[norm(it.nome)];
-      if(contaCad && it.conta !== contaCad){
-        detalhes.push(`${lanc.cod||lanc.id}: "${it.nome}" ${it.conta||'(vazio)'} → ${contaCad}`);
-        totalItensCorrigidos++;
-        alterou = true;
-        return {...it, conta: contaCad};
-      }
-      return it;
-    });
-    // Atualiza também a conta principal do lançamento se todos os itens corrigidos
-    // apontam para a mesma conta e a principal era de receita (grupo 1)
-    if(alterou){
-      totalLancsAlterados++;
-      const grpPrinc = (lanc.conta||'').split('.')[0];
-      if(grpPrinc === '1' || !lanc.conta){
-        const cv = {};
-        lanc.itens.forEach(it => { if(it.conta) cv[it.conta]=(cv[it.conta]||0)+(it.total||0); });
-        const dominante = Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
-        if(dominante) lanc.conta = dominante[0];
-      }
-    }
-  });
-
-  S.s('pagar', pagar);
-  if(typeof renderPagar==='function') renderPagar();
-  if(typeof renderDRE==='function') renderDRE();
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderDashboard==='function') renderDashboard();
-
-  if(totalItensCorrigidos === 0){
-    alert('✓ Nenhum item com conta divergente do cadastro encontrado.\nTodos os itens já estão sincronizados.');
-  } else {
-    alert(`✓ Sincronização concluída!\n\n${totalItensCorrigidos} item(ns) corrigido(s) em ${totalLancsAlterados} lançamento(s):\n\n${detalhes.slice(0,15).join('\n')}${detalhes.length>15?'\n...e mais '+(detalhes.length-15)+' item(ns)':''}\n\nDRE e Fluxo de Caixa foram atualizados.`);
-  }
-}
-window.sincronizarContaItensPagar = sincronizarContaItensPagar;
-
-// ── Corrige itens do CAP cuja conta diverge da conta principal do lançamento ──
-// Útil quando o item foi cadastrado com conta errada (ex: 1.1 em vez de 4.1)
-// e a conta principal já foi corrigida manualmente.
-function corrigirContaItensCAP(){
-  const pagar = S.g('pagar')||[];
-  let corrigidos = 0;
-  const detalhes = [];
-
-  pagar.forEach(lanc => {
-    if(!lanc.conta || !lanc.itens || !lanc.itens.length) return;
-    let alterou = false;
-    lanc.itens = lanc.itens.map(it => {
-      // Corrige se conta do item diverge da conta principal E a conta do item é do grupo 1 (receita)
-      const grpItem = (it.conta||'').split('.')[0];
-      const grpPrinc = lanc.conta.split('.')[0];
-      if(it.conta && it.conta !== lanc.conta && grpItem === '1' && grpPrinc !== '1'){
-        detalhes.push(`${lanc.cod}: item "${it.nome}" ${it.conta} → ${lanc.conta}`);
-        alterou = true;
-        corrigidos++;
-        return {...it, conta: lanc.conta};
-      }
-      return it;
-    });
-    if(alterou && lanc.itensConsulta && lanc.itensConsulta.length){
-      lanc.itensConsulta = lanc.itensConsulta.map(it => {
-        const grpItem = (it.conta||'').split('.')[0];
-        if(grpItem === '1') return {...it, conta: lanc.conta};
-        return it;
-      });
-    }
-  });
-
-  S.s('pagar', pagar);
-  renderPagar();
-  if(typeof renderDRE==='function') renderDRE();
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderDashboard==='function') renderDashboard();
-
-  if(corrigidos === 0){
-    alert('✓ Nenhum item com conta divergente encontrado.\nTodos os itens já estão com a conta correta.');
-  } else {
-    alert(`✓ ${corrigidos} item(ns) corrigido(s):\n\n${detalhes.join('\n')}\n\nDRE e Fluxo de Caixa foram atualizados.`);
-  }
-}
+window.cxCorrigirCAPsFaltantes = cxCorrigirCAPsFaltantes;
 
 // ══════════════════════════════════════
 // DIAGNÓSTICO DRE — AUDITORIA POR CONTA
@@ -10612,14 +10449,6 @@ function dreValorPorContaItem(lanc, cod){
   if(refItens){
     const totalItens = refItens.reduce((s,it)=>s+(it.total||0),0);
     if(totalItens > 0){
-      // Se conta principal está preenchida E todos os itens têm conta de receita (grupo 1),
-      // usa a conta principal — evita que itens cadastrados com conta errada (1.x) bloqueiem
-      // lançamentos de despesa cuja conta principal já foi corrigida manualmente.
-      const todosItemReceita = refItens.every(it=>(it.conta||'').split('.')[0]==='1');
-      const contaPrincDespesa = lanc.conta && lanc.conta.split('.')[0] !== '1';
-      if(todosItemReceita && contaPrincDespesa){
-        return lanc.conta === cod ? val : 0;
-      }
       const somaCod = refItens.filter(it=>it.conta===cod).reduce((s,it)=>s+(it.total||0),0);
       return somaCod>0 ? val*(somaCod/totalItens) : 0;
     }
@@ -12109,21 +11938,6 @@ function cxSalvarSaida(){
 
   if(!desc){alert('Informe a descrição / NF.');return;}
   if(!valor){alert('Informe o valor ou adicione itens ao lançamento.');return;}
-
-  // ── Alerta: item selecionado mas não adicionado com o botão + ──
-  const itemBuscaVal = (document.getElementById('cx-sai-item-busca')?.value||'').trim();
-  const itemContaHid = document.getElementById('cx-sai-item-conta')?.value||'';
-  if(itemBuscaVal && itemContaHid && !cxSaiItens.length){
-    const continuar = confirm(
-      '⚠️ Item selecionado mas não adicionado!\n\n' +
-      'Você selecionou "' + itemBuscaVal + '" mas não clicou no botão [+] para adicioná-lo ao lançamento.\n\n' +
-      'Deseja continuar sem adicionar o item?\n\n' +
-      '• OK = salvar sem o item (conta precisará ser selecionada manualmente)\n' +
-      '• Cancelar = voltar e adicionar o item'
-    );
-    if(!continuar) return;
-  }
-
   if(!conta){
     alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nTodo lançamento precisa ter a Conta do Plano de Contas informada.\nEla é a base do DRE, Fluxo de Caixa e todos os relatórios.\n\nSelecione a conta no campo correspondente ou adicione itens com conta vinculada.');
     document.getElementById('cx-sai-conta').focus();return;
@@ -12165,7 +11979,7 @@ function cxSalvarSaida(){
         forn, desc, conta, val:valor,
         forma:'Dinheiro',
         status:statusCAP,
-        reg: (comp && comp !== data) ? 'competencia' : 'caixa',
+        reg:comp?'competencia':'caixa',
         obs:obs||(resp?'Operador: '+resp:''),
         dtpag:statusCAP==='Pago'?data:undefined,
         contaCorrente:'Caixa', banco:'Caixa',
@@ -13119,22 +12933,18 @@ function eqIntegrarDoCAP(lancamento){
     const nomeNorm2 = (item.nome||'').toLowerCase().trim();
     if(!_nomesValidos2.has(nomeNorm2)) return; // ignora itens não cadastrados
 
+    // Regra: só integra se o produto JÁ existe no eq-produtos cadastrado pelo usuário.
+    // O sistema NUNCA cria produtos automaticamente — isso gera duplicatas e sujeira.
     let prod = prods.find(p=>p.nome.toLowerCase().trim()===nomeNorm2 && p.ativo!==false);
-    if(!prod){
-      const _cp = _prodsCad2.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm2);
-      const _ci = _insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm2);
-      const catCorreta2 = _cp?.cat || _ci?.cat || item.cat || 'Insumos';
-      const unCorreta2  = _cp?.un  || _ci?.un  || item.un  || 'un';
-      const novoProdId = 'eq-'+Date.now()+'-'+Math.random().toString(36).slice(2,5);
-      prod = { id:novoProdId, cod:eqGerarCodigoProduto(prods), nome:item.nome, cat:catCorreta2, un:unCorreta2,
-               min:0, custoMedio:item.preco, ativo:true, criadoEm:new Date().toISOString() };
-      prods.push(prod);
-    } else {
-      const _cp = _prodsCad2.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm2);
-      const _ci = _insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm2);
-      const catCorreta2 = _cp?.cat || _ci?.cat;
-      if(catCorreta2) prod.cat = catCorreta2;
-    }
+    if(!prod) return; // produto não cadastrado no Estoque → ignora, não cria nada
+
+    // Traduz categoria interna do cadastro (CMV_INSUMOS, CMV_BEBIDAS) para categoria do Estoque
+    const CAT_TRADUCAO = { CMV_INSUMOS:'Insumos', CMV_BEBIDAS:'Bebidas', CMV_SERVICOS:'Serviços' };
+    const _cp = _prodsCad2.find(p=>(p.n||p.nome||'').toLowerCase().trim()===nomeNorm2);
+    const _ci = _insumosCad2.find(i=>(i.nome||'').toLowerCase().trim()===nomeNorm2);
+    const catRaw = _cp?.cat || _ci?.cat;
+    const catCorreta2 = catRaw ? (CAT_TRADUCAO[catRaw] || catRaw) : null;
+    if(catCorreta2 && prod.cat !== catCorreta2) prod.cat = catCorreta2;
     // Evita duplicar a integração deste item específico vindo desta NF —
     // checagem por item (não pela nota inteira), para que itens novos vinculados
     // numa edição posterior continuem sendo sincronizados normalmente
@@ -13334,7 +13144,57 @@ function eqGerarCodigoProduto(prodsArr){
 // Migração: garante que todo produto do estoque tenha um código legível (EST-0001...)
 // Produtos antigos só tinham o id interno (ex: eq-1780867845690-05je), o que aparecia
 // como um código estranho nas telas de drill-down (Compras do Período etc.)
+function eqLimparProdutosSemCadastro(){
+  // Remove do eq-produtos qualquer produto criado automaticamente pelo sistema
+  // (identificados por cat inválida como CMV_INSUMOS, ou sem correspondência no cadastro de insumos)
+  // e redireciona movimentos órfãos para o produto correto pelo nome
+  const CATS_INVALIDAS = ['CMV_INSUMOS','CMV_BEBIDAS','CMV_SERVICOS'];
+  let prods = S.g('eq-produtos')||[];
+  let movs  = S.g('eq-movimentos')||[];
+  const insumosCad = S.g('insumos')||[];
+  const prodsCad   = S.g('produtos')||[];
+  const nomesValidos = new Set([
+    ...insumosCad.map(i=>(i.nome||'').toLowerCase().trim()),
+    ...prodsCad.map(p=>(p.n||p.nome||'').toLowerCase().trim())
+  ].filter(Boolean));
+
+  const CAT_TRADUCAO = { CMV_INSUMOS:'Insumos', CMV_BEBIDAS:'Bebidas', CMV_SERVICOS:'Serviços' };
+  let removidos = 0;
+
+  // Para cada produto com categoria inválida, tenta encontrar produto correto pelo nome
+  const parasRemover = [];
+  prods.filter(p=>CATS_INVALIDAS.includes(p.cat)).forEach(pRuim=>{
+    const nomeNorm = (pRuim.nome||'').toLowerCase().trim();
+    // Procura produto correto (mesma nome, cat válida)
+    const pBom = prods.find(p=>p.id!==pRuim.id && p.nome.toLowerCase().trim()===nomeNorm && !CATS_INVALIDAS.includes(p.cat));
+    if(pBom){
+      // Redireciona movimentos órfãos para o produto correto
+      movs.forEach(m=>{ if(m.prodId===pRuim.id) m.prodId = pBom.id; });
+      parasRemover.push(pRuim.id);
+      removidos++;
+    } else if(!nomesValidos.has(nomeNorm)){
+      // Produto criado automaticamente sem cadastro correspondente → remove
+      movs = movs.filter(m=>m.prodId!==pRuim.id);
+      parasRemover.push(pRuim.id);
+      removidos++;
+    } else {
+      // Produto tem cadastro mas cat errada → só corrige a categoria
+      const catCerta = CAT_TRADUCAO[pRuim.cat] || pRuim.cat;
+      pRuim.cat = catCerta;
+    }
+  });
+
+  if(parasRemover.length){
+    prods = prods.filter(p=>!parasRemover.includes(p.id));
+    S.s('eq-produtos', prods);
+    S.s('eq-movimentos', movs);
+    console.log(`[EqLimpeza] ${removidos} produto(s) inválido(s) removido(s) do Estoque.`);
+  }
+}
+
 function eqMigrarCodigosProdutos(){
+  // Roda limpeza de produtos inválidos antes de migrar códigos
+  try{ eqLimparProdutosSemCadastro(); }catch(e){ console.warn('eqLimparProdutosSemCadastro:', e); }
   let prods = S.g('eq-produtos')||[];
   if(!prods.length || prods.every(p=>p.cod)) return;
   let maxNum = prods.reduce((m,p)=>Math.max(m, parseInt((p.cod||'').replace(/\D/g,''))||0), 0);
@@ -14660,6 +14520,58 @@ function migrarCatProdPadrao(){
 
 function getCatProdsVenda(){ return S.g('cat-produtos-venda')||[]; }
 
+// Migração única: converte nomes de categorias existentes para sentence case
+function migrarCategoriasSentenceCase(){
+  const chave = 'cats_sentencecase_v2'; // v2: inclui produtos e insumos
+  if(localStorage.getItem('homolog_'+chave)) return;
+  const sc = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+  let alterou = false;
+
+  // 1. Corrige nomes no cadastro de categorias
+  ['cat-produtos','cat-produtos-venda'].forEach(key=>{
+    const arr = S.g(key)||[];
+    arr.forEach(c=>{ if(c.nome && c.nome !== sc(c.nome)){ c.nome = sc(c.nome); alterou = true; } });
+    S.s(key, arr);
+  });
+
+  // 2. Monta mapa de nome antigo → nome correto para lookup rápido
+  const mapaCorreto = {};
+  ['cat-produtos','cat-produtos-venda'].forEach(key=>{
+    (S.g(key)||[]).forEach(c=>{ if(c.nome) mapaCorreto[c.nome.toUpperCase().trim()] = c.nome; });
+  });
+
+  // 3. Corrige campo cat nos produtos de revenda
+  const prods = S.g('produtos')||[];
+  prods.forEach(p=>{
+    if(!p.cat) return;
+    const corrigido = mapaCorreto[p.cat.toUpperCase().trim()] || sc(p.cat);
+    if(p.cat !== corrigido){ p.cat = corrigido; alterou = true; }
+  });
+  if(prods.length) S.s('produtos', prods);
+
+  // 4. Corrige campo cat nos insumos
+  const insumos = S.g('insumos')||[];
+  insumos.forEach(i=>{
+    if(!i.cat) return;
+    const corrigido = mapaCorreto[i.cat.toUpperCase().trim()] || sc(i.cat);
+    if(i.cat !== corrigido){ i.cat = corrigido; alterou = true; }
+  });
+  if(insumos.length) S.s('insumos', insumos);
+
+  // 5. Corrige campo cat nos produtos do estoque (eq-produtos)
+  const eqProds = S.g('eq-produtos')||[];
+  const CATS_EQ = {'CMV_INSUMOS':'Insumos','CMV_BEBIDAS':'Bebidas','CMV_SERVICOS':'Serviços'};
+  eqProds.forEach(p=>{
+    if(!p.cat) return;
+    const corrigido = CATS_EQ[p.cat] || mapaCorreto[p.cat.toUpperCase().trim()] || p.cat;
+    if(p.cat !== corrigido){ p.cat = corrigido; alterou = true; }
+  });
+  if(eqProds.length) S.s('eq-produtos', eqProds);
+
+  localStorage.setItem('homolog_'+chave, '1');
+  if(alterou) console.log('[Migração v2] Categorias e produtos convertidos para sentence case.');
+}
+
 function gerarCodigoCatVenda(){
   const arr=getCatProdsVenda();
   const nums=arr.map(x=>parseInt((x.cod||'').replace(/\D/g,''))||0);
@@ -14669,7 +14581,7 @@ function gerarCodigoCatVenda(){
 
 function saveCatProdVenda(){
   const idVal=document.getElementById('mcpv-id').value;
-  const nome=document.getElementById('mcpv-nome').value.trim();
+  const nome=toSentenceCase(document.getElementById('mcpv-nome').value.trim());
   if(!nome){alert('Informe o nome da categoria.');return;}
   const arr=getCatProdsVenda();
   if(idVal){
@@ -14792,7 +14704,7 @@ function gerarCodigoCat(){
 
 function saveCategoriaProd(){
   const idVal=document.getElementById('mcp-id').value;
-  const nome=document.getElementById('mcp-nome').value.trim();
+  const nome=toSentenceCase(document.getElementById('mcp-nome').value.trim());
   if(!nome){alert('Informe o nome da categoria.');return;}
   const arr=getCatProds();
   if(idVal){
@@ -15816,9 +15728,6 @@ function saveEditPagar(){
     status,
   };
   S.s('pagar',arr); closeMod('mod-editpagar'); renderPagar();
-  if(typeof renderDRE==='function') renderDRE();
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderDashboard==='function') renderDashboard();
 }
 
 // ── Baixa Rápida ──
@@ -15916,9 +15825,6 @@ function confirmarBaixaLote(){
   S.s('pagar', arr);
   closeMod('mod-baixa-lote');
   renderPagar();
-  if(typeof renderDRE==='function') renderDRE();
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderDashboard==='function') renderDashboard();
 
   // Toast de confirmação
   const toast = document.createElement('div');
@@ -15952,10 +15858,7 @@ function abrirBaixa(id){
   }
   document.getElementById('mbx-obs').value = '';
   // Monta resumo do título
-  // Fornecedor: tenta pelo cadastro, senão usa desc ou indica não encontrado
-  const _fornObj = c.forn ? (S.g('fornecedores')||[]).find(x=>String(x.id)===String(c.forn)) : null;
-  const fornNome = _fornObj ? _fornObj.n
-    : (c.forn ? (c.desc||'⚠ Fornecedor não vinculado ao cadastro') : (c.desc||'—'));
+  const fornNome = nomeFornById(c.forn);
   const atraso = calcAtraso(c.venc, c.status, c.dtpag);
   const atrasoTxt = atraso > 0
     ? `<span style="color:var(--rd);font-weight:600"> · ${atraso} dia(s) de atraso</span>` : '';
@@ -15968,30 +15871,14 @@ function abrirBaixa(id){
 
   document.getElementById('mbx-resumo').innerHTML = `
     ${isConfirmacao ? '<div style="background:rgba(33,150,243,0.1);border:1px solid rgba(33,150,243,0.3);border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#64B5F6"><i class="fa-solid fa-circle-info" style="margin-right:6px"></i>Este título já foi marcado como <strong>Pago</strong>. Ao confirmar, o status mudará para <strong>Baixado</strong> — comprovante arquivado.</div>' : ''}
-    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">N° Doc.</span>
-        <span style="color:var(--or);font-weight:600;font-size:11px">${c.ndoc||c.cod||'—'}</span>
-      </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--tx2)">Fornecedor</span>
         <span style="color:var(--tx);font-weight:500">${fornNome}</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">Descrição / NF</span>
-        <span style="color:var(--tx)">${c.nf && c.nf!==c.desc ? c.nf+' — '+c.desc : (c.desc||'—')}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">Categoria</span>
-        <span style="color:var(--tx);font-size:11px">${resolverCatLancamento(c)||'—'}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">Conta Débito</span>
-        <span style="color:var(--tx);font-size:11px">${nomeContaByCod(c.conta)||'—'}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="color:var(--tx2)">Competência</span>
-        <span style="color:var(--tx)">${c.comp ? fd(c.comp) : '—'}</span>
+        <span style="color:var(--tx2)">Descrição</span>
+        <span style="color:var(--tx)">${c.desc||'—'}</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--tx2)">Vencimento</span>
@@ -16016,22 +15903,7 @@ function salvarBaixa(){
   const forma  = document.getElementById('mbx-forma').value;
   const cc     = document.getElementById('mbx-cc').value.trim();
   const obs    = document.getElementById('mbx-obs').value.trim();
-  // ── Validações obrigatórias para baixa ──
-  if(!dtpag){
-    alert('⚠️ Campo obrigatório!\n\nInforme a Data do Pagamento antes de confirmar a baixa.');
-    document.getElementById('mbx-dtpag').focus();
-    return;
-  }
-  if(!forma){
-    alert('⚠️ Campo obrigatório!\n\nSelecione a Forma de Pagamento antes de confirmar a baixa.\n\nEx: Dinheiro, PIX, Cartão, Boleto...');
-    document.getElementById('mbx-forma').focus();
-    return;
-  }
-  if(!cc){
-    alert('⚠️ Campo obrigatório!\n\nSelecione a Conta Corrente / Banco que originou o pagamento.\n\nEste campo é necessário para o correto lançamento no Fluxo de Caixa.');
-    document.getElementById('mbx-cc').focus();
-    return;
-  }
+  if(!dtpag){ alert('Informe a data do pagamento.'); return; }
   const arr = S.g('pagar')||[];
   const idx = arr.findIndex(x=>x.id===id); if(idx===-1) return;
   // Se já estava Pago → confirmação com comprovante → Baixado
@@ -16044,9 +15916,6 @@ function salvarBaixa(){
   S.s('pagar', arr);
   closeMod('mod-baixa');
   renderPagar();
-  if(typeof renderDRE==='function') renderDRE();
-  if(typeof renderFluxo==='function') renderFluxo();
-  if(typeof renderDashboard==='function') renderDashboard();
   // Feedback visual
   const toast = document.createElement('div');
   toast.textContent = novoStatus === 'Baixado'
@@ -16941,13 +16810,13 @@ function renderRelPagar(){
       ? `<span class="tg ${catCor}" style="font-size:10px">${catNome}</span>`
       : `<span style="color:var(--tx3)">—</span>`;
     return `<tr>
-      <td style="color:var(--or);font-size:11px">${ndoc}</td>
-      <td style="white-space:nowrap">${fd(c.comp||c.venc)}</td>
       <td style="white-space:nowrap">${fd(c.venc)}</td>
+      <td style="white-space:nowrap">${fd(c.comp||c.venc)}</td>
       <td style="font-size:11px;color:var(--tx2)">${contaDebNome||'—'}</td>
       <td>${catBadge}</td>
-      <td style="font-weight:500;white-space:nowrap">${fornNome}</td>
       <td style="color:var(--tx);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.desc||''}">${c.desc||'—'}</td>
+      <td style="font-weight:500;white-space:nowrap">${fornNome}</td>
+      <td style="color:var(--tx3);font-size:11px">${ndoc}</td>
       <td style="text-align:right;font-weight:700;font-size:13px;color:var(--gr)">${R(c.val)}</td>
       <td><span class="tg tg-bl" style="font-size:10px">${c.forma||'—'}</span></td>
       <td style="white-space:nowrap;color:var(--tx2)">${dtpag||'—'}</td>
@@ -16960,19 +16829,19 @@ function renderRelPagar(){
   // 15 colunas no total (adicionada Categoria)
   document.getElementById('rp-tfoot').innerHTML=`
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
-      <td colspan="7" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
+      <td colspan="11" style="font-weight:600;font-size:12px;color:var(--tx);padding:10px">TOTAL GERAL</td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--or)">${R(total)}</td>
-      <td colspan="5"></td>
+      <td></td>
     </tr>`;
 }
 
 function exportarRelPagar(){
   if(!rpDados.length){ alert('Nenhum dado para exportar. Aplique um filtro primeiro.'); return; }
-  const cab = ['N° Doc.','Dt. Competência','Dt. Vencimento','Conta Débito','Categoria','Fornecedor','Descrição','Valor','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Status'];
+  const cab = ['Dt. Vencimento','Dt. Competência','Conta Débito','Categoria','Descrição','Fornecedor','N° Doc.','Valor','Forma Pagto.','Dt. Pagamento','Atraso (dias)','Conta Corrente','Status'];
   const linhas = rpDados.map(c=>[
     c.cod||'',
-    c.comp||c.venc||'',
     c.venc||'',
+    c.comp||c.venc||'',
     nomeContaByCod(c.conta),
     c.contaCorrente||c.forma||'',
     resolverCatLancamento(c),
@@ -17330,26 +17199,24 @@ function rcMsBuildLanc(){
 }
 
 function rcMsBuildConta(){
+  const pagar = S.g('pagar')||[];
+  const contaSet = new Map();
+  pagar.forEach(lanc=>{
+    if(!lanc.itens || !lanc.itens.length) return;
+    lanc.itens.forEach(it=>{
+      if(!it.conta) return;
+      const contaNome = nomeContaByCod(it.conta)||it.conta;
+      const label = `${it.conta} — ${contaNome}`;
+      if(!contaSet.has(it.conta)) contaSet.set(it.conta, label);
+    });
+  });
   const drop = document.getElementById('rc-conta-drop');
   if(!drop) return;
-  const pc = getPC ? getPC() : [];
-
-  // Pega apenas as contas (tipo='conta'), ordena por código numérico
-  const contas = pc.filter(x=>x.tipo==='conta').sort((a,b)=>{
-    const pA=a.cod.split('.').map(Number);
-    const pB=b.cod.split('.').map(Number);
-    for(let i=0;i<Math.max(pA.length,pB.length);i++){
-      const d=(pA[i]||0)-(pB[i]||0);
-      if(d!==0)return d;
-    }
-    return 0;
-  });
-
+  const lista = [...contaSet.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('conta')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todas)</span></div>`;
-
-  drop.innerHTML = todos + (contas.length===0
-    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta no plano</div>'
-    : contas.map(c=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${c.cod}"><span class="rc-ms-chk"></span><span>${c.cod} — ${c.nome}</span></div>`).join(''));
+  drop.innerHTML = todos + (lista.length===0
+    ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta encontrada</div>'
+    : lista.map(([cod,lbl])=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${cod}"><span class="rc-ms-chk"></span><span>${lbl}</span></div>`).join(''));
 }
 
 function rcMsBuildProd(){
@@ -17510,42 +17377,43 @@ function renderRelCompras(){
   document.getElementById('rc-tbody').innerHTML = rcDados.map(it=>{
     const cor = catCor[it.cat]||'tg-gy';
     return `<tr>
-      <td style="color:var(--or);font-size:11px">${it.lanc}</td>
       <td style="white-space:nowrap">${fd(it.data)}</td>
-      <td style="font-size:11px;color:var(--tx2)">${it.contaNome||'—'}</td>
-      <td><span class="tg ${cor}" style="font-size:10px">${it.cat}</span></td>
-      <td style="white-space:nowrap">${it.forn}</td>
       <td style="color:var(--tx);font-weight:500">${it.nome}</td>
+      <td><span class="tg ${cor}" style="font-size:10px">${it.cat}</span></td>
       <td style="text-align:center"><span class="tg tg-gy">${it.un||'—'}</span></td>
       <td style="text-align:right;font-weight:500">${it.qtd%1===0?it.qtd:it.qtd.toFixed(3)}</td>
       <td style="text-align:right">${R(it.preco)}</td>
       <td style="text-align:right;font-weight:600;color:var(--gr)">${R(it.total)}</td>
+      <td style="white-space:nowrap">${it.forn}</td>
+      <td style="color:var(--or);font-size:11px">${it.lanc}</td>
+      <td style="font-size:11px;color:var(--tx2)">${it.contaNome||'—'}</td>
     </tr>`;
   }).join('');
 
   document.getElementById('rc-tfoot').innerHTML=`
     <tr style="border-top:2px solid var(--or);background:rgba(242,100,25,0.07)">
-      <td colspan="7" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
+      <td colspan="4" style="font-weight:600;font-size:12px;padding:10px;color:var(--tx)">TOTAL GERAL</td>
       <td style="text-align:right;font-weight:700;color:var(--bl)">${totalQtd.toLocaleString('pt-BR',{maximumFractionDigits:2})}</td>
       <td></td>
       <td style="text-align:right;font-weight:700;font-size:14px;color:var(--or)">${R(totalVal)}</td>
+      <td colspan="3"></td>
     </tr>`;
 }
 
 function exportarRelCompras(){
   if(!rcDados.length){ alert('Nenhum dado para exportar.'); return; }
-  const cab = ['N° Lançamento','Data Compra','Conta Plano','Categoria','Fornecedor','Produto','Unidade','Qtd. Comprada','Preço Unit.','Total'];
+  const cab = ['Data Compra','Produto','Categoria','Unidade','Qtd. Comprada','Preço Unit.','Total','Fornecedor','N° Lançamento','Conta Plano'];
   const linhas = rcDados.map(it=>[
-    it.lanc||'',
     it.data,
-    (it.contaNome||'').replace(/;/g,' '),
-    it.cat,
-    (it.forn||'').replace(/;/g,' '),
     (it.nome||'').replace(/;/g,' '),
+    it.cat,
     it.un||'',
     String(it.qtd).replace('.',','),
     (it.preco||0).toFixed(2).replace('.',','),
-    (it.total||0).toFixed(2).replace('.',',')
+    (it.total||0).toFixed(2).replace('.',','),
+    (it.forn||'').replace(/;/g,' '),
+    it.lanc||'',
+    (it.contaNome||'').replace(/;/g,' ')
   ].join(';'));
   const csv = [cab.join(';'), ...linhas].join('\n');
   const a = document.createElement('a');
@@ -18023,6 +17891,7 @@ function pvSort(col, th){
 // Estado de ordenação do cadastro de produtos venda
 let _pvSortCol = 'cod', _pvSortDir = 'asc';
 
+const _resolveCatNome = v => { const cats=getCatProdsVenda(); const f=cats.find(c=>c.nome.toUpperCase().trim()===(v||'').toUpperCase().trim()); return f?f.nome:(v?v.charAt(0).toUpperCase()+v.slice(1).toLowerCase():'—'); };
 function renderProdVenda(){
   const arr     = S.g('prod-venda')||[];
   const filtCat = document.getElementById('pv-filtro-cat')?.value||'';
@@ -18066,7 +17935,7 @@ function renderProdVenda(){
       return `<tr>
         <td style="color:var(--or);font-size:11px;font-weight:600">${p.cod||'—'}</td>
         <td style="color:var(--tx);font-weight:500">${p.nome}${p.precoPromo>0?` <span style="font-size:10px;background:rgba(33,150,243,0.15);color:var(--bl);padding:1px 6px;border-radius:3px;margin-left:4px">PROMO ${R(p.precoPromo)}</span>`:''}</td>
-        <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+        <td><span class="tg ${catCor[_resolveCatNome(p.cat)]||'tg-gy'}">${_resolveCatNome(p.cat)}</span></td>
         <td style="color:var(--tx2);text-align:center">${p.un}</td>
         <td style="text-align:right;color:var(--tx2)">${p.custo>0?R(p.custo):'—'}</td>
         <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.preco)}</td>
@@ -18517,6 +18386,10 @@ function renderRelVendas(){
     'Combos':'tg-gr','Promoções':'tg-gr','Sobremesas':'tg-rd','Sucos':'tg-or',
     'Outros':'tg-gy','Vinhos':'tg-pu'};
   _catsCadastro.forEach(c=>{ catCor[c.nome] = c.cor||catCorFallback[c.nome]||'tg-gy'; });
+  // Mapa para resolver p.cat (pode estar em maiúsculo) para o nome correto do cadastro
+  const _catNomeMap = {};
+  _catsCadastro.forEach(c=>{ _catNomeMap[c.nome.toUpperCase().trim()] = c.nome; });
+  const _resolverCat = v => _catNomeMap[(v||'').toUpperCase().trim()] || (v ? v.charAt(0).toUpperCase()+v.slice(1).toLowerCase() : '—');
 
   document.getElementById('rv-tbody').innerHTML = arr.map(p=>{
     const custo = p.custo||0;
@@ -18526,7 +18399,7 @@ function renderRelVendas(){
     const corMg = margem>=50?'var(--gr)':margem>=30?'var(--am)':'var(--rd)';
     return `<tr>
       <td style="color:var(--tx);font-weight:500">${p.nome}</td>
-      <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+      <td><span class="tg ${catCor[_resolverCat(p.cat)]||'tg-gy'}">${_resolverCat(p.cat)}</span></td>
       <td style="text-align:center;font-size:14px;font-weight:700;color:var(--or)">${p.qtd.toLocaleString('pt-BR')}</td>
       <td style="text-align:center;color:var(--tx2)">${p.un}</td>
       <td style="text-align:right;color:var(--tx2)">${R(p.preco)}</td>
@@ -18860,7 +18733,7 @@ function renderProdVendaSorted(col,dir){
     return `<tr>
       <td style="color:var(--or);font-size:11px;font-weight:600">${p.cod||'—'}</td>
       <td style="color:var(--tx);font-weight:500">${p.nome}</td>
-      <td><span class="tg ${catCor[p.cat]||'tg-gy'}">${p.cat}</span></td>
+      <td><span class="tg ${catCor[_resolveCatNome(p.cat)]||'tg-gy'}">${_resolveCatNome(p.cat)}</span></td>
       <td style="color:var(--tx2);text-align:center">${p.un}</td>
       <td style="text-align:right;color:var(--tx2)">${p.custo>0?R(p.custo):'—'}</td>
       <td style="text-align:right;font-weight:600;color:var(--gr)">${R(p.preco)}</td>
@@ -19319,49 +19192,55 @@ function dreDrillDown(tipo, label, cor){
       }catch(e){ console.warn('drill cmv estoque:', e); }
     }
   } else if((tipo==='cmv_41' || tipo==='cmv_42') && regime==='comp'){
-    // Drill-down Compras de Insumos/Bebidas em regime Competência
-    // Parte 1: produtos do estoque calculados pelo módulo de Estoque
-    // Parte 2: lançamentos CAP com conta 4.1/4.2 não integrados ao estoque
-    if(typeof eqMigrarCodigosProdutos==='function') try{ eqMigrarCodigosProdutos(); }catch(e){};
+    // Compras de Insumos (4.1) / Compras de Bebidas (4.2) — regime competência
+    // Fonte primária: módulo de Estoque (eq-movimentos)
+    // Fonte secundária (fallback): lançamentos do CAP com conta 4.1 / 4.2 não cobertos pelo Estoque
+    if(typeof eqMigrarCodigosProdutos==='function') try{ eqMigrarCodigosProdutos(); }catch(e){}
     const ym = (de && ate && de===ate) ? de : (de||ate||'');
     const catAlvo = tipo==='cmv_41' ? 'Insumos' : 'Bebidas';
-    const codAlvo = tipo==='cmv_41' ? '4.1' : '4.2';
-    const capOrigensNoEstoque = new Set();
+    const codConta = tipo==='cmv_41' ? '4.1' : '4.2';
+    const idsJaIncluidos = new Set();
     if(ym){
+      // ── 1. Busca do módulo de Estoque ──
       try{
         const prods = S.g('eq-produtos')||[];
         const movs  = S.g('eq-movimentos')||[];
         const inventarios = S.g('eq-inventarios')||{};
-        movs.filter(m=>m.tipo==='entrada'&&(m.data||'').slice(0,7)===ym)
-            .forEach(m=>{ if(m.capOrigemId) capOrigensNoEstoque.add(String(m.capOrigemId)); });
         prods.filter(p=>p.ativo!==false && p.cat===catAlvo).forEach(p=>{
           const r = eqCalcProduto(p.id, ym, movs, inventarios);
           const val = r.totalComprasVal;
-          if(val > 0) lancs.push({
-            cod: p.cod || ('EST-'+p.id.slice(-4)),
-            desc: p.nome,
-            forn: `${r.totalComprasQtd} ${p.un} comprados`,
-            comp: ym+'-01', venc: ym+'-01',
-            forma: 'Estoque', status: 'Calculado',
-            _valDRE: val
-          });
+          if(val > 0){
+            movs.filter(m=> m.prodId===p.id && m.tipo==='entrada' &&
+                            (m.origem==='compra'||m.origem==='cap'||!m.origem) &&
+                            (m.data||'').slice(0,7)===ym)
+                .forEach(m=>{ if(m.capId) idsJaIncluidos.add(m.capId); });
+            lancs.push({
+              cod: p.cod || ('EST-'+p.id.slice(-4)),
+              desc: p.nome,
+              forn: `${r.totalComprasQtd} ${p.un} comprados`,
+              comp: ym+'-01', venc: ym+'-01',
+              forma: 'Estoque', status: 'Calculado',
+              _valDRE: val
+            });
+          }
         });
-      }catch(e){ console.warn('drill cmv 4.1/4.2:', e); }
+      }catch(e){ console.warn('drill cmv 4.1/4.2 estoque:', e); }
+
+      // ── 2. Fallback: lançamentos do CAP com conta 4.1/4.2 não cobertos pelo Estoque ──
+      try{
+        filtP.forEach(lanc=>{
+          const lancId = lanc.id || lanc.cod || '';
+          if(lancId && idsJaIncluidos.has(lancId)) return;
+          const val = dreValorPorContaItem(lanc, codConta);
+          if(val > 0){
+            const compRef = (lanc.comp || lanc.venc || '').slice(0,7);
+            if(compRef === ym){
+              lancs.push({...lanc, _valDRE: val, _fonte: 'cap'});
+            }
+          }
+        });
+      }catch(e){ console.warn('drill cmv 4.1/4.2 cap fallback:', e); }
     }
-    // Parte 2: lançamentos CAP com conta 4.1/4.2 não representados no estoque
-    console.log('[DRILL cmv_41] filtP total:', filtP.length,
-      'com conta '+codAlvo+':', filtP.filter(l=>l.conta===codAlvo).length,
-      'capOrigensNoEstoque:', [...capOrigensNoEstoque]);
-    filtP.filter(l=>l.conta===codAlvo).forEach(l=>{
-      console.log('[DRILL] lanc:', l.cod||l.id, 'conta:', l.conta,
-        'noEstoque:', capOrigensNoEstoque.has(String(l.cod||l.id)));
-    });
-    filtP.filter(l=>{
-      if(l.conta !== codAlvo) return false;
-      return !capOrigensNoEstoque.has(String(l.cod||l.id));
-    }).forEach(l=>{
-      lancs.push({...l, _valDRE: l.val||0});
-    });
   } else if(tipo==='cmv_41' || tipo==='cmv_42'){
     // Regime de Caixa: calcula proporcionalmente pelos itens de cada lançamento
     // (mesmo cálculo usado na linha do DRE) em vez do Estoque por data de competência
@@ -19816,18 +19695,6 @@ function renderFluxo(){
     // Lançamentos com itens: distribui por conta de cada item
     if(lanc.itens && lanc.itens.length){
       const totalItens = lanc.itens.reduce((s,i)=>s+(i.total||0),0);
-      // Se todos os itens têm conta de receita (grupo 1) mas conta principal é despesa,
-      // usa a conta principal — corrige insumos cadastrados com conta errada
-      const todosItemReceita = lanc.itens.every(it=>(it.conta||'').split('.')[0]==='1');
-      const contaPrincDespesa = lanc.conta && lanc.conta.split('.')[0] !== '1';
-      if(todosItemReceita && contaPrincDespesa){
-        const pcIt = pc.find(p=>p.cod===lanc.conta&&p.tipo==='conta');
-        const grp  = pcIt?.grupo||'5';
-        saiDia[dia][grp]=(saiDia[dia][grp]||0)+val;
-        saiDiaAnalitico[dia][lanc.conta]=(saiDiaAnalitico[dia][lanc.conta]||0)+val;
-        if(lanc.conta&&!contasUsadas[lanc.conta]) contasUsadas[lanc.conta]={nome:pcIt?.nome||lanc.conta,grupo:grp,subgrupo:pcIt?.subgrupo||''};
-        return;
-      }
       lanc.itens.forEach(it=>{
         const itVal = totalItens>0 ? val*(it.total||0)/totalItens : (it.total||0);
         if(!itVal) return;
@@ -20468,6 +20335,7 @@ function initAll(){
   try{ eqCorrigirInventariosErrados(); }catch(e){ console.warn('eqCorrigir:', e); }
   // Garante código legível (EST-0001...) para produtos antigos do estoque
   try{ eqMigrarCodigosProdutos(); }catch(e){ console.warn('eqMigrarCodigos:', e); }
+  try{ migrarCategoriasSentenceCase(); }catch(e){ console.warn('migrarCategoriasSentenceCase:', e); }
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
@@ -20579,510 +20447,8 @@ document.addEventListener('click', ()=>{
   }catch{ temaAplicar('preto'); }
 })();
 
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     BUSCA DINÂMICA NOS FILTROS MULTISELECT — Finance Gestão Pro
-     Adiciona campo de busca nos dropdowns rc-ms-drop e eq-cat-drop
-     sem tocar em nenhuma lógica existente.
-     ═══════════════════════════════════════════════════════════════ -->
-<style>
-.rc-ms-search{
-  padding:8px 10px;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-  position:sticky;top:0;z-index:2;
-  background:var(--dk2);
-}
-.rc-ms-search input{
-  width:100%;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);
-  border-radius:5px;padding:6px 28px 6px 10px;color:var(--tx);
-  font-family:'Outfit',sans-serif;font-size:12px;outline:none;box-sizing:border-box;
-  transition:border-color .15s;
-}
-.rc-ms-search input:focus{border-color:var(--or);}
-.rc-ms-search-icon{
-  position:absolute;right:18px;top:50%;transform:translateY(-50%);
-  color:var(--tx3);font-size:11px;pointer-events:none;
-}
-.rc-ms-search-wrap{position:relative;}
-.rc-ms-item.rc-ms-hidden{display:none!important;}
-.rc-ms-sem-resultado{
-  padding:10px 14px;font-size:12px;color:var(--tx3);
-  font-family:'Outfit',sans-serif;text-align:center;display:none;
-}
-</style>
-<script>
-(function(){
-  'use strict';
-
-  function _norm(s){
-    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  }
-
-  // Injeta campo de busca num dropdown rc-ms-drop ou eq-cat-drop
-  function _injetarBusca(dropId, placeholder){
-    const drop = document.getElementById(dropId);
-    if(!drop || drop.dataset.buscaInited) return;
-    drop.dataset.buscaInited = '1';
-
-    // Monta o bloco de busca como primeiro filho (sticky no topo)
-    const buscaWrap = document.createElement('div');
-    buscaWrap.className = 'rc-ms-search rc-ms-search-wrap';
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = placeholder || 'Buscar...';
-    input.autocomplete = 'off';
-    input.spellcheck = false;
-
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-magnifying-glass rc-ms-search-icon';
-
-    buscaWrap.appendChild(input);
-    buscaWrap.appendChild(icon);
-
-    // Mensagem "sem resultado"
-    const semRes = document.createElement('div');
-    semRes.className = 'rc-ms-sem-resultado';
-    semRes.innerHTML = '<i class="fa-solid fa-magnifying-glass" style="margin-right:5px;opacity:.4"></i>Nenhum resultado';
-
-    // Insere ANTES do primeiro filho
-    drop.insertBefore(semRes, drop.firstChild);
-    drop.insertBefore(buscaWrap, drop.firstChild);
-
-    // Evento de filtro
-    input.addEventListener('input', () => {
-      const f = _norm(input.value);
-      let visiveis = 0;
-      // Itera todos os itens (exclui: sticky "Todos", separadores, o próprio semRes e buscaWrap)
-      Array.from(drop.children).forEach(child => {
-        if(child === buscaWrap || child === semRes) return;
-        // Item "todos/limpar" — mantém sempre visível
-        const isTodos = child.classList.contains('rc-ms-item') &&
-          (child.style.color === 'var(--or)' ||
-           (child.querySelector('span:last-child')?.textContent||'').toLowerCase().includes('todos') ||
-           (child.querySelector('span:last-child')?.textContent||'').toLowerCase().includes('limpar'));
-        if(isTodos){ child.classList.remove('rc-ms-hidden'); return; }
-
-        if(!f){
-          child.classList.remove('rc-ms-hidden');
-          visiveis++;
-          return;
-        }
-        const txt = _norm(child.querySelector('span:last-child')?.textContent || child.textContent);
-        if(txt.includes(f)){
-          child.classList.remove('rc-ms-hidden');
-          visiveis++;
-        } else {
-          child.classList.add('rc-ms-hidden');
-        }
-      });
-      semRes.style.display = (f && visiveis === 0) ? 'block' : 'none';
-    });
-
-    // Impede que clique no input feche o dropdown
-    input.addEventListener('click', e => e.stopPropagation());
-    buscaWrap.addEventListener('click', e => e.stopPropagation());
-
-    // Limpa busca quando o dropdown fecha
-    const _limparBusca = () => {
-      input.value = '';
-      input.dispatchEvent(new Event('input'));
-    };
-
-    // Observa quando o dropdown é ocultado para limpar a busca
-    const mo = new MutationObserver(() => {
-      const vis = drop.style.display !== 'none' && !drop.classList.contains('hidden');
-      if(!vis) _limparBusca();
-    });
-    mo.observe(drop, {attributes:true, attributeFilter:['style','class']});
-  }
-
-  // ── Patch no rcMsToggle para injetar busca na 1ª abertura ──
-  // Os drops de forn, prod, lanc, conta são populados dinamicamente (rcMsBuildX),
-  // então precisamos injetar APÓS a primeira build
-  const _rcKeys = ['cat','forn','prod','lanc','conta'];
-  const _rcPlaceholders = {
-    cat:   'Buscar categoria...',
-    forn:  'Buscar fornecedor...',
-    prod:  'Buscar produto...',
-    lanc:  'Buscar lançamento...',
-    conta: 'Buscar conta...',
-  };
-
-  // Patch rcMsToggle: injeta busca ao abrir
-  const _origRcToggle = window.rcMsToggle;
-  if(typeof _origRcToggle === 'function'){
-    window.rcMsToggle = function(key){
-      _origRcToggle.call(this, key);
-      // Após toggle, verifica se está aberto e injeta busca
-      const drop = document.getElementById('rc-'+key+'-drop');
-      if(drop && drop.style.display !== 'none'){
-        setTimeout(() => _injetarBusca('rc-'+key+'-drop', _rcPlaceholders[key]||'Buscar...'), 0);
-      }
-    };
-  }
-
-  // Patch rcMsBuildX: re-injeta busca após rebuild do conteúdo dinâmico
-  ['rcMsBuildForn','rcMsBuildProd','rcMsBuildLanc','rcMsBuildConta'].forEach(fn => {
-    const orig = window[fn];
-    if(typeof orig !== 'function') return;
-    window[fn] = function(...args){
-      orig.apply(this, args);
-      // descobre a key pelo nome da função
-      const key = fn.replace('rcMsBuild','').toLowerCase();
-      // remove flag para reinjetar (conteúdo mudou)
-      const drop = document.getElementById('rc-'+key+'-drop');
-      if(drop) drop.dataset.buscaInited = '';
-      setTimeout(() => _injetarBusca('rc-'+key+'-drop', _rcPlaceholders[key]||'Buscar...'), 0);
-    };
-  });
-
-  // ── eq-cat-drop (Estoque): patch no eqCatMsToggle ──
-  const _origEqToggle = window.eqCatMsToggle;
-  if(typeof _origEqToggle === 'function'){
-    window.eqCatMsToggle = function(...args){
-      _origEqToggle.apply(this, args);
-      const drop = document.getElementById('eq-cat-drop');
-      if(drop && drop.style.display !== 'none'){
-        setTimeout(() => _injetarBusca('eq-cat-drop', 'Buscar categoria...'), 0);
-      }
-    };
-  }
-
-  // ── eq-cat-drop: também injeta quando o Estoque inicializa (eqCatMsInit) ──
-  const _origEqInit = window.eqCatMsInit;
-  if(typeof _origEqInit === 'function'){
-    window.eqCatMsInit = function(...args){
-      _origEqInit.apply(this, args);
-      // Após init, drop pode ter sido reconstruído — reseta flag
-      const drop = document.getElementById('eq-cat-drop');
-      if(drop) drop.dataset.buscaInited = '';
-    };
-  }
-
-  // ── rc-cat-drop: já tem itens estáticos no HTML, injetar na 1ª abertura ──
-  // (rcMsToggle já foi patchado acima, então funciona automaticamente)
-
-  // ── ms-drop (Contas a Pagar): já tem busca nativa — nada a fazer ──
-
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     AUTOCOMPLETE CONTA DO PLANO DE CONTAS — Finance Gestão Pro
-     Funciona como camada visual sobre o <select> original.
-     O <select> continua existindo (hidden) e mantém seu .value
-     para que todo código JS existente continue funcionando.
-     ═══════════════════════════════════════════════════════════════ -->
-<script>
-(function(){
-  'use strict';
-
-  // ── Registro global: selectId → { input, drop, hidden } ──
-  const _acReg = {};
-
-  // ── Monta lista de contas a partir do select já populado ──
-  function _getOpcoesDoSelect(sel){
-    const lista = [];
-    Array.from(sel.children).forEach(node => {
-      if(node.tagName === 'OPTGROUP'){
-        lista.push({ tipo:'grupo', texto: node.label });
-        Array.from(node.children).forEach(o => {
-          if(o.disabled){
-            lista.push({ tipo:'sub', texto: o.textContent.trim() });
-          } else {
-            lista.push({ tipo:'conta', value: o.value, texto: o.textContent.trim() });
-          }
-        });
-      } else if(node.tagName === 'OPTION'){
-        if(node.disabled || !node.value) return;
-        lista.push({ tipo:'conta', value: node.value, texto: node.textContent.trim() });
-      }
-    });
-    return lista;
-  }
-
-  // ── Normaliza texto para busca (remove acentos, maiúsculas) ──
-  function _norm(s){
-    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  }
-
-  // ── Renderiza dropdown filtrado ──
-  function _renderDrop(id, filtro){
-    const r = _acReg[id]; if(!r) return;
-    const lista = _getOpcoesDoSelect(r.sel);
-    const f = _norm(filtro);
-    r.drop.innerHTML = '';
-    r.idx = -1;
-
-    // Filtra apenas contas (não grupos/subs) que batem com o filtro
-    const contasFiltradas = lista.filter(x => x.tipo === 'conta' && (
-      !f || _norm(x.texto).includes(f) || _norm(x.value).includes(f)
-    ));
-
-    if(!contasFiltradas.length){
-      r.drop.innerHTML = '<div class="ac-conta-vazio"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px;opacity:.5"></i>Nenhuma conta encontrada</div>';
-      r.drop.classList.add('ac-aberto');
-      return;
-    }
-
-    // Agrupa as contas filtradas pelo grupo delas (percorre lista original mantendo ordem)
-    let grupoAtual = null, subAtual = null;
-    lista.forEach(item => {
-      if(item.tipo === 'grupo'){ grupoAtual = item.texto; subAtual = null; return; }
-      if(item.tipo === 'sub'){   subAtual = item.texto; return; }
-      if(!contasFiltradas.find(c => c.value === item.value)) return;
-
-      // Imprime cabeçalho de grupo se mudou
-      if(grupoAtual && grupoAtual !== r._lastGrupo){
-        const g = document.createElement('div');
-        g.className = 'ac-conta-item ac-group';
-        g.textContent = grupoAtual;
-        r.drop.appendChild(g);
-        r._lastGrupo = grupoAtual;
-        r._lastSub = null;
-      }
-      // Imprime cabeçalho de subgrupo se mudou
-      if(subAtual && subAtual !== r._lastSub){
-        const s = document.createElement('div');
-        s.className = 'ac-conta-item ac-sub';
-        s.textContent = '▸ ' + subAtual;
-        r.drop.appendChild(s);
-        r._lastSub = subAtual;
-      }
-
-      const d = document.createElement('div');
-      d.className = 'ac-conta-item';
-      d.dataset.value = item.value;
-      // Destaca parte que bate com filtro
-      const txt = item.texto.trim();
-      if(f){
-        const ni = _norm(txt).indexOf(f);
-        if(ni >= 0){
-          d.innerHTML =
-            _esc(txt.slice(0,ni)) +
-            '<strong style="color:var(--or)">' + _esc(txt.slice(ni, ni+filtro.length)) + '</strong>' +
-            _esc(txt.slice(ni + filtro.length));
-        } else {
-          d.textContent = txt;
-        }
-      } else {
-        d.textContent = txt;
-      }
-      d.addEventListener('mousedown', e => { e.preventDefault(); _selecionar(id, item.value, txt); });
-      r.drop.appendChild(d);
-    });
-
-    r._lastGrupo = null; r._lastSub = null;
-    r.drop.classList.add('ac-aberto');
-  }
-
-  function _esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  // ── Seleciona uma conta ──
-  function _selecionar(id, value, label){
-    const r = _acReg[id]; if(!r) return;
-    r.input.value = label || '';
-    r.sel.value = value;
-    // Dispara change no select original para manter compatibilidade com onchange existente
-    r.sel.dispatchEvent(new Event('change', {bubbles:true}));
-    _fechar(id);
-  }
-
-  function _fechar(id){
-    const r = _acReg[id]; if(!r) return;
-    r.drop.classList.remove('ac-aberto');
-    r._lastGrupo = null; r._lastSub = null;
-  }
-
-  // ── Navegação por teclado ──
-  function _navegar(id, dir){
-    const r = _acReg[id]; if(!r) return;
-    const items = Array.from(r.drop.querySelectorAll('.ac-conta-item:not(.ac-group):not(.ac-sub)'));
-    if(!items.length) return;
-    items.forEach(i => i.classList.remove('ac-selected'));
-    r.idx = Math.max(0, Math.min(items.length - 1, (r.idx||0) + dir));
-    items[r.idx].classList.add('ac-selected');
-    items[r.idx].scrollIntoView({block:'nearest'});
-  }
-
-  // ── API pública: inicializa o autocomplete em um select ──
-  window.initContaAutocomplete = function(selectId){
-    const sel = document.getElementById(selectId);
-    if(!sel || sel.dataset.acInited) return;
-
-    sel.dataset.acInited = '1';
-    sel.style.display = 'none';
-
-    // Cria wrapper
-    const wrap = document.createElement('div');
-    wrap.className = 'ac-conta-wrap';
-    wrap.setAttribute('data-ac-id', selectId);
-    sel.parentNode.insertBefore(wrap, sel);
-    wrap.appendChild(sel);
-
-    // Input visível
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'ac-conta-input';
-    input.placeholder = 'Digite para buscar a conta...';
-    input.autocomplete = 'off';
-    input.spellcheck = false;
-
-    // Ícone lupa
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-magnifying-glass ac-conta-icon';
-
-    // Dropdown
-    const drop = document.createElement('div');
-    drop.className = 'ac-conta-drop';
-
-    wrap.appendChild(input);
-    wrap.appendChild(icon);
-    wrap.appendChild(drop);
-
-    _acReg[selectId] = { sel, input, drop, idx:-1, _lastGrupo:null, _lastSub:null };
-
-    // Sincroniza valor inicial (se select já tiver valor ao abrir edição)
-    function _syncValorAtual(){
-      const val = sel.value;
-      if(val){
-        const opt = sel.querySelector(`option[value="${CSS.escape(val)}"]`);
-        if(opt) input.value = opt.textContent.trim();
-      } else {
-        input.value = '';
-      }
-    }
-    _syncValorAtual();
-
-    // Observa mudanças no select feitas por código externo (ex: mpp-conta preenchido automaticamente)
-    const mo = new MutationObserver(() => _syncValorAtual());
-    mo.observe(sel, {attributes:true, attributeFilter:['value']});
-    // Também observa via evento change disparado externamente
-    sel.addEventListener('change', () => { setTimeout(_syncValorAtual, 0); });
-
-    // Eventos do input
-    input.addEventListener('focus', () => {
-      input.select();
-      _renderDrop(selectId, input.value);
-    });
-
-    input.addEventListener('input', () => {
-      _renderDrop(selectId, input.value);
-    });
-
-    input.addEventListener('keydown', e => {
-      if(e.key === 'ArrowDown'){ e.preventDefault(); _navegar(selectId, 1); }
-      else if(e.key === 'ArrowUp'){ e.preventDefault(); _navegar(selectId, -1); }
-      else if(e.key === 'Enter'){
-        e.preventDefault();
-        const r = _acReg[selectId];
-        const sel2 = r.drop.querySelector('.ac-selected');
-        if(sel2) sel2.dispatchEvent(new MouseEvent('mousedown'));
-      }
-      else if(e.key === 'Escape'){ _fechar(selectId); input.blur(); }
-    });
-
-    input.addEventListener('blur', () => {
-      setTimeout(() => {
-        // Se o texto não corresponde a nenhuma conta, limpa
-        const r = _acReg[selectId];
-        if(!r.sel.value && input.value){
-          // verifica se digitou algo que não bateu com nenhuma opção
-          const txt = _norm(input.value);
-          const opts = Array.from(r.sel.options).filter(o => o.value);
-          const match = opts.find(o => _norm(o.textContent).includes(txt));
-          if(!match) { input.value = ''; }
-        }
-        _fechar(selectId);
-      }, 200);
-    });
-  };
-
-  // ── Patch nas funções fill existentes para inicializar autocomplete após popular ──
-  // Intercepta fillSelectContasPlano, fillSelectContasPagar, fillSelectContasReceita, fillSelectContas
-  // sem modificar as funções originais — apenas adiciona chamada ao initContaAutocomplete depois.
-
-  const _IDS_CONTA = [
-    'msrv-conta','mins-conta','mpr-conta','mepr-conta','mep-conta',
-    'mer-conta','mpv-conta','mpp-conta','mr-conta',
-    'cx-ent-conta','cx-sai-conta'
-  ];
-
-  // IDs de campos de conta que NÃO são plano de contas (evitar falsos positivos)
-  const _IDS_EXCLUIR = new Set(['mpp-banco','msc-grupo','mcc-grupo','mcc-sub','mpr-cat','mepr-cat','msrv-cat']);
-
-  function _patchFill(nomeFn){
-    const orig = window[nomeFn];
-    if(!orig || typeof orig !== 'function') return;
-    window[nomeFn] = function(selId, ...args){
-      orig.call(this, selId, ...args);
-      if(selId && !_IDS_EXCLUIR.has(selId)){
-        // Só inicializa se for um campo de conta do plano
-        const el = document.getElementById(selId);
-        if(el && el.tagName === 'SELECT'){
-          // Verifica se tem options com valor (conta real)
-          const temContas = Array.from(el.options).some(o => o.value && !o.disabled);
-          if(temContas) initContaAutocomplete(selId);
-          else {
-            // Pode ser que as contas ainda não existam; tenta sincronizar label se já inited
-            if(el.dataset.acInited) {
-              const reg = _acReg[selId];
-              if(reg && el.value){
-                const opt = el.querySelector(`option[value="${CSS.escape(el.value)}"]`);
-                if(opt) reg.input.value = opt.textContent.trim();
-              }
-            }
-          }
-        }
-      }
-    };
-  }
-
-  // Aplica patch nas funções fill de conta padrão (recebem selId como 1º argumento)
-  ['fillSelectContasPlano','fillSelectContasPagar','fillSelectContasReceita','fillSelectContas'].forEach(_patchFill);
-
-  // Patch especial para funções do Caixa Diário (IDs hardcoded, sem argumento selId)
-  function _patchCaixa(nomeFn, selId){
-    const orig = window[nomeFn];
-    if(!orig || typeof orig !== 'function') return;
-    window[nomeFn] = function(...args){
-      orig.apply(this, args);
-      setTimeout(() => initContaAutocomplete(selId), 50);
-    };
-  }
-  _patchCaixa('cxPopularContasSaida',  'cx-sai-conta');
-  _patchCaixa('cxPopularContasReceita','cx-ent-conta');
-
-  // ── Fecha dropdowns ao clicar fora ──
-  document.addEventListener('click', e => {
-    if(!e.target.closest('.ac-conta-wrap')){
-      Object.keys(_acReg).forEach(id => _fechar(id));
-    }
-  });
-
-  // ── nfe-conta-sobra: criado dinamicamente, intercepta via MutationObserver ──
-  const _observer = new MutationObserver(muts => {
-    muts.forEach(m => {
-      m.addedNodes.forEach(node => {
-        if(node.nodeType !== 1) return;
-        // Busca selects de conta dentro do nó adicionado
-        const sels = node.id === 'nfe-conta-sobra'
-          ? [node]
-          : Array.from(node.querySelectorAll ? node.querySelectorAll('select[id$="-conta"]') : []);
-        sels.forEach(s => {
-          if(s.id && !_IDS_EXCLUIR.has(s.id) && !s.dataset.acInited){
-            // Aguarda populate pelo código existente
-            setTimeout(() => { if(!s.dataset.acInited) initContaAutocomplete(s.id); }, 100);
-          }
-        });
-      });
-    });
-  });
-  _observer.observe(document.body, {childList:true, subtree:true});
-
-})();
+// Sentence case: primeira letra maiúscula, restante minúsculo
+function toSentenceCase(str){ return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : ''; }
 </script>
 </body>
 </html>
