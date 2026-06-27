@@ -18290,6 +18290,18 @@ function renderProdVenda(){
 // ══════════════════════════════════════
 let rvDados = [];
 
+function rvSalvarFiltros(){
+  // Persiste os filtros atuais no localStorage para restaurar ao voltar
+  const f = {
+    ini:   document.getElementById('rv-dt-ini')?.value||'',
+    fim:   document.getElementById('rv-dt-fim')?.value||'',
+    compMes: document.getElementById('rv-comp-mes')?.value||'',
+    compAno: document.getElementById('rv-comp-ano')?.value||'',
+    modo:  document.querySelector('.rv-tab-btn.act')?.dataset?.modo||'caixa'
+  };
+  localStorage.setItem('homolog_rv_filtros', JSON.stringify(f));
+}
+
 function initRelVendas(){
   // Inicializa multi-selects de categoria e produto
   rvPreencherCats('rv-cat-dd', 'rv-cat-label');
@@ -18301,20 +18313,33 @@ function initRelVendas(){
   const anoAtual = String(hoje.getFullYear());
   const mesAtual = hoje.toISOString().slice(0,7);
 
-  // Data padrão período (caixa): mês atual — sempre inicializa se não tiver valor
-  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
-  const elIni = document.getElementById('rv-dt-ini');
-  const elFim = document.getElementById('rv-dt-fim');
-  // Garante que ini e fim nunca ficam com o mesmo valor (dia 1 = dia 1)
-  if(elIni && !elIni.value) elIni.value = ini;
-  if(elFim && (!elFim.value || elFim.value === elIni?.value)) elFim.value = fim;
+  // Tentar restaurar filtros salvos anteriormente
+  let filtrosSalvos = null;
+  try{ filtrosSalvos = JSON.parse(localStorage.getItem('homolog_rv_filtros')||'null'); }catch(e){}
 
-  // Competência: mês atual e ano atual já preenchidos
-  const elCompMes = document.getElementById('rv-comp-mes');
-  const elCompAno = document.getElementById('rv-comp-ano');
-  if(elCompMes && !elCompMes.value) elCompMes.value = mesAtual;
-  if(elCompAno && !elCompAno.value) elCompAno.value = anoAtual;
+  if(filtrosSalvos){
+    // Restaura filtros da última sessão
+    const elIni = document.getElementById('rv-dt-ini');
+    const elFim = document.getElementById('rv-dt-fim');
+    if(elIni) elIni.value = filtrosSalvos.ini || '';
+    if(elFim) elFim.value = filtrosSalvos.fim || '';
+    const elCompMes = document.getElementById('rv-comp-mes');
+    const elCompAno = document.getElementById('rv-comp-ano');
+    if(elCompMes) elCompMes.value = filtrosSalvos.compMes || mesAtual;
+    if(elCompAno) elCompAno.value = filtrosSalvos.compAno || anoAtual;
+  } else {
+    // Primeira vez: usa mês atual como padrão
+    const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+    const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
+    const elIni = document.getElementById('rv-dt-ini');
+    const elFim = document.getElementById('rv-dt-fim');
+    if(elIni && !elIni.value) elIni.value = ini;
+    if(elFim && (!elFim.value || elFim.value === elIni?.value)) elFim.value = fim;
+    const elCompMes = document.getElementById('rv-comp-mes');
+    const elCompAno = document.getElementById('rv-comp-ano');
+    if(elCompMes && !elCompMes.value) elCompMes.value = mesAtual;
+    if(elCompAno && !elCompAno.value) elCompAno.value = anoAtual;
+  }
 
   gerarRelVendas();
 }
@@ -18514,6 +18539,7 @@ function rvSetTipoFiltro(tipo){
 
 function limparFiltrosVendas(){
   ['rv-dt-ini','rv-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  localStorage.removeItem('homolog_rv_filtros'); // limpa memória ao usar Limpar
   const compMes=document.getElementById('rv-comp-mes'); if(compMes)compMes.value='';
   const compAno=document.getElementById('rv-comp-ano'); if(compAno)compAno.value='';
   rvLimparFiltrosMs();
@@ -18525,6 +18551,7 @@ function limparFiltrosVendas(){
 }
 
 function gerarRelVendas(){
+  rvSalvarFiltros(); // persiste filtros para restaurar ao voltar
   const tabComp   = document.getElementById('rv-tab-comp');
   const modoComp  = tabComp && tabComp.classList.contains('rc-tab-ativo');
 
