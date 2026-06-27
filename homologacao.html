@@ -607,11 +607,12 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('pizzas',this)"><i class="fa-solid fa-pizza-slice"></i>Pizzas Vendidas</button>
     <button class="ni" onclick="go('dre',this)"><i class="fa-solid fa-file-chart-column"></i>DRE</button>
     <button class="ni" onclick="go('fluxo',this)"><i class="fa-solid fa-arrows-left-right"></i>Fluxo de Caixa</button>
-    <button class="ni" onclick="go('cad-fcx',this)"><i class="fa-solid fa-building-columns"></i>Contas FCX</button>
-    <button class="ni" onclick="go('caixa',this)"><i class="fa-solid fa-cash-register"></i>Caixa Diário</button>
+    <button class="ni" onclick="go('pe',this)"><i class="fa-solid fa-bullseye"></i>Ponto de Equilíbrio</button>
     <div class="sb-sec">Financeiro</div>
     <button class="ni" onclick="go('pagar',this)"><i class="fa-solid fa-file-invoice-dollar"></i>Contas a Pagar</button>
     <button class="ni" onclick="go('receber',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Contas a Receber</button>
+    <button class="ni" onclick="go('cad-fcx',this)"><i class="fa-solid fa-building-columns"></i>Contas FCX</button>
+    <button class="ni" onclick="go('caixa',this)"><i class="fa-solid fa-cash-register"></i>Caixa Diário</button>
     <div class="sb-sec">Operacional</div>
     <button class="ni" onclick="go('estoque',this)"><i class="fa-solid fa-boxes-stacked"></i>Estoque</button>
     <div class="sb-sec">Cadastros</div>
@@ -815,6 +816,96 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="cd"><div class="ct">Semáforo Financeiro</div><div class="sf" id="sf-db"></div></div>
     <div class="cd"><div class="ct">Ponto de Equilíbrio</div><div id="pe-db"></div></div>
     <div class="cd"><div class="ct">Alertas</div><div id="al-db"></div></div>
+  </div>
+
+  <!-- ── BLOCO FLUXO DE CAIXA ── -->
+  <div class="cd" style="margin-top:12px;padding:10px 16px 6px">
+    <div class="ct"><i class="fa-solid fa-arrows-left-right" style="color:var(--or);margin-right:8px"></i>Fluxo de Caixa <span class="cs">Análise mensal e evolutiva</span></div>
+  </div>
+  <!-- KPIs FCX -->
+  <div class="kg" id="kpi-fcx" style="margin-top:4px"></div>
+  <!-- Gráfico evolutivo + Termômetro de liquidez -->
+  <div class="g2" style="margin-top:12px">
+    <div class="cd">
+      <div class="ct">Evolução do Fluxo de Caixa <span class="cs">6 meses</span></div>
+      <div class="cw" style="height:200px"><canvas id="c-fcx" role="img" aria-label="fluxo evolutivo"></canvas></div>
+    </div>
+    <div class="cd">
+      <div class="ct">Termômetro de Liquidez <span class="cs" id="fcx-liq-label"></span></div>
+      <div id="fcx-liquidez"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PONTO DE EQUILÍBRIO -->
+<div class="page" id="page-pe">
+  <div class="print-header" style="display:none"></div>
+
+  <!-- Barra de controles -->
+  <div class="cd" style="margin-bottom:12px;padding:12px 16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="peNavMes(-1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px">‹</button>
+          <input type="month" id="pe-mes-sel" onchange="renderPE()" style="background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;padding:6px 12px;color:var(--or);font-family:Outfit,sans-serif;font-size:13px;font-weight:500;outline:none;cursor:pointer">
+          <button onclick="peNavMes(1)" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px">›</button>
+          <button onclick="peMesAtual()" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Atual</button>
+        </div>
+        <div style="display:flex;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
+          <button id="pe-tab-mensal" onclick="peModo('mensal')" style="padding:6px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:600;cursor:pointer;background:var(--or);color:#fff">Mensal</button>
+          <button id="pe-tab-acum"   onclick="peModo('acumulado')" style="padding:6px 14px;border:none;font-family:Outfit,sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--tx2)">Acumulado no Ano</button>
+        </div>
+      </div>
+      <button class="btn btn-sm" onclick="imprimirPagina('page-pe','Ponto de Equilíbrio',document.getElementById('pe-mes-sel').value)"><i class="fa-solid fa-print"></i> Imprimir</button>
+    </div>
+  </div>
+
+  <!-- Dois regimes lado a lado -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <!-- COMPETÊNCIA -->
+    <div>
+      <div class="cd" style="margin-bottom:10px;padding:10px 16px 8px">
+        <div class="ct"><i class="fa-solid fa-calendar-check" style="color:var(--bl);margin-right:8px"></i>Regime de Competência</div>
+      </div>
+      <div class="kg" id="pe-kpi-comp" style="margin-bottom:10px"></div>
+      <div class="cd" style="margin-bottom:10px"><div class="ct" style="font-size:12px">Posição vs Ponto de Equilíbrio</div><div id="pe-gauge-comp"></div></div>
+      <div class="cd"><div class="ct" style="font-size:12px">Evolução — 6 meses</div><div class="cw" style="height:180px"><canvas id="c-pe-comp" role="img"></canvas></div></div>
+    </div>
+    <!-- CAIXA -->
+    <div>
+      <div class="cd" style="margin-bottom:10px;padding:10px 16px 8px">
+        <div class="ct"><i class="fa-solid fa-money-bill-wave" style="color:var(--gr);margin-right:8px"></i>Regime de Caixa</div>
+      </div>
+      <div class="kg" id="pe-kpi-caixa" style="margin-bottom:10px"></div>
+      <div class="cd" style="margin-bottom:10px"><div class="ct" style="font-size:12px">Posição vs Ponto de Equilíbrio</div><div id="pe-gauge-caixa"></div></div>
+      <div class="cd"><div class="ct" style="font-size:12px">Evolução — 6 meses</div><div class="cw" style="height:180px"><canvas id="c-pe-caixa" role="img"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- Tabela despesas fixas -->
+  <div class="cd">
+    <div class="ct">
+      <span><i class="fa-solid fa-lock" style="color:var(--bl);margin-right:8px"></i>Despesas Fixas Classificadas</span>
+      <span class="cs">Contas marcadas como Fixo no Plano de Contas</span>
+    </div>
+    <div class="tw">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--bd)">
+          <th style="text-align:left;padding:8px 12px;font-size:11px;color:var(--tx3);font-weight:600">GRUPO</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;color:var(--tx3);font-weight:600">CONTA</th>
+          <th style="text-align:right;padding:8px 12px;font-size:11px;color:var(--tx3);font-weight:600">COMPETÊNCIA</th>
+          <th style="text-align:right;padding:8px 12px;font-size:11px;color:var(--tx3);font-weight:600">CAIXA</th>
+          <th style="text-align:right;padding:8px 12px;font-size:11px;color:var(--tx3);font-weight:600">% DO TOTAL</th>
+        </tr></thead>
+        <tbody id="pe-tbody"></tbody>
+        <tfoot id="pe-tfoot"></tfoot>
+      </table>
+    </div>
+    <div id="pe-sem-fixas" style="display:none;text-align:center;padding:32px;color:var(--tx3)">
+      <i class="fa-solid fa-lock-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.4"></i>
+      Nenhuma conta marcada como <strong style="color:var(--bl)">Fixo</strong> no Plano de Contas.<br>
+      <span style="font-size:12px;margin-top:4px;display:block">Acesse <strong style="color:var(--or)">Plano de Contas → Editar conta → Tipo de Custo → Fixo</strong></span>
+    </div>
   </div>
 </div>
 
@@ -1124,6 +1215,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
       <!-- KPIs rápidos -->
       <div id="fcx-kpis" style="display:flex;gap:10px;flex:1;justify-content:flex-end"></div>
+      <button class="btn btn-sm" onclick="fcxForcarCarry()" title="Recalcular saldo inicial deste mês a partir do saldo final do mês anterior"><i class="fa-solid fa-rotate"></i> Recalc. Saldo</button>
       <button class="btn btn-sm" onclick="imprimirFluxo()"><i class="fa-solid fa-print"></i> Imprimir</button>
     </div>
   </div>
@@ -1138,7 +1230,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <!-- Calendário de Saídas e Saldo Diário -->
   <div class="cd" style="margin-top:12px">
     <div class="ct">Calendário de Caixa — Saídas e Saldo Diário
-      <span class="cs">Saldo acumulado · borda azul = positivo · borda vermelha = negativo</span>
+      <span class="cs">Geração de caixa acumulada · borda azul = positivo · borda vermelha = negativo</span>
     </div>
     <div id="fcx-calendario-blk" style="margin-top:10px"></div>
   </div>
@@ -1933,11 +2025,22 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <option value="Cancelado">Cancelado</option>
         </select>
       </div>
-      <div class="fg">
+      <div class="fg" style="position:relative">
         <label>Forma de Recebimento</label>
-        <select id="rr-forma" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-          <option value="">Todas as formas</option>
-        </select>
+        <div id="rr-forma-btn"
+          onclick="rrFormaToggle()"
+          style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:36px;user-select:none">
+          <span id="rr-forma-label" style="flex:1">Todas as formas</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)"></i>
+        </div>
+        <div id="rr-forma-drop"
+          style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--dk2);border:1px solid var(--bd2);border-radius:8px;z-index:600;box-shadow:0 8px 32px rgba(0,0,0,0.6);max-height:260px;overflow-y:auto">
+          <div class="rc-ms-item" onclick="rrFormaToggleTodos()"
+            style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap">
+            <span style="width:14px;flex-shrink:0">✕</span><span>Todas as formas</span>
+          </div>
+          <div id="rr-forma-items"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -4231,7 +4334,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <!-- EDITAR CONTA -->
 <div class="mo" id="mod-editconta">
   <div class="mb">
-    <div class="mt"><span><i class="fa-solid fa-pen-to-square" style="color:var(--bl);margin-right:8px"></i>Editar Conta</span><span class="mc" onclick="closeMod('mod-editconta')">✕</span></div>
+    <div class="mt"><span><i class="fa-solid fa-pen-to-square" style="color:var(--bl);margin-right:8px"></i>Editar Conta</span><span class="mc" onclick="pcFecharEditConta()">✕</span></div>
     <input type="hidden" id="mec-id">
     <input type="hidden" id="mec-src">
     <div style="background:var(--dk3);border-radius:6px;padding:10px 14px;margin-bottom:14px;border-left:3px solid var(--bl);font-size:11px;color:var(--tx2)">
@@ -4282,7 +4385,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </label>
       </div>
     </div>
-    <div class="mf"><button class="bc" onclick="closeMod('mod-editconta')">Cancelar</button><button class="bs" onclick="saveEditConta()"><i class="fa-solid fa-check"></i> Salvar Alterações</button></div>
+    <div class="mf"><button class="bc" onclick="pcFecharEditConta()">Cancelar</button><button class="bs" onclick="saveEditConta()"><i class="fa-solid fa-check"></i> Salvar Alterações</button></div>
   </div>
 </div>
 
@@ -5703,7 +5806,7 @@ const titles={
   'cad-produtos':['Produtos','Cadastro de produtos e insumos'],
   'cad-insumos':['Cadastro de Insumos','CMV Insumos · CMV Bebidas · CMV Serviços'],
   'cad-servicos':['Cadastro de Serviços e Impostos','Serviços · Impostos · Aluguel · Utilidades'],
-  'cad-fcx':['Contas — Fluxo de Caixa','Cadastro de contas bancárias e caixa para o FCX'],
+  'pe':['Ponto de Equilíbrio','Análise por regime de competência e caixa'],
   'cad-catprod-venda':['Categorias de Produtos (Revenda)','Classificação de produtos vendidos ao cliente'],
   'cad-pagamentos':['Formas de Cobrança','Cadastro de formas de cobrança'],
   'cad-recebimentos':['Formas de Recebimento','Cadastro de formas de recebimento'],
@@ -5743,11 +5846,13 @@ function go(pg,btn){
     pg === 'cad-pagamentos' || pg === 'cad-recebimentos' || pg === 'cad-bancos' ||
     pg === 'cmv' || pg === 'metas' || pg === 'estoque' ||
     pg === 'pagar' || pg === 'receber' || pg === 'usuarios' ||
-    pg === 'fluxo' || pg === 'pizzas'
+    pg === 'fluxo' || pg === 'pizzas' || pg === 'pe'
   ) ? 'none' : '';
   // Inicializa relatórios ao navegar
   if(pg==='cad-fcx')       { renderFcxContas(); }
-  if(pg==='fluxo')          { renderFluxo(); }
+  if(pg==='plano')          { renderPlano(); renderCadContas(); }
+  if(pg==='pe')             { initPE(); }
+  if(pg==='fluxo')          { fcxCarryForward(); renderFluxo(); }
   if(pg==='rel-pagar')   initRelPagar();
   if(pg==='rel-receber')  initRelReceber();
   if(pg==='rel-compras') initRelCompras();
@@ -5782,7 +5887,12 @@ function openMod(id){
   }
 }
 function closeMod(id){document.getElementById(id).classList.remove('op');}
-document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('op');}));
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',function(e){
+  if(e.target===this){
+    if(this.id==='mod-editconta'){ pcFecharEditConta(); }
+    else { this.classList.remove('op'); }
+  }
+}));
 function novoLancamento(){
   const pagAtiva=document.querySelector('.page.act');
   if(!pagAtiva)return;
@@ -8554,6 +8664,9 @@ function abrirEditConta(cod, src){
   const tcRadios = document.querySelectorAll('input[name="mec-tipocusto"]');
   tcRadios.forEach(r => { r.checked = r.value === tcVal; });
   openMod('mod-editconta');
+  // Guarda referência para reabrir o grupo ao fechar
+  document.getElementById('mod-editconta').dataset.grupoCod = c.grupo||'';
+  document.getElementById('mod-editconta').dataset.contaCod = c.cod||'';
 }
 
 function onGrupoChangeEdit(grpCod, subCodInicial=''){
@@ -8611,6 +8724,48 @@ function saveEditConta(){
   renderPlano(); renderCadContas();
   fillSelectContasPagar('mp-conta'); fillSelectContas('mr-conta', c => c.natureza==='receita');
   fillSelectContas('mfn-conta'); fillSelectContas('mpr-conta');
+  // Reabre o grupo da conta editada e faz scroll até ela
+  _pcReabrirGrupo(grupo, cod);
+}
+
+// Fecha modal de edição e reabre o grupo/conta no plano
+function pcFecharEditConta(){
+  const mod = document.getElementById('mod-editconta');
+  const grupoCod = mod.dataset.grupoCod||'';
+  const contaCod = mod.dataset.contaCod||'';
+  closeMod('mod-editconta');
+  if(grupoCod) _pcReabrirGrupo(grupoCod, contaCod);
+}
+
+// Reabre o grupo/conta no Plano após salvar edição
+function _pcReabrirGrupo(grupoCod, contaCod){
+  setTimeout(()=>{
+    // Achar o pc-body do grupo e abrir
+    const headers = document.querySelectorAll('#plano-tree .pc-g-header');
+    headers.forEach(h=>{
+      const codEl = h.querySelector('.pc-g-cod');
+      if(codEl && codEl.textContent.trim() === String(grupoCod)){
+        const body = h.nextElementSibling;
+        if(body && !body.classList.contains('open')) body.classList.add('open');
+        // Scroll até a conta específica
+        if(contaCod){
+          setTimeout(()=>{
+            const contas = body ? body.querySelectorAll('.pc-conta') : [];
+            contas.forEach(el=>{
+              const codSpan = el.querySelector('.pc-c-cod');
+              if(codSpan && codSpan.textContent.trim() === String(contaCod)){
+                el.scrollIntoView({behavior:'smooth', block:'center'});
+                // Piscar para destacar
+                el.style.transition='background 0.3s';
+                el.style.background='rgba(192,67,42,0.18)';
+                setTimeout(()=>{ el.style.background=''; },1500);
+              }
+            });
+          }, 80);
+        }
+      }
+    });
+  }, 50);
 }
 
 // calcCMV preview
@@ -9294,6 +9449,503 @@ function renderDashboard(){
     `<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2)">
       <span style="width:8px;height:8px;border-radius:2px;background:${cols[i]};display:inline-block"></span>${l}
     </span>`).join('');
+
+  // ── Análise Fluxo de Caixa ──
+  dbRenderFCX(ymAtual);
+}
+
+// ══════════════════════════════════════
+// DASHBOARD — ANÁLISE FLUXO DE CAIXA
+// ══════════════════════════════════════
+function dbCalcFCX(ym){
+  const pagar   = S.g('pagar')  ||[];
+  const receber = S.g('receber')||[];
+  const saldos  = S.g('fcx-saldos')||{};
+  const contas  = getFcxContas();
+  const contasOper  = contas.filter(c=>c.tipo!=='aplicacao');
+  const contasAplic = contas.filter(c=>c.tipo==='aplicacao');
+  const saldoIni    = contasOper.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  const saldoAplic  = contasAplic.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  // Replica exatamente a mesma lógica do renderFluxo para garantir valores idênticos
+  const pc = getPC();
+  const prodVenda = S.g('prod-venda')||[];
+  const diasMes   = new Date(Number(ym.slice(0,4)), Number(ym.slice(5,7)), 0).getDate();
+  const dias      = Array.from({length:diasMes},(_,i)=>i+1);
+  const grpOrdem  = ['4','5','3','2','9'];
+
+  const entDia = {}; dias.forEach(d=>{entDia[d]={alim:0,merc:0,desc:0};});
+  receber.filter(x=>(x.venc||x.comp||'').slice(0,7)===ym).forEach(lanc=>{
+    const dia=parseInt((lanc.venc||lanc.comp||'').slice(8,10));
+    if(!dia||!entDia[dia]) return;
+    const val=lanc.val||0, desc=lanc.desconto||0, bruto=val+desc;
+    if(!bruto) return;
+    entDia[dia].desc+=desc;
+    if(lanc.itens&&lanc.itens.length){
+      const sumAlim=lanc.itens.reduce((s,i)=>{const prod=prodVenda.find(p=>String(p.id)===String(i.prodId));const cat=prod?prod.cat:i.cat;return s+(dreClassificarItem(cat)==='alimentacao'?(i.total||0):0);},0);
+      const sumMerc=lanc.itens.reduce((s,i)=>{const prod=prodVenda.find(p=>String(p.id)===String(i.prodId));const cat=prod?prod.cat:i.cat;return s+(dreClassificarItem(cat)==='mercadoria'?(i.total||0):0);},0);
+      const sumTot=sumAlim+sumMerc;
+      entDia[dia].alim+=sumTot>0?bruto*(sumAlim/sumTot):bruto;
+      entDia[dia].merc+=sumTot>0?bruto*(sumMerc/sumTot):0;
+    } else {
+      if((lanc.conta||'')==='1.2') entDia[dia].merc+=bruto;
+      else entDia[dia].alim+=bruto;
+    }
+  });
+  const saiDia={}; dias.forEach(d=>{saiDia[d]={};});
+  pagar.filter(x=>(x.venc||'').slice(0,7)===ym).forEach(lanc=>{
+    const dia=parseInt((lanc.venc||'').slice(8,10)); if(!dia) return;
+    if(lanc.itens&&lanc.itens.length){
+      const totalItens=lanc.itens.reduce((s,i)=>s+(i.total||0),0);
+      lanc.itens.forEach(it=>{
+        const itVal=totalItens>0?(lanc.val||0)*(it.total||0)/totalItens:(it.total||0);
+        const cod=it.conta||lanc.conta||''; const pcIt=pc.find(p=>p.cod===cod&&p.tipo==='conta');
+        const grp=pcIt?.grupo||'5'; saiDia[dia][grp]=(saiDia[dia][grp]||0)+itVal;
+      }); return;
+    }
+    const pcConta=pc.find(p=>p.cod===lanc.conta&&p.tipo==='conta');
+    const grp=pcConta?.grupo||'5'; saiDia[dia][grp]=(saiDia[dia][grp]||0)+(lanc.val||0);
+  });
+
+  const totEntAlim=dias.reduce((s,d)=>s+entDia[d].alim,0);
+  const totEntMerc=dias.reduce((s,d)=>s+entDia[d].merc,0);
+  const totEntDesc=dias.reduce((s,d)=>s+entDia[d].desc,0);
+  let entradas = totEntAlim+totEntMerc-totEntDesc;
+  let saidas   = grpOrdem.reduce((s,g)=>s+dias.reduce((ss,d)=>ss+(saiDia[d][g]||0),0),0);
+  const geracao    = entradas - saidas;
+  const saldoFinal = saldoIni + geracao;
+  const saldoGeral = saldoFinal + saldoAplic;
+  const mediaDiaria= saidas > 0 ? saidas/diasMes : 0;
+  const cobertura  = mediaDiaria > 0 ? Math.round(saldoGeral/mediaDiaria) : 0;
+  return {saldoIni, saldoAplic, entradas, saidas, geracao, saldoFinal, saldoGeral, cobertura, diasMes};
+}
+
+function dbRenderFCX(ymAtual){
+  const f = dbCalcFCX(ymAtual);
+  const [y,m] = ymAtual.split('-').map(Number);
+
+  // ── KPIs FCX (4 cards) ──
+  const kpiEl = document.getElementById('kpi-fcx');
+  if(kpiEl){
+    const corGer  = f.geracao>=0 ? 'var(--gr)' : 'var(--rd)';
+    const corFin  = f.saldoFinal>=0 ? 'var(--gr)' : 'var(--rd)';
+    const corGer2 = f.saldoGeral>=0 ? 'var(--gr)' : 'var(--rd)';
+    const cobTxt  = f.cobertura<=0 ? '—' : f.cobertura+' dias';
+    const cobCor  = f.cobertura>=30?'var(--gr)':f.cobertura>=15?'var(--am)':'var(--rd)';
+    kpiEl.style.gridTemplateColumns = 'repeat(4,1fr)';
+    kpiEl.innerHTML =
+      `<div class="kc"><div class="kl"><i class="fa-solid fa-arrows-left-right" style="color:var(--bl);margin-right:4px"></i>Geração de Caixa</div><div class="kv" style="color:${corGer}">${R(f.geracao)}</div><div style="font-size:10px;color:var(--tx3);margin-top:2px">Entradas − Saídas do mês</div></div>`+
+      `<div class="kc"><div class="kl"><i class="fa-solid fa-wallet" style="color:var(--or);margin-right:4px"></i>Saldo Operacional</div><div class="kv" style="color:${corFin}">${R(f.saldoFinal)}</div><div style="font-size:10px;color:var(--tx3);margin-top:2px">Saldo Inicial + Geração</div></div>`+
+      `<div class="kc"><div class="kl"><i class="fa-solid fa-building-columns" style="color:#CE93D8;margin-right:4px"></i>Saldo Geral c/ Aplic.</div><div class="kv" style="color:${corGer2}">${R(f.saldoGeral)}</div><div style="font-size:10px;color:var(--tx3);margin-top:2px">Operacional + Aplicações</div></div>`+
+      `<div class="kc"><div class="kl"><i class="fa-solid fa-shield-halved" style="color:${cobCor};margin-right:4px"></i>Cobertura de Caixa</div><div class="kv" style="color:${cobCor}">${cobTxt}</div><div style="font-size:10px;color:var(--tx3);margin-top:2px">Dias de saída cobertos</div></div>`;
+  }
+
+  // ── Gráfico evolutivo 6 meses ──
+  const meses6=[], gerArr=[], saldoArr=[], geralArr=[];
+  for(let i=5;i>=0;i--){
+    const d  = new Date(y, m-1-i, 1);
+    const ym2= d.toISOString().slice(0,7);
+    const fx = dbCalcFCX(ym2);
+    meses6.push(d.toLocaleString('pt-BR',{month:'short'}));
+    gerArr.push(fx.geracao);
+    saldoArr.push(fx.saldoFinal);
+    geralArr.push(fx.saldoGeral);
+  }
+  dc('fcx');
+  const fcxEl = document.getElementById('c-fcx');
+  if(fcxEl){
+    CH.fcx = new Chart(fcxEl, {
+      type:'line',
+      data:{
+        labels: meses6,
+        datasets:[
+          {label:'Geração de Caixa', data:gerArr,   borderColor:'#64B5F6', backgroundColor:'rgba(100,181,246,0.08)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#64B5F6', borderWidth:2},
+          {label:'Saldo Operacional', data:saldoArr, borderColor:'#F26419', backgroundColor:'transparent', tension:0.4, pointRadius:3, pointBackgroundColor:'#F26419', borderDash:[4,3], borderWidth:1.5},
+          {label:'Saldo c/ Aplic.',   data:geralArr, borderColor:'#CE93D8', backgroundColor:'rgba(206,147,216,0.06)', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#CE93D8', borderWidth:2}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true, position:'bottom', labels:{color:'#888', font:{size:10}, boxWidth:10, padding:10}},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${R(ctx.raw)}`}}
+        },
+        scales:{
+          x:{ticks:{color:'#666',font:{size:10}}},
+          y:{ticks:{color:'#666',font:{size:10},callback:v=>'R$'+(v/1000).toFixed(1)+'k'}, grid:{color:'rgba(255,255,255,0.04)'},
+             afterDataLimits:axis=>{ if(axis.min>0) axis.min=0; }}
+        }
+      }
+    });
+  }
+
+  // ── Termômetro de Liquidez ──
+  const liqEl = document.getElementById('fcx-liquidez');
+  const liqLbl = document.getElementById('fcx-liq-label');
+  if(liqLbl){
+    const mesLabel = new Date(y,m-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+    liqLbl.textContent = mesLabel;
+  }
+  if(liqEl){
+    const semDados = f.entradas===0 && f.saidas===0;
+    if(semDados){
+      liqEl.innerHTML = `<div style="color:var(--tx3);font-size:12px;padding:20px 0;text-align:center"><i class="fa-solid fa-droplet" style="font-size:24px;display:block;margin-bottom:8px;opacity:0.3"></i>Sem lançamentos no período.</div>`;
+    } else {
+      // Índice de liquidez = Saldo Geral / Saídas (quanto das saídas está coberto)
+      const idxLiq = f.saidas>0 ? Math.min(f.saldoGeral/f.saidas*100, 200) : 100;
+      const corLiq = idxLiq>=100?'var(--gr)':idxLiq>=50?'var(--am)':'var(--rd)';
+      const msgLiq = idxLiq>=100 ? 'Caixa saudável — cobre todas as saídas' : idxLiq>=50 ? 'Atenção — cobertura parcial das saídas' : 'Risco — caixa insuficiente para cobrir saídas';
+      const iconLiq = idxLiq>=100 ? 'fa-check-circle' : idxLiq>=50 ? 'fa-triangle-exclamation' : 'fa-circle-xmark';
+
+      const barras = [
+        {label:'Entradas',         val:f.entradas,   cor:'#64B5F6'},
+        {label:'Saídas',           val:f.saidas,     cor:'#EF5350'},
+        {label:'Saldo Operacional',val:Math.max(f.saldoFinal,0), cor:'#F26419'},
+        {label:'Saldo c/ Aplic.',  val:Math.max(f.saldoGeral,0), cor:'#CE93D8'},
+      ];
+      const maxVal = Math.max(...barras.map(b=>b.val), 1);
+
+      liqEl.innerHTML =
+        `<div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:11px;color:var(--tx3)">Índice de Liquidez</span>
+            <span style="font-size:18px;font-weight:700;color:${corLiq}">${idxLiq.toFixed(0)}%</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:8px;overflow:hidden">
+            <div style="width:${Math.min(idxLiq,100).toFixed(0)}%;height:100%;background:${corLiq};border-radius:6px;transition:width 0.5s"></div>
+          </div>
+          <div style="margin-top:6px;font-size:11px;color:${corLiq}"><i class="fa-solid ${iconLiq}" style="margin-right:4px"></i>${msgLiq}</div>
+        </div>`+
+        barras.map(b=>`
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:3px">
+            <span>${b.label}</span><span style="color:${b.cor};font-weight:600">${R(b.val)}</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:5px">
+            <div style="width:${(b.val/maxVal*100).toFixed(0)}%;height:100%;background:${b.cor};border-radius:4px;opacity:0.8"></div>
+          </div>
+        </div>`).join('')+
+        `<div style="margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--or)">
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:4px">COBERTURA DE CAIXA</div>
+          <div style="font-size:12px;color:var(--tx)">O caixa atual cobre <strong style="color:${cobCor}">${cobTxt}</strong> de operação</div>
+        </div>`;
+
+      // variável cobCor e cobTxt já calculadas acima
+      const cobCor = f.cobertura>=30?'var(--gr)':f.cobertura>=15?'var(--am)':'var(--rd)';
+      const cobTxt = f.cobertura<=0?'—':f.cobertura+' dias';
+      liqEl.querySelector('[style*="COBERTURA"]').nextElementSibling.innerHTML =
+        `O caixa atual cobre <strong style="color:${cobCor}">${cobTxt}</strong> de operação`;
+    }
+  }
+}
+
+
+// ══════════════════════════════════════
+// PONTO DE EQUILÍBRIO
+// ══════════════════════════════════════
+let _peModo = 'mensal';
+
+function peNavMes(d){
+  const sel = document.getElementById('pe-mes-sel');
+  if(!sel) return;
+  const [y,m] = sel.value.split('-').map(Number);
+  const nd = new Date(y, m-1+d, 1);
+  sel.value = nd.toISOString().slice(0,7);
+  renderPE();
+}
+function peMesAtual(){
+  const sel = document.getElementById('pe-mes-sel');
+  if(sel){ sel.value = new Date().toISOString().slice(0,7); renderPE(); }
+}
+function peModo(modo){
+  _peModo = modo;
+  const bM = document.getElementById('pe-tab-mensal');
+  const bA = document.getElementById('pe-tab-acum');
+  [bM,bA].forEach(b=>{ if(b){ b.style.background='transparent'; b.style.color='var(--tx2)'; b.style.fontWeight='500'; }});
+  const ativo = modo==='mensal'?bM:bA;
+  if(ativo){ ativo.style.background='var(--or)'; ativo.style.color='#fff'; ativo.style.fontWeight='600'; }
+  renderPE();
+}
+
+// Calcula PE para um regime específico
+function peCalc(ym, regime){
+  // regime: 'comp' usa comp||venc, 'caixa' usa venc||comp
+  const pagar   = S.g('pagar')  ||[];
+  const receber = S.g('receber')||[];
+  const pc      = getPC();
+
+  const filtroData = (l, campo1, campo2) => (l[campo1]||l[campo2]||'').slice(0,7)===ym;
+  const rec = receber.filter(l=> regime==='comp' ? filtroData(l,'comp','venc') : filtroData(l,'venc','comp'));
+  const pag = pagar.filter(l=>   regime==='comp' ? filtroData(l,'comp','venc') : filtroData(l,'venc','comp'));
+
+  const fat = rec.reduce((s,l)=>s+(l.val||0),0);
+
+  // CMV — grupos 4
+  let totCMV = 0;
+  pag.forEach(l=>{
+    const val=l.val||0; if(!val) return;
+    const getCod = it => it.conta||l.conta||'';
+    const itens = l.itens&&l.itens.length ? l.itens : [{conta:l.conta,total:val}];
+    const totIt = itens.reduce((s,i)=>s+(i.total||0),0)||val;
+    itens.forEach(it=>{
+      const itVal = totIt>0?val*(it.total||0)/totIt:val;
+      const cod   = getCod(it);
+      const pcIt  = pc.find(p=>p.cod===cod&&p.tipo==='conta');
+      if(pcIt&&pcIt.grupo==='4') totCMV+=itVal;
+    });
+  });
+
+  // Margem de Contribuição
+  const mc    = fat - totCMV;
+  const mcPct = fat>0 ? mc/fat : 0;
+
+  // Despesas fixas — por conta marcada no Plano de Contas
+  const mapTipo = {};
+  pc.filter(x=>x.tipo==='conta'&&x.tipoCusto).forEach(x=>{ mapTipo[x.cod]=x.tipoCusto; });
+
+  // Pré-popula contasFixas com TODAS as contas marcadas como fixo (mesmo sem lançamentos)
+  const contasFixas = {};
+  pc.filter(x=>x.tipo==='conta'&&x.tipoCusto==='fixo').forEach(x=>{
+    const grp = pc.find(g=>g.cod===x.grupo&&g.tipo==='grupo');
+    contasFixas[x.cod] = {nome:x.nome, grupo:grp?grp.nome:'—', val:0};
+  });
+
+  const addFixa = (cod, itVal) => {
+    if(!cod || !itVal) return;
+    if(contasFixas[cod]) contasFixas[cod].val += itVal;
+    // Se a conta é fixo mas não estava no pré-populate (edge case)
+    else if(mapTipo[cod]==='fixo'){
+      const pcIt = pc.find(p=>p.cod===cod&&p.tipo==='conta');
+      const grp  = pcIt ? pc.find(g=>g.cod===pcIt.grupo&&g.tipo==='grupo') : null;
+      contasFixas[cod]={nome:pcIt?pcIt.nome:cod, grupo:grp?grp.nome:'—', val:itVal};
+    }
+  };
+  pag.forEach(l=>{
+    const val=l.val||0; if(!val) return;
+    if(l.itens && l.itens.length){
+      const totIt = l.itens.reduce((s,i)=>s+(i.total||0),0);
+      l.itens.forEach(it=>{
+        const cod   = it.conta||l.conta||'';
+        const itVal = totIt>0 ? val*(it.total||0)/totIt : val/l.itens.length;
+        addFixa(cod, itVal);
+      });
+    } else {
+      addFixa(l.conta||'', val);
+    }
+  });
+
+  const despFixas = Object.values(contasFixas).reduce((s,x)=>s+x.val,0);
+  const pe        = mcPct>0&&despFixas>0 ? despFixas/mcPct : 0;
+  const acimaPE   = fat - pe;
+  const pePct     = pe>0 ? Math.min(fat/pe*100,200) : 0;
+
+  return { fat, totCMV, mc, mcPct, despFixas, pe, acimaPE, pePct, contasFixas };
+}
+
+// Acumula vários meses
+function peCalcAcum(ymBase, regime){
+  const [y,m] = ymBase.split('-').map(Number);
+  // Do Jan do ano até o mês selecionado
+  const meses = [];
+  for(let i=1; i<=m; i++) meses.push(y+'-'+String(i).padStart(2,'0'));
+  let fat=0, totCMV=0, despFixas=0;
+  const contasFixas = {};
+  meses.forEach(ym=>{
+    const r = peCalc(ym, regime);
+    fat      += r.fat;
+    totCMV   += r.totCMV;
+    despFixas+= r.despFixas;
+    Object.entries(r.contasFixas).forEach(([cod,x])=>{
+      if(!contasFixas[cod]) contasFixas[cod]={nome:x.nome,grupo:x.grupo,val:0};
+      contasFixas[cod].val += x.val;
+    });
+  });
+  const mc     = fat-totCMV;
+  const mcPct  = fat>0?mc/fat:0;
+  const pe     = mcPct>0&&despFixas>0?despFixas/mcPct:0;
+  const acimaPE= fat-pe;
+  const pePct  = pe>0?Math.min(fat/pe*100,200):0;
+  return {fat,totCMV,mc,mcPct,despFixas,pe,acimaPE,pePct,contasFixas};
+}
+
+function peRenderKPI(elId, d, corTema){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const corPE  = d.acimaPE>=0?'var(--gr)':'var(--rd)';
+  const corPct = d.acimaPE>=0?'var(--gr)':'var(--rd)';
+  el.style.gridTemplateColumns='repeat(2,1fr)';
+  el.innerHTML =
+    `<div class="kc"><div class="kl">Faturamento</div><div class="kv" style="color:${corTema}">${R(d.fat)}</div></div>`+
+    `<div class="kc"><div class="kl">Desp. Fixas</div><div class="kv" style="color:var(--bl)">${R(d.despFixas)}</div></div>`+
+    `<div class="kc"><div class="kl">MC%</div><div class="kv" style="color:var(--or)">${(d.mcPct*100).toFixed(1)}%</div></div>`+
+    `<div class="kc"><div class="kl">Ponto de Equilíbrio</div><div class="kv" style="color:var(--am)">${R(d.pe)}</div></div>`;
+}
+
+function peRenderGauge(elId, d){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const corPE  = d.acimaPE>=0?'var(--gr)':'var(--rd)';
+  const icon   = d.acimaPE>=0?'fa-check-circle':'fa-triangle-exclamation';
+  const pePct  = Math.min(d.pePct,100);
+  const fatPct = d.pe>0?Math.min(d.fat/d.pe*100,100):0;
+
+  if(d.pe===0){
+    el.innerHTML=`<div style="color:var(--tx3);font-size:12px;padding:12px 0"><i class="fa-solid fa-circle-info" style="color:var(--bl);margin-right:6px"></i>Classifique despesas fixas e registre faturamento para calcular o PE.</div>`;
+    return;
+  }
+
+  el.innerHTML=`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-bottom:4px">
+        <span>Faturamento atual</span><span style="color:${corPE};font-weight:600">${(fatPct).toFixed(0)}% do PE</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:10px;overflow:hidden">
+        <div style="width:${fatPct.toFixed(0)}%;height:100%;background:${corPE};border-radius:6px;transition:width 0.6s"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;font-size:11px;flex-wrap:wrap">
+      <span><i class="fa-solid fa-bullseye" style="color:var(--am);margin-right:4px"></i>PE: <strong style="color:var(--am)">${R(d.pe)}</strong></span>
+      <span><i class="fa-solid fa-chart-line" style="color:var(--or);margin-right:4px"></i>Fat: <strong style="color:var(--or)">${R(d.fat)}</strong></span>
+      <span style="color:${corPE}"><i class="fa-solid ${icon}" style="margin-right:4px"></i>${d.acimaPE>=0?'Acima: ':'Abaixo: '}<strong>${R(Math.abs(d.acimaPE))}</strong></span>
+    </div>`;
+}
+
+function peRenderGrafico(canvasId, ym, regime, corTema){
+  const [y,m] = ym.split('-').map(Number);
+  const meses=[], fatArr=[], peArr=[], fixArr=[];
+  for(let i=5;i>=0;i--){
+    const d2 = new Date(y,m-1-i,1);
+    const ym2= d2.toISOString().slice(0,7);
+    const r  = peCalc(ym2, regime);
+    meses.push(d2.toLocaleString('pt-BR',{month:'short'}));
+    fatArr.push(r.fat);
+    peArr.push(r.pe);
+    fixArr.push(r.despFixas);
+  }
+  dc(canvasId);
+  const el = document.getElementById(canvasId);
+  if(!el) return;
+  new Chart(el,{
+    type:'bar',
+    data:{
+      labels:meses,
+      datasets:[
+        {label:'Faturamento', data:fatArr,  backgroundColor:corTema+'99', borderRadius:4, order:2},
+        {label:'Desp. Fixas', data:fixArr,  backgroundColor:'rgba(33,150,243,0.3)', borderRadius:4, order:3},
+        {label:'PE',          data:peArr,   type:'line', borderColor:'#FFB74D', backgroundColor:'transparent',
+         tension:0.3, pointRadius:4, pointBackgroundColor:'#FFB74D', borderWidth:2, borderDash:[5,3], order:1}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:10,padding:8}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${R(ctx.raw)}`}}
+      },
+      scales:{
+        x:{ticks:{color:'#666',font:{size:10}}},
+        y:{ticks:{color:'#666',font:{size:10},callback:v=>'R$'+(v/1000).toFixed(1)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}
+      }
+    }
+  });
+}
+
+function peRenderTabela(ymComp, ymCaixa){
+  const comp  = _peModo==='acumulado' ? peCalcAcum(ymComp,'comp')  : peCalc(ymComp,'comp');
+  const caixa = _peModo==='acumulado' ? peCalcAcum(ymCaixa,'caixa'): peCalc(ymCaixa,'caixa');
+
+  const todasCods = new Set([...Object.keys(comp.contasFixas),...Object.keys(caixa.contasFixas)]);
+  const totalComp = comp.despFixas;
+  const totalCaixa = caixa.despFixas;
+
+  const tbody = document.getElementById('pe-tbody');
+  const tfoot = document.getElementById('pe-tfoot');
+  const semEl = document.getElementById('pe-sem-fixas');
+
+  if(todasCods.size===0){
+    if(tbody) tbody.innerHTML='';
+    if(tfoot) tfoot.innerHTML='';
+    if(semEl) semEl.style.display='';
+    return;
+  }
+  if(semEl) semEl.style.display='none';
+
+  // Para cada conta com caixa > 0 mas comp = 0, buscar o mês de competência real
+  const pagar = S.g('pagar')||[];
+  const mapComp = {}; // cod -> mês de competência (para lançamentos pagos no mês mas de outra competência)
+  if(_peModo!=='acumulado'){
+    const mapTipo = {};
+    getPC().filter(x=>x.tipo==='conta'&&x.tipoCusto==='fixo').forEach(x=>{ mapTipo[x.cod]=true; });
+    pagar.filter(l=>(l.venc||'').slice(0,7)===ymCaixa).forEach(l=>{
+      const compMes = (l.comp||'').slice(0,7);
+      if(compMes && compMes!==ymCaixa){
+        const cod = l.conta||'';
+        if(mapTipo[cod] && !mapComp[cod]) mapComp[cod] = compMes;
+        // Verifica também nos itens
+        if(l.itens) l.itens.forEach(it=>{ if(mapTipo[it.conta||''] && !mapComp[it.conta]) mapComp[it.conta] = compMes; });
+      }
+    });
+  }
+
+  const linhas = [...todasCods].map(cod=>{
+    const cf = comp.contasFixas[cod]  || {nome:caixa.contasFixas[cod]?.nome||cod, grupo:caixa.contasFixas[cod]?.grupo||'—', val:0};
+    const cx = caixa.contasFixas[cod] || {val:0};
+    return {cod, nome:cf.nome, grupo:cf.grupo, comp:cf.val, caixa:cx.val, compRef:mapComp[cod]||null};
+  }).sort((a,b)=>b.caixa-a.caixa||b.comp-a.comp);
+
+  if(tbody) tbody.innerHTML = linhas.map(l=>{
+    const pct = totalCaixa>0?(l.caixa/totalCaixa*100):totalComp>0?(l.comp/totalComp*100):0;
+    // Célula competência: valor ou indicador de mês diferente
+    let tdComp;
+    if(l.comp>0){
+      tdComp = `<td style="padding:8px 12px;text-align:right;font-weight:600;color:var(--bl);font-size:12px">${R(l.comp)}</td>`;
+    } else if(l.compRef){
+      const mesRef = new Date(l.compRef+'-02').toLocaleString('pt-BR',{month:'short',year:'2-digit'});
+      tdComp = `<td style="padding:8px 12px;text-align:right;font-size:11px;color:var(--tx3)">
+        <span title="Competência em ${mesRef}" style="background:rgba(100,181,246,0.12);color:#64B5F6;padding:2px 7px;border-radius:4px;font-size:10px;cursor:default">
+          comp. ${mesRef} <i class="fa-solid fa-arrow-left" style="font-size:9px"></i>
+        </span>
+      </td>`;
+    } else {
+      tdComp = `<td style="padding:8px 12px;text-align:right;color:rgba(255,255,255,0.2);font-size:11px">R$ 0,00</td>`;
+    }
+    return `<tr style="border-bottom:1px solid var(--bd)">
+      <td style="padding:8px 12px;font-size:11px;color:var(--tx2)">${l.grupo}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--tx)">${l.nome}<span style="font-size:10px;color:var(--tx3);margin-left:6px">${l.cod}</span></td>
+      ${tdComp}
+      <td style="padding:8px 12px;text-align:right;font-weight:600;color:${l.caixa>0?'var(--gr)':'rgba(255,255,255,0.2)'};font-size:12px">${l.caixa>0?R(l.caixa):'R$ 0,00'}</td>
+      <td style="padding:8px 12px;text-align:right;font-size:11px;color:var(--tx3)">${pct.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+
+  if(tfoot) tfoot.innerHTML=`<tr style="border-top:2px solid var(--bd);background:var(--dk2)">
+    <td colspan="2" style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--tx)">TOTAL DESPESAS FIXAS</td>
+    <td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700;color:var(--bl)">${R(comp.despFixas)}</td>
+    <td style="padding:8px 12px;text-align:right;font-size:13px;font-weight:700;color:var(--gr)">${R(caixa.despFixas)}</td>
+    <td style="padding:8px 12px;text-align:right;font-size:11px;color:var(--or);font-weight:600">100%</td>
+  </tr>`;
+}
+
+function renderPE(){
+  const sel = document.getElementById('pe-mes-sel');
+  if(!sel||!sel.value) return;
+  const ym = sel.value;
+
+  const dComp  = _peModo==='acumulado' ? peCalcAcum(ym,'comp')  : peCalc(ym,'comp');
+  const dCaixa = _peModo==='acumulado' ? peCalcAcum(ym,'caixa') : peCalc(ym,'caixa');
+
+  peRenderKPI('pe-kpi-comp',  dComp,  '#64B5F6');
+  peRenderKPI('pe-kpi-caixa', dCaixa, '#4CAF50');
+  peRenderGauge('pe-gauge-comp',  dComp);
+  peRenderGauge('pe-gauge-caixa', dCaixa);
+  peRenderGrafico('c-pe-comp',  ym, 'comp',  'rgba(100,181,246,0.7)');
+  peRenderGrafico('c-pe-caixa', ym, 'caixa', 'rgba(76,175,80,0.7)');
+  peRenderTabela(ym, ym);
+}
+
+function initPE(){
+  const sel = document.getElementById('pe-mes-sel');
+  if(sel && !sel.value) sel.value = new Date().toISOString().slice(0,7);
+  renderPE();
 }
 
 // ══════════════════════════════════════
@@ -15261,7 +15913,7 @@ function getFormasRecebimento(){
 
 function saveFormaRec(){
   const idVal = document.getElementById('mfr-id').value;
-  const nome  = document.getElementById('mfr-nome').value.trim();
+  const nome  = document.getElementById('mfr-nome').value.trim().toUpperCase();
   if(!nome){ alert('Informe o nome da forma de recebimento.'); return; }
   const arr = S.g('formas-recebimento')||[];
   if(idVal){
@@ -15322,7 +15974,7 @@ function renderFormasRec(){
   document.getElementById('tb-formas-rec').innerHTML = arr.length===0
     ? `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:28px;font-size:13px"><i class="fa-solid fa-inbox" style="margin-right:6px"></i>Nenhuma forma de recebimento cadastrada</td></tr>`
     : arr.map(f=>`<tr>
-    <td style="color:var(--tx);font-weight:500">${f.nome}</td>
+    <td style="color:var(--tx);font-weight:500;text-transform:uppercase">${f.nome}</td>
     <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
     <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
     <td>${stTag(f.st)}</td>
@@ -17015,18 +17667,34 @@ function imprimirRelPagar(){
 
 let _rrChart = null;
 
+function rrPopularFormasDropdown(){
+  const container = document.getElementById('rr-forma-items');
+  if(!container) return;
+  container.innerHTML = '';
+  const formas = S.g('formas-recebimento')||[];
+  formas.forEach(f=>{
+    const nome = (f.nome||'').toUpperCase();
+    const item = document.createElement('div');
+    item.className = 'rc-ms-item';
+    item.setAttribute('data-val', nome);
+    item.onclick = function(){ rrFormaCb(this); };
+    item.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--tx);white-space:nowrap';
+    item.innerHTML = `<span class="rc-ms-chk" style="width:14px;flex-shrink:0"></span><span>${nome}</span>`;
+    container.appendChild(item);
+  });
+}
+
 function initRelReceber(){
-  // Popular select de formas de recebimento
-  const sel = document.getElementById('rr-forma');
-  if(sel){
-    sel.innerHTML = '<option value="">Todas as formas</option>';
-    const formas = S.g('formas-recebimento')||[];
-    formas.forEach(f=>{
-      const opt = document.createElement('option');
-      opt.value = f.nome; opt.textContent = f.nome;
-      sel.appendChild(opt);
-    });
-  }
+  // Popular multi-select de formas de recebimento
+  rrPopularFormasDropdown();
+  // Fechar dropdown ao clicar fora
+  document.addEventListener('click', function rrFormaOutside(e){
+    const drop = document.getElementById('rr-forma-drop');
+    const btn  = document.getElementById('rr-forma-btn');
+    if(drop && btn && !drop.contains(e.target) && !btn.contains(e.target)){
+      drop.style.display = 'none';
+    }
+  }, { capture: true });
   // Definir período padrão: mês atual
   const hoje = new Date();
   const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
@@ -17039,10 +17707,45 @@ function initRelReceber(){
   gerarRelReceber();
 }
 
+function rrFormaToggle(){
+  const drop = document.getElementById('rr-forma-drop');
+  if(drop) drop.style.display = drop.style.display === 'none' ? '' : 'none';
+}
+
+function rrFormaToggleTodos(){
+  // Limpar todas as seleções
+  document.querySelectorAll('#rr-forma-items .rc-ms-item').forEach(i=>{
+    i.classList.remove('rc-ms-sel');
+    const chk = i.querySelector('.rc-ms-chk');
+    if(chk) chk.textContent = '';
+  });
+  document.getElementById('rr-forma-label').textContent = 'Todas as formas';
+  document.getElementById('rr-forma-drop').style.display = 'none';
+}
+
+function rrFormaCb(el){
+  el.classList.toggle('rc-ms-sel');
+  const chk = el.querySelector('.rc-ms-chk');
+  if(chk) chk.textContent = el.classList.contains('rc-ms-sel') ? '✓' : '';
+  // Atualizar label
+  const selecionados = [...document.querySelectorAll('#rr-forma-items .rc-ms-item.rc-ms-sel')]
+    .map(i => i.getAttribute('data-val'));
+  const label = document.getElementById('rr-forma-label');
+  if(selecionados.length === 0) label.textContent = 'Todas as formas';
+  else if(selecionados.length === 1) label.textContent = selecionados[0];
+  else label.textContent = selecionados.length + ' formas selecionadas';
+}
+
+function rrGetFormasSelecionadas(){
+  const selecionados = [...document.querySelectorAll('#rr-forma-items .rc-ms-item.rc-ms-sel')]
+    .map(i => i.getAttribute('data-val'));
+  return selecionados; // array vazio = todas
+}
+
 function limparFiltrosRelRec(){
   ['rr-dt-ini','rr-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const s=document.getElementById('rr-status'); if(s) s.value='';
-  const f=document.getElementById('rr-forma');  if(f) f.value='';
+  rrFormaToggleTodos();
   document.getElementById('rr-resultado').style.display='none';
   document.getElementById('rr-kpis').style.display='none';
   document.getElementById('rr-vazio').style.display='';
@@ -17052,7 +17755,7 @@ function gerarRelReceber(){
   const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
   const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
   const status = document.getElementById('rr-status')?.value||'';
-  const forma  = document.getElementById('rr-forma')?.value||'';
+  const formasSel = rrGetFormasSelecionadas(); // array, vazio = todas
 
   const receber = S.g('receber')||[];
 
@@ -17062,7 +17765,7 @@ function gerarRelReceber(){
     if(dtIni && venc < dtIni) return false;
     if(dtFim && venc > dtFim) return false;
     if(status && l.status !== status) return false;
-    if(forma  && l.forma  !== forma)  return false;
+    if(formasSel.length > 0 && !formasSel.includes((l.forma||'').toUpperCase())) return false;
     return true;
   });
 
@@ -17077,7 +17780,7 @@ function gerarRelReceber(){
   // Agrupar por forma de recebimento
   const grupos = {};
   filtrados.forEach(l=>{
-    const f = l.forma || '(Não informado)';
+    const f = (l.forma || '(Não informado)').toUpperCase();
     if(!grupos[f]) grupos[f] = { forma:f, total:0, qtd:0 };
     grupos[f].total += (l.val||0);
     grupos[f].qtd++;
@@ -17198,18 +17901,18 @@ function exportarRelReceber(){
   const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
   const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
   const status = document.getElementById('rr-status')?.value||'';
-  const forma  = document.getElementById('rr-forma')?.value||'';
+  const formasSel = rrGetFormasSelecionadas();
   const filtrados = receber.filter(l=>{
     const venc = (l.venc||'').slice(0,10);
     if(dtIni && venc < dtIni) return false;
     if(dtFim && venc > dtFim) return false;
     if(status && l.status !== status) return false;
-    if(forma  && l.forma  !== forma)  return false;
+    if(formasSel.length > 0 && !formasSel.includes((l.forma||'').toUpperCase())) return false;
     return true;
   });
   const grupos = {};
   filtrados.forEach(l=>{
-    const f = l.forma || '(Não informado)';
+    const f = (l.forma || '(Não informado)').toUpperCase();
     if(!grupos[f]) grupos[f] = { forma:f, total:0, qtd:0 };
     grupos[f].total += (l.val||0);
     grupos[f].qtd++;
@@ -19202,7 +19905,7 @@ function renderFormasRecSorted(col,dir){
   const tbody = document.getElementById('tb-formas-rec'); if(!tbody) return;
   const tipoCor={'À Vista':'tg-gr','Antecipado':'tg-pu','Parcelado':'tg-am','Crédito':'tg-bl','Débito':'tg-or','Transferência':'tg-gy','Recorrente':'tg-rd','Outros':'tg-gy'};
   tbody.innerHTML = arr.map(f=>`<tr>
-    <td style="color:var(--tx);font-weight:500">${f.nome}</td>
+    <td style="color:var(--tx);font-weight:500;text-transform:uppercase">${f.nome}</td>
     <td><span class="tg ${tipoCor[f.tipo]||'tg-gy'}">${f.tipo||'—'}</span></td>
     <td style="color:var(--tx2)">${f.prazo===0?'Imediato':f.prazo+' dia'+(f.prazo>1?'s':'')}</td>
     <td>${stTag(f.st)}</td>
@@ -19827,11 +20530,66 @@ function fcxEditarSaldo(ym){
   openMod('mod-fcx-saldos');
 }
 
+
+function fcxCarryForward(){
+  try{
+    const ym = _fcxAno+'-'+String(_fcxMes).padStart(2,'0');
+    const saldos = S.g('fcx-saldos')||{};
+    const saldoYm = saldos[ym]||{};
+    if(Object.values(saldoYm).some(v=>v>0)) return;
+    let anoAnt=_fcxAno, mesAnt=_fcxMes-1;
+    if(mesAnt<1){mesAnt=12;anoAnt--;}
+    const ymAnt = anoAnt+'-'+String(mesAnt).padStart(2,'0');
+    const saldosAnt = saldos[ymAnt]||{};
+    if(!Object.keys(saldosAnt).length) return;
+    const contas=getFcxContas(); if(!contas.length) return;
+    const contasOper=contas.filter(c=>c.tipo!=='aplicacao');
+    const contasAplic=contas.filter(c=>c.tipo==='aplicacao');
+    let totE=0,totS=0;
+    (S.g('receber')||[]).filter(x=>(x.venc||x.comp||'').slice(0,7)===ymAnt).forEach(l=>{totE+=(l.val||0)-(l.desconto||0);});
+    (S.g('pagar')||[]).filter(x=>(x.venc||'').slice(0,7)===ymAnt).forEach(l=>{totS+=(l.val||0);});
+    const res=totE-totS;
+    const totOp=contasOper.reduce((s,c)=>s+(saldosAnt[c.id]||0),0);
+    const novo={};
+    contasOper.forEach(c=>{const sa=saldosAnt[c.id]||0;const p=totOp>0?sa/totOp:(contasOper.length?1/contasOper.length:0);novo[c.id]=Math.max(0,sa+res*p);});
+    contasAplic.forEach(c=>{novo[c.id]=saldosAnt[c.id]||0;});
+    saldos[ym]=novo; S.s('fcx-saldos',saldos);
+    showToast('Saldo inicial de '+fmtMes(ym)+' calculado a partir de '+fmtMes(ymAnt),'var(--bl)',4000);
+  }catch(e){console.warn('[fcxCarryForward]',e);}
+}
+
 function fcxNavMes(delta){
-  _fcxMes += delta;
-  if(_fcxMes > 12){ _fcxMes=1; _fcxAno++; }
-  if(_fcxMes < 1) { _fcxMes=12; _fcxAno--; }
+  _fcxMes+=delta;
+  if(_fcxMes>12){_fcxMes=1;_fcxAno++;}
+  if(_fcxMes<1){_fcxMes=12;_fcxAno--;}
+  fcxCarryForward();
   renderFluxo();
+}
+
+function fcxForcarCarry(){
+  try{
+    const ym=_fcxAno+'-'+String(_fcxMes).padStart(2,'0');
+    const saldos=S.g('fcx-saldos')||{};
+    let anoAnt=_fcxAno,mesAnt=_fcxMes-1;
+    if(mesAnt<1){mesAnt=12;anoAnt--;}
+    const ymAnt=anoAnt+'-'+String(mesAnt).padStart(2,'0');
+    const saldosAnt=saldos[ymAnt]||{};
+    if(!Object.keys(saldosAnt).length){showToast('Mes anterior ('+fmtMes(ymAnt)+') sem saldo cadastrado.','#FF4444',3000);return;}
+    const contas=getFcxContas(); if(!contas.length) return;
+    const contasOper=contas.filter(c=>c.tipo!=='aplicacao');
+    const contasAplic=contas.filter(c=>c.tipo==='aplicacao');
+    let totE=0,totS=0;
+    (S.g('receber')||[]).filter(x=>(x.venc||x.comp||'').slice(0,7)===ymAnt).forEach(l=>{totE+=(l.val||0)-(l.desconto||0);});
+    (S.g('pagar')||[]).filter(x=>(x.venc||'').slice(0,7)===ymAnt).forEach(l=>{totS+=(l.val||0);});
+    const res=totE-totS;
+    const totOp=contasOper.reduce((s,c)=>s+(saldosAnt[c.id]||0),0);
+    const novo={};
+    contasOper.forEach(c=>{const sa=saldosAnt[c.id]||0;const p=totOp>0?sa/totOp:(contasOper.length?1/contasOper.length:0);novo[c.id]=Math.max(0,sa+res*p);});
+    contasAplic.forEach(c=>{novo[c.id]=saldosAnt[c.id]||0;});
+    saldos[ym]=novo; S.s('fcx-saldos',saldos);
+    showToast('Saldo inicial de '+fmtMes(ym)+' recalculado a partir de '+fmtMes(ymAnt),'var(--gr)',4000);
+    renderFluxo();
+  }catch(e){console.warn('[fcxForcarCarry]',e);}
 }
 
 function fcxSetModo(modo){
@@ -19877,9 +20635,8 @@ function fcxRenderCalendario(dias, entDia, saiDia, grpOrdem, saldoInicial, ano, 
         ? ` onclick="${fcxDrillAttr('Saídas do dia '+dataFmt,'#EF5350',null,'saida',dia)}" title="Clique para ver os lançamentos do dia"`
         : '';
       const cursor = sai>0 ? 'cursor:pointer;' : '';
-      // No dia 01, mostra explicitamente o Saldo Inicial (bancos/aplicações) que entra no fluxo
       const saldoIniLine = dia===1
-        ? `<div style="font-size:9px;color:#90CAF9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Saldo Inicial (bancos/aplicações)">+ Saldo Inicial: ${R(saldoInicial)}</div>`
+        ? `<div style="font-size:9px;color:#90CAF9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Saldo Inicial (contas operacionais)">+ Saldo Inicial: ${R(saldoInicial)}</div>`
         : '';
       return `<div${clickAttr} style="${cursor}border:1.5px solid ${corBorda};background:${bgBorda};border-radius:8px;padding:8px 6px;min-height:78px;display:flex;flex-direction:column;justify-content:space-between">
         <div style="font-size:11px;font-weight:700;color:${fds?'var(--or)':'var(--tx2)'}">${dia}</div>
@@ -19887,7 +20644,7 @@ function fcxRenderCalendario(dias, entDia, saiDia, grpOrdem, saldoInicial, ano, 
         <div style="font-size:10px;color:#EF9A9A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${sai>0?'text-decoration:underline dotted;text-decoration-color:rgba(239,154,154,0.4)':''}" title="Saídas do dia">
           ${sai>0?'− '+R(sai):'<span style="color:rgba(255,255,255,0.15)">— sem saída</span>'}
         </div>
-        <div style="font-size:12px;font-weight:700;color:${corBorda};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Saldo acumulado do dia">
+        <div style="font-size:12px;font-weight:700;color:${corBorda};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Geração de caixa acumulada do dia">
           ${R(saldo)}
         </div>
       </div>`;
@@ -20060,7 +20817,10 @@ function renderFluxo(){
   });
 
   // Totais
-  const saldoInicial = contas.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  const contasOper  = contas.filter(c=> c.tipo !== 'aplicacao');
+  const contasAplic = contas.filter(c=> c.tipo === 'aplicacao');
+  const saldoInicial  = contasOper.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  const saldoAplicTotal = contasAplic.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
   const totEntAlim   = dias.reduce((s,d)=>s+entDia[d].alim,0);
   const totEntMerc   = dias.reduce((s,d)=>s+entDia[d].merc,0);
   const totEntDesc   = dias.reduce((s,d)=>s+entDia[d].desc,0);
@@ -20083,7 +20843,7 @@ function renderFluxo(){
 
   // ── Modo Semanal ──────────────────────────────────────────
   const BG = 'var(--dk2)';
-  const totSalIni = contas.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
+  const totSalIni = contasOper.reduce((s,c)=>s+((saldos[ym]||{})[c.id]||0),0);
   // trSec é definido por cada modo com seu próprio nCols
   if(_fcxModo==='semanal'){
     // Agrupa dias em semanas — semana começa no dia 1 e vai de 7 em 7
@@ -20119,9 +20879,9 @@ function renderFluxo(){
       ${thLS('Descrição')}${semanas.map(thSem).join('')}${thTotS('Total')}${thTotS('Média/Sem')}
     </tr></thead><tbody>`;
 
-    // Saldos iniciais
+    // Saldos iniciais (apenas contas operacionais)
     htmlS += trSecS('Saldos Iniciais','#90CAF9');
-    contas.forEach(c=>{
+    contasOper.forEach(c=>{
       const sal=(saldos[ym]||{})[c.id]||0;
       htmlS+=`<tr>${tdLS(c.nome,'var(--tx2)',false,12)}${semanas.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTotS(sal,'#90CAF9')}${tdMedS(0)}</tr>`;
     });
@@ -20154,8 +20914,25 @@ function renderFluxo(){
     let acumSem = saldoInicial;
     const sdSem = semanas.map((_,i)=>{ const s=semEnt[i]-grpOrdem.reduce((t,g)=>t+(semSaiGrp[g][i]||0),0); acumSem+=s; return {sd:s,acum:acumSem}; });
     const totSD = totEnt-totSai;
-    htmlS+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdLS('= SALDO DA SEMANA',totSD>=0?'#4CAF50':'#FF4444',true)}${sdSem.map(d=>tdVS(d.sd,d.sd>=0?'#4CAF50':'#FF4444',true)).join('')}${tdTotS(totSD,totSD>=0?'#4CAF50':'#FF4444')}${tdMedS(totSD/nSem)}</tr>`;
-    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= SALDO ACUMULADO','#4CAF50',true)}${sdSem.map(d=>tdVS(d.acum,'#4CAF50',true)).join('')}${tdTotS(saldoFinal,'#4CAF50')}<td></td></tr>`;
+    htmlS+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdLS('= GERAÇÃO DE CAIXA DA SEMANA',totSD>=0?'#4CAF50':'#FF4444',true)}${sdSem.map(d=>tdVS(d.sd,d.sd>=0?'#4CAF50':'#FF4444',true)).join('')}${tdTotS(totSD,totSD>=0?'#4CAF50':'#FF4444')}${tdMedS(totSD/nSem)}</tr>`;
+    htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= GERAÇÃO DE CAIXA ACUMULADA','#4CAF50',true)}${sdSem.map(d=>tdVS(d.acum,'#4CAF50',true)).join('')}${tdTotS(saldoFinal,'#4CAF50')}<td></td></tr>`;
+
+    // APLICAÇÕES FINANCEIRAS
+    if(contasAplic.length){
+      htmlS+=trSecS('Aplicações Financeiras','#CE93D8');
+      contasAplic.forEach(c=>{
+        const sal=(saldos[ym]||{})[c.id]||0;
+        htmlS+=`<tr>${tdLS(c.nome,'var(--tx2)',false,12)}${semanas.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTotS(sal,'#CE93D8')}${tdMedS(0)}</tr>`;
+      });
+      htmlS+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdLS('= TOTAL APLICAÇÕES','#CE93D8',true)}${semanas.map(()=>`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTotS(saldoAplicTotal,'#CE93D8')}${tdMedS(0)}</tr>`;
+    }
+    const saldoGeral=saldoFinal+saldoAplicTotal;
+    const corSGS = saldoGeral>=0?'#4CAF50':'#FF4444';
+    htmlS+=`<tr style="border-top:2px solid rgba(255,255,255,0.12);background:rgba(76,175,80,0.06)">`+
+      `<td style="padding:5px 10px;font-size:12px;font-weight:700;color:${corSGS};white-space:nowrap;position:sticky;left:0;z-index:2;background:rgba(30,30,30,0.98);border-bottom:1px solid rgba(255,255,255,0.06)">= SALDO GERAL DO FLUXO DE CAIXA</td>`+
+      `${sdSem.map(d=>{ const sg=saldoAplicTotal+d.acum; const c=sg>=0?'#4CAF50':'#FF4444'; return `<td style="padding:5px 12px;text-align:right;font-size:11px;font-weight:700;color:${c};white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.03)">${R(sg)}</td>`; }).join('')}`+
+      `<td style="padding:5px 10px;text-align:right;font-size:13px;font-weight:700;color:${corSGS};border-left:2px solid ${corSGS};border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${R(saldoGeral)}</td>`+
+      `${tdMedS(0)}</tr>`;
 
     htmlS+=`</tbody></table>`;
     const blk=document.getElementById('fcx-blk');
@@ -20186,14 +20963,14 @@ function renderFluxo(){
     ${thL('Descrição')}${dias.map(thD).join('')}${thTot('Total')}${thTot('Média')}
   </tr></thead><tbody>`;
 
-  // SALDOS INICIAIS — o saldo de bancos/aplicações deve aparecer sempre no dia 01 do mês
+  // SALDOS INICIAIS — apenas contas operacionais (conta corrente, caixa, cofre)
   html += trSec('Saldos Iniciais','#90CAF9');
-  contas.forEach(c=>{
+  contasOper.forEach(c=>{
     const sal=(saldos[ym]||{})[c.id]||0;
     html+=`<tr>${tdL(c.nome,'var(--tx2)',false,12)}${dias.map(d=>d===1?tdV(sal,'#90CAF9',true):`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(sal,'#90CAF9')}${tdMedia(0)}</tr>`;
   });
-  if(!contas.length) html+=`<tr>${tdL('Cadastre contas em Contas FCX','var(--tx3)')}<td colspan="${nCols-1}"></td></tr>`;
-  html+=`<tr>${tdL('TOTAL SALDOS INICIAIS','#90CAF9',true)}${dias.map(d=>d===1?tdV(totSalIni,'#90CAF9',true):`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(totSalIni,'#90CAF9')}${tdMedia(0)}</tr>`;
+  if(!contasOper.length) html+=`<tr>${tdL('Cadastre contas em Contas FCX','var(--tx3)')}<td colspan="${nCols-1}"></td></tr>`;
+  html+=`<tr>${tdL('TOTAL SALDOS INICIAIS','#90CAF9',true)}${dias.map(d=>d===1?tdV(saldoInicial,'#90CAF9',true):`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(saldoInicial,'#90CAF9')}${tdMedia(0)}</tr>`;
 
   // ENTRADAS
   html+=trSec('(+) Receitas Operacionais','#64B5F6');
@@ -20236,7 +21013,7 @@ function renderFluxo(){
   }
   html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= TOTAL SAÍDAS','#FF4444',true)}${dias.map(d=>{ const v=grpOrdem.reduce((s,g)=>s+(saiDia[d][g]||0),0); return tdV(v,'#FF4444','',true); }).join('')}${tdTot(totSai,'#FF4444')}${tdMedia(totSai/diasMes,'#FF4444')}</tr>`;
 
-  // SALDO DO DIA E ACUMULADO
+  // GERAÇÃO DE CAIXA DO DIA E ACUMULADA
   let acum=saldoInicial;
   const sdArr=dias.map(d=>{
     const ent=entDia[d].alim+entDia[d].merc-entDia[d].desc;
@@ -20245,8 +21022,27 @@ function renderFluxo(){
     return {ent,sai,sd,acum};
   });
 
-  html+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdL('= SALDO DO DIA',(totEnt-totSai)>=0?'#4CAF50':'#FF4444',true)}${sdArr.map(d=>tdV(d.sd,d.sd>=0?'#4CAF50':'#FF4444','',true)).join('')}${tdTot(totEnt-totSai,(totEnt-totSai)>=0?'#4CAF50':'#FF4444')}${tdMedia((totEnt-totSai)/diasMes)}</tr>`;
-  html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= SALDO ACUMULADO','#4CAF50',true)}${sdArr.map(d=>tdV(d.acum,'#4CAF50','',true)).join('')}${tdTot(saldoFinal,'#4CAF50')}<td></td></tr>`;
+  html+=`<tr style="border-top:2px solid rgba(255,255,255,0.08)">${tdL('= GERAÇÃO DE CAIXA DO DIA',(totEnt-totSai)>=0?'#4CAF50':'#FF4444',true)}${sdArr.map(d=>tdV(d.sd,d.sd>=0?'#4CAF50':'#FF4444','',true)).join('')}${tdTot(totEnt-totSai,(totEnt-totSai)>=0?'#4CAF50':'#FF4444')}${tdMedia((totEnt-totSai)/diasMes)}</tr>`;
+  html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= GERAÇÃO DE CAIXA ACUMULADA','#4CAF50',true)}${sdArr.map(d=>tdV(d.acum,'#4CAF50','',true)).join('')}${tdTot(saldoFinal,'#4CAF50')}<td></td></tr>`;
+
+  // APLICAÇÕES FINANCEIRAS — separadas do fluxo operacional
+  if(contasAplic.length){
+    html+=trSec('Aplicações Financeiras','#CE93D8');
+    contasAplic.forEach(c=>{
+      const sal=(saldos[ym]||{})[c.id]||0;
+      html+=`<tr>${tdL(c.nome,'var(--tx2)',false,12)}${dias.map(d=>d===1?tdV(sal,'#CE93D8',true):`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(sal,'#CE93D8')}${tdMedia(0)}</tr>`;
+    });
+    html+=`<tr style="border-top:1px solid rgba(255,255,255,0.06)">${tdL('= TOTAL APLICAÇÕES','#CE93D8',true)}${dias.map(d=>d===1?tdV(saldoAplicTotal,'#CE93D8',true):`<td style="border-bottom:1px solid rgba(255,255,255,0.03)"></td>`).join('')}${tdTot(saldoAplicTotal,'#CE93D8')}${tdMedia(0)}</tr>`;
+  }
+  // Saldo Geral acumulado dia a dia (operacional + aplicações)
+  const saldoGeral = saldoFinal + saldoAplicTotal;
+  const saldoGeralInicial = saldoInicial + saldoAplicTotal;
+  const corSG = saldoGeral>=0?'#4CAF50':'#FF4444';
+  html+=`<tr style="border-top:2px solid rgba(255,255,255,0.12);background:rgba(76,175,80,0.06)">`+
+    `<td style="padding:5px 10px;font-size:12px;font-weight:700;color:${corSG};white-space:nowrap;position:sticky;left:0;z-index:1;background:rgba(30,30,30,0.98);border-bottom:1px solid rgba(255,255,255,0.06)">= SALDO GERAL DO FLUXO DE CAIXA</td>`+
+    `${sdArr.map(d=>{ const sg=saldoAplicTotal+d.acum; const c=sg>=0?'#4CAF50':'#FF4444'; return `<td style="padding:5px 8px;text-align:right;font-size:11px;font-weight:700;color:${c};white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.03)">${R(sg)}</td>`; }).join('')}`+
+    `<td style="padding:5px 10px;text-align:right;font-size:13px;font-weight:700;color:${corSG};border-left:2px solid ${corSG};border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap">${R(saldoGeral)}</td>`+
+    `${tdMedia((saldoGeralInicial+(saldoGeral-saldoGeralInicial))/2)}</tr>`;
 
   html+=`</tbody></table>`;
   const blk=document.getElementById('fcx-blk');
