@@ -595,6 +595,19 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- APP -->
 <div id="app">
+  <!-- ── OVERLAY DE SINCRONIZAÇÃO (retorno após pausa) ── -->
+  <div id="sync-overlay" style="display:none;position:fixed;inset:0;z-index:9500;pointer-events:all">
+    <div style="position:absolute;inset:0;background:rgba(18,18,18,0.72);backdrop-filter:blur(2px)"></div>
+    <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);background:var(--dk2);border:1px solid rgba(192,67,42,0.35);border-radius:12px;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:300px;max-width:90vw">
+      <div style="width:32px;height:32px;border:3px solid rgba(192,67,42,0.2);border-top-color:#C0432A;border-radius:50%;animation:syncSpin 0.8s linear infinite;flex-shrink:0"></div>
+      <div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--tx)">Sincronizando dados da nuvem…</div>
+        <div id="sync-overlay-sub" style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--tx2);margin-top:2px">Aguarde, isso leva apenas alguns segundos.</div>
+      </div>
+    </div>
+  </div>
+  <style>@keyframes syncSpin{to{transform:rotate(360deg)}}</style>
+
   <div id="aviso-falha-carregamento" style="display:none;position:fixed;top:32px;left:0;right:0;z-index:9998;background:#B71C1C;color:#fff;padding:10px 20px;text-align:center;font-family:'DM Sans',sans-serif;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
     <i class="fa-solid fa-triangle-exclamation"></i>
     Não foi possível carregar seus dados da nuvem agora (provável instabilidade de conexão). Os dados não foram perdidos — só não chegaram até a tela ainda.
@@ -1816,24 +1829,98 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="kg" id="kpi-pg"></div>
   <div class="cd">
     <div class="ct">Contas a Pagar
-      <div style="display:flex;align-items:center;gap:8px">
-        <button class="btn btn-p btn-sm" onclick="resetModalPagar();openMod('mod-pagar')"><i class="fa-solid fa-plus"></i> Novo Lançamento</button>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="pg-filtro-status" onchange="renderPagar()"
+          style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;outline:none">
+          <option value="">Todos os status</option>
+          <option value="Pendente">⏳ Pendente</option>
+          <option value="Pago">✅ Pago</option>
+          <option value="Baixado">🔵 Baixado</option>
+          <option value="Vencida">🔴 Vencida</option>
+          <option value="Agendado">📅 Agendado</option>
+        </select>
         <button class="btn btn-sm" onclick="abrirBaixaLote()"
           style="border-color:rgba(76,175,80,0.5);color:#81C784"
           title="Baixar múltiplos pagamentos de uma vez por período">
           <i class="fa-solid fa-list-check"></i> Baixa em Lote
         </button>
-        <button class="btn btn-sm" onclick="diagDuplicidade()"
-          style="border-color:rgba(255,143,0,0.4);color:var(--am)"
-          title="Detecta lançamentos com itens E val simultâneos que causam dupla contagem no DRE">
-          <i class="fa-solid fa-stethoscope"></i> Diagnóstico DRE
-        </button>
-        <button class="btn btn-sm" onclick="auditarReceitas()"
-          style="border-color:rgba(100,181,246,0.4);color:#64B5F6"
-          title="Lista todos os lançamentos de receita no localStorage — útil para encontrar lançamentos fantasmas">
-          <i class="fa-solid fa-magnifying-glass-chart"></i> Auditar Receitas
-        </button>
         <button class="btn btn-sm" onclick="imprimirModuloPagar()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <!-- Wrapper com position:relative para o picker ficar ancorado ao botão -->
+        <div style="position:relative">
+          <button id="pg-periodo-btn" onclick="pgTogglePicker()"
+            style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="pg-periodo-label">Junho de 2026</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+          </button>
+
+          <!-- Picker premium — idêntico ao CAR -->
+          <div id="pg-picker" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:1500;
+            background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+            <!-- Tabs modo -->
+            <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+              <button id="pg-tab-mes" onclick="pgSetModo('mes')"
+                style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+                class="rc-tab-ativo">Por mês</button>
+              <button id="pg-tab-periodo" onclick="pgSetModo('periodo')"
+                style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+                class="rc-tab-inativo">Por período</button>
+              <button id="pg-tab-ano" onclick="pgSetModo('ano')"
+                style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+                class="rc-tab-inativo">Por ano</button>
+            </div>
+
+            <!-- Modo: mês -->
+            <div id="pg-modo-mes">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <button onclick="pgNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                <span id="pg-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                <button onclick="pgNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+              </div>
+              <div id="pg-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Modo: período (data início/fim) -->
+            <div id="pg-modo-periodo" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data início</label>
+                  <input type="date" id="pg-dt-ini"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data fim</label>
+                  <input type="date" id="pg-dt-fim"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+              </div>
+              <button onclick="pgAplicarPeriodoData()"
+                style="width:100%;margin-top:10px;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+                <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+              </button>
+            </div>
+
+            <!-- Modo: ano -->
+            <div id="pg-modo-ano" style="display:none">
+              <div id="pg-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Rodapé: atalhos rápidos -->
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap">
+              <button onclick="pgAtalho('mes')"  class="rc-atalho">Este mês</button>
+              <button onclick="pgAtalho('ant')"  class="rc-atalho">Mês anterior</button>
+              <button onclick="pgAtalho('trim')" class="rc-atalho">Trimestre</button>
+              <button onclick="pgAtalho('ano')"  class="rc-atalho">Este ano</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="resetModalPagar();openMod('mod-pagar')">
+          <i class="fa-solid fa-plus"></i> Novo Lançamento
+        </button>
       </div>
     </div>
     <div class="tw"><table><thead><tr>
@@ -1865,6 +1952,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <option value="">Todos os status</option>
           <option value="Pendente">⏳ Pendente</option>
           <option value="Recebido">✅ Recebido</option>
+          <option value="Baixado">🔵 Baixado</option>
           <option value="Vencido">🔴 Vencido</option>
         </select>
         <select id="rc-filtro-forma" onchange="renderReceber()"
@@ -1878,18 +1966,25 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         </select>
 
         <!-- Botão de período -->
-        <button class="btn btn-sm" onclick="imprimirModuloReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button id="rc-periodo-btn" onclick="rcTogglePicker()"
-          style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
-          <span style="display:flex;align-items:center;gap:6px">
-            <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
-            <span id="rc-periodo-label">Junho de 2026</span>
-          </span>
-          <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)" id="rc-periodo-chevron"></i>
+        <button class="btn btn-sm" onclick="abrirBaixaLoteRC()"
+          style="border-color:rgba(76,175,80,0.5);color:#81C784"
+          title="Baixar múltiplos recebimentos de uma vez por período">
+          <i class="fa-solid fa-list-check"></i> Baixa em Lote
         </button>
+        <button class="btn btn-sm" onclick="imprimirModuloReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <!-- Wrapper com position:relative para ancorar o picker ao botão -->
+        <div style="position:relative">
+          <button id="rc-periodo-btn" onclick="rcTogglePicker()"
+            style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:180px;justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="rc-periodo-label">Junho de 2026</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)" id="rc-periodo-chevron"></i>
+          </button>
 
-        <!-- Picker de período -->
-        <div id="rc-picker" style="display:none;position:absolute;top:36px;left:0;z-index:999;
+          <!-- Picker de período -->
+          <div id="rc-picker" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:1500;
           background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
           box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
 
@@ -1950,6 +2045,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <button onclick="rcAtalho('ano')"     class="rc-atalho">Este ano</button>
           </div>
         </div>
+        </div><!-- /wrapper picker -->
 
         <!-- input hidden para compatibilidade com renderReceber -->
         <select id="rc-filtro-mes" style="display:none"></select>
@@ -4446,6 +4542,95 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 <!-- BAIXA RÁPIDA -->
+<div class="mo" id="mod-baixa-lote-rc">
+  <div class="mb" style="width:700px;max-width:95vw">
+    <div class="mt">
+      <span><i class="fa-solid fa-list-check" style="color:var(--gr);margin-right:8px"></i>Baixa em Lote — Contas a Receber</span>
+      <span class="mc" onclick="closeMod('mod-baixa-lote-rc')">✕</span>
+    </div>
+
+    <!-- Filtro de período -->
+    <div style="background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Filtrar por período de vencimento</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">De</label>
+          <input type="date" id="bloterc-ini"
+            style="background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">Até</label>
+          <input type="date" id="bloterc-fim"
+            style="background:var(--dk2);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <button class="btn btn-p btn-sm" onclick="filtrarBaixaLoteRC()" style="padding:7px 16px">
+          <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+        </button>
+        <div id="bloterc-contador" style="font-size:12px;color:var(--tx3);margin-left:4px"></div>
+      </div>
+    </div>
+
+    <!-- Lista de títulos encontrados -->
+    <div id="bloterc-lista-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+        Lançamentos com status <strong style="color:#FFB74D">Pendente</strong> ou <strong style="color:#81C784">Recebido</strong> no período — serão marcados como <strong style="color:#64B5F6">Baixado</strong>
+      </div>
+      <div style="max-height:340px;overflow-y:auto;border:1px solid var(--bd);border-radius:8px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:var(--dk3);position:sticky;top:0">
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Competência</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Vencimento</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Cliente / Descrição</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Forma</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Status</th>
+              <th style="padding:8px 10px;font-size:10px;color:var(--tx3);text-align:right;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--bd)">Valor</th>
+            </tr>
+          </thead>
+          <tbody id="bloterc-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Totalizador -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dk3);border:1px solid var(--bd);border-radius:8px;padding:12px 16px;margin-top:12px">
+        <div>
+          <span style="font-size:12px;color:var(--tx2)">Total selecionado:</span>
+          <span id="bloterc-qtd" style="font-size:12px;color:var(--tx);font-weight:600;margin-left:6px"></span>
+          <span style="font-size:12px;color:var(--tx3);margin:0 4px">lançamento(s)</span>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:var(--gr)" id="bloterc-total-val"></div>
+      </div>
+
+      <!-- Data da baixa -->
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:12px;color:var(--tx2);white-space:nowrap">📅 Data da Baixa</label>
+          <input type="date" id="bloterc-dtbaixa"
+            style="background:var(--dk3);border:1px solid rgba(242,100,25,0.4);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:Outfit,sans-serif;font-size:13px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(242,100,25,0.4)'">
+        </div>
+        <div style="font-size:11px;color:var(--tx3)">Esta data será registrada como data de recebimento de todos os lançamentos do lote.</div>
+      </div>
+    </div>
+
+    <!-- Mensagem vazia -->
+    <div id="bloterc-vazio" style="display:none;text-align:center;padding:32px;color:var(--tx3);font-size:13px">
+      <i class="fa-solid fa-circle-check" style="font-size:28px;color:var(--gr);display:block;margin-bottom:10px"></i>
+      Nenhum lançamento com status <strong style="color:#FFB74D">Pendente</strong> ou <strong style="color:#81C784">Recebido</strong> encontrado neste período.<br>
+      <span style="font-size:11px;color:var(--tx3)">Todos os títulos já foram Baixados ou o período não possui lançamentos.</span>
+    </div>
+
+    <div class="mf" style="margin-top:16px">
+      <button class="bc" onclick="closeMod('mod-baixa-lote-rc')">Cancelar</button>
+      <button id="bloterc-btn-baixar" class="bs" style="background:var(--gr);min-width:200px;display:none" onclick="confirmarBaixaLoteRC()">
+        <i class="fa-solid fa-list-check"></i> Baixar Lote
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="mod-baixa-lote">
   <div class="mb" style="width:780px;max-width:96vw">
     <div class="mt">
@@ -4934,6 +5119,8 @@ async function recarregarDadosNuvem(){
   if(info){ info.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:var(--or)"></i> Recarregando...'; }
   try{
     await _loadAllFromCloud();
+    // Esconde overlay ANTES de re-renderizar — dados já estão no _cache
+    _syncOverlayEsconder();
     if(_ultimoCarregamentoFalhou){
       if(info) info.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="color:var(--rd)"></i> Falhou, tenta de novo';
       return;
@@ -4949,6 +5136,7 @@ async function recarregarDadosNuvem(){
       setTimeout(()=>{ if(info) info.innerHTML = '<i class="fa-solid fa-rotate" style="color:var(--or)"></i> Recarregar dados da nuvem'; }, 2500);
     }
   } catch(e){
+    _syncOverlayEsconder();
     if(info) info.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="color:var(--rd)"></i> Falhou, tenta de novo';
     console.error(e);
   }
@@ -5049,12 +5237,36 @@ document.addEventListener('visibilitychange', ()=>{
     // Só recarrega se ficou escondida por mais de 10s — evita recarregar à toa
     // em trocas rápidas de aba (ex: copiar algo e voltar na hora).
     if(logado && ficouEscondidaPor > 10000 && typeof recarregarDadosNuvem === 'function'){
+      // Mostra overlay ANTES de buscar o Firebase — bloqueia interação durante a sincronização
+      _syncOverlayMostrar();
       recarregarDadosNuvem();
     }
   } else {
     _ultimaVezVisivel = Date.now();
   }
 });
+
+// ── Controle do overlay de sincronização ──
+function _syncOverlayMostrar(){
+  const el = document.getElementById('sync-overlay');
+  if(!el) return;
+  el.style.display = 'block';
+  // Segurança: se o Firebase não responder em 10s, esconde o overlay
+  // e permite que o cliente continue (melhor experiência que travar para sempre)
+  clearTimeout(window._syncOverlayTimeout);
+  window._syncOverlayTimeout = setTimeout(()=>{
+    const sub = document.getElementById('sync-overlay-sub');
+    if(sub) sub.textContent = 'Conexão lenta — os dados podem estar desatualizados.';
+    setTimeout(()=> _syncOverlayEsconder(), 3000);
+  }, 10000);
+}
+function _syncOverlayEsconder(){
+  const el = document.getElementById('sync-overlay');
+  if(el) el.style.display = 'none';
+  clearTimeout(window._syncOverlayTimeout);
+  const sub = document.getElementById('sync-overlay-sub');
+  if(sub) sub.textContent = 'Aguarde, isso leva apenas alguns segundos.';
+}
 
 // ══════════════════════════════════════
 // DADOS DEMO
@@ -5868,6 +6080,26 @@ function go(pg,btn){
   if(bdgMes) bdgMes.style.display=pg==='dashboard'?'none':'';
   if(pg==='rel-vendas')  initRelVendas();
   if(pg==='usuarios')     renderUsuarios();
+  // Módulos que precisam re-renderizar ao navegar (inclusive após recarregarDadosNuvem)
+  if(pg==='pagar')             renderPagar();
+  if(pg==='receber')           renderReceber();
+  if(pg==='dre')               renderDRE();
+  if(pg==='caixa')             renderCaixa();
+  if(pg==='pizzas')            renderPizzas();
+  if(pg==='metas')             renderMetas();
+  if(pg==='cmv')               renderCMV();
+  if(pg==='dashboard')         renderDashboard();
+  if(pg==='cad-fornecedores')  renderForn();
+  if(pg==='cad-produtos')      renderProd();
+  if(pg==='cad-insumos')       renderInsumos();
+  if(pg==='cad-servicos')      renderServicos();
+  if(pg==='cad-catprod')       renderCategoriasProd();
+  if(pg==='cad-catprod-venda') renderCatProdVenda();
+  if(pg==='cad-pagamentos')    renderFormasPag();
+  if(pg==='cad-recebimentos')  renderFormasRec();
+  if(pg==='cad-bancos')        renderBancos();
+  if(pg==='cad-produtos-venda') renderProdVenda();
+  if(pg==='estoque-abc')       renderEstoque();
 }
 
 // ══════════════════════════════════════
@@ -7777,6 +8009,7 @@ function resetModalReceber(){
   mrRenderItens();
   mrPopularFormas();
   mrPopularProdutos();
+  fillSelectContasReceita('mr-conta');
 }
 
 function mrPopularFormas(){
@@ -13231,6 +13464,156 @@ function excluirPagar(id){
   renderPagar();
 }
 
+// ══════════════════════════════════════
+// PICKER DE PERÍODO — CONTAS A PAGAR (idêntico ao CAR)
+// ══════════════════════════════════════
+let _pgModo   = 'mes';
+let _pgAnoNav = new Date().getFullYear();
+let _pgFiltro = { tipo:'mes', mes: new Date().toISOString().slice(0,7), ini:null, fim:null, ano:null };
+
+function pgTogglePicker(){
+  const p = document.getElementById('pg-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){ pgRenderGridMeses(); pgRenderGridAnos(); }
+}
+
+function pgFecharPicker(){
+  const p = document.getElementById('pg-picker');
+  if(p) p.style.display = 'none';
+}
+
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('pg-picker');
+  const btn    = document.getElementById('pg-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    pgFecharPicker();
+  }
+});
+
+function pgSetModo(modo){
+  _pgModo = modo;
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('pg-tab-'+m);
+    const div = document.getElementById('pg-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes') pgRenderGridMeses();
+  if(modo==='ano') pgRenderGridAnos();
+}
+
+function pgNavAno(delta){
+  _pgAnoNav += delta;
+  document.getElementById('pg-nav-ano').textContent = _pgAnoNav;
+  pgRenderGridMeses();
+}
+
+function pgRenderGridMeses(){
+  const grid = document.getElementById('pg-grid-meses');
+  if(!grid) return;
+  const ano = _pgAnoNav;
+  const sel = _pgFiltro.tipo==='mes' ? _pgFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button onclick="pgSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+      onmouseover="this.style.borderColor='var(--or)'" onmouseout="this.style.borderColor='${ativo?'var(--or)':'var(--bd)'}'
+    ">${m}</button>`;
+  }).join('');
+}
+
+function pgRenderGridAnos(){
+  const grid = document.getElementById('pg-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _pgFiltro.tipo==='ano' ? _pgFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button onclick="pgSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function pgSelecionarMes(val){
+  _pgFiltro = { tipo:'mes', mes:val, ini:null, fim:null, ano:null };
+  const [y,m] = val.split('-');
+  const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  pgAtualizarLabel(`${MESES_FULL[parseInt(m)-1]} de ${y}`);
+  pgFecharPicker();
+  renderPagar();
+}
+
+function pgSelecionarAno(ano){
+  _pgFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano };
+  pgAtualizarLabel(`Ano de ${ano}`);
+  pgFecharPicker();
+  renderPagar();
+}
+
+function pgAplicarPeriodo(){
+  // chamado pelo onchange dos inputs type=month (picker antigo — mantido por segurança)
+  pgAplicarPeriodoData();
+}
+
+function pgAplicarPeriodoData(){
+  const ini = document.getElementById('pg-dt-ini')?.value;
+  const fim = document.getElementById('pg-dt-fim')?.value;
+  if(!ini || !fim){ alert('Informe as duas datas.'); return; }
+  if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
+  _pgFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+  pgAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+  pgFecharPicker();
+  renderPagar();
+}
+
+function pgAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fmtM = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if(tipo==='mes'){
+    const val = fmtM(hoje);
+    _pgFiltro = { tipo:'mes', mes:val, ini:null, fim:null, ano:null };
+    pgAtualizarLabel(`${MESES_FULL[hoje.getMonth()]} de ${hoje.getFullYear()}`);
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    const val = fmtM(ant);
+    _pgFiltro = { tipo:'mes', mes:val, ini:null, fim:null, ano:null };
+    pgAtualizarLabel(`${MESES_FULL[ant.getMonth()]} de ${ant.getFullYear()}`);
+  } else if(tipo==='trim'){
+    const q   = Math.floor(hoje.getMonth()/3);
+    const ini = fmt(new Date(hoje.getFullYear(), q*3, 1));
+    const fim = fmt(new Date(hoje.getFullYear(), q*3+3, 0));
+    _pgFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+    pgAtualizarLabel(`${q+1}º Trimestre ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    _pgFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano:hoje.getFullYear() };
+    pgAtualizarLabel(`Ano de ${hoje.getFullYear()}`);
+  }
+  pgFecharPicker();
+  renderPagar();
+}
+
+function pgAtualizarLabel(txt){
+  const el = document.getElementById('pg-periodo-label');
+  if(el) el.textContent = txt;
+}
+
+
 function renderPagar(){
   let arr=S.g('pagar')||[];
   const venc=arr.filter(x=>x.status==='Vencida').reduce((a,b)=>a+b.val,0);
@@ -13239,6 +13622,23 @@ function renderPagar(){
     <div class="kc"><div class="kl">Vencidas</div><div class="kv" style="color:var(--rd)">${R(venc)}</div></div>
     <div class="kc"><div class="kl">Qtd. Contas</div><div class="kv">${arr.length}</div></div>
     <div class="kc"><div class="kl">Próx. 7 dias</div><div class="kv">${R(arr.filter(x=>x.status==='Pendente').reduce((a,b)=>a+b.val,0))}</div></div>`;
+  // ── Aplica filtros de status e período ──
+  const filtStatus = document.getElementById('pg-filtro-status')?.value||'';
+  if(filtStatus) arr = arr.filter(x => x.status === filtStatus);
+  if(typeof _pgFiltro !== 'undefined' && _pgFiltro){
+    const f = _pgFiltro;
+    if(f.tipo==='mes' && f.mes){
+      arr = arr.filter(x => (x.venc||x.comp||'').slice(0,7) === f.mes);
+    } else if(f.tipo==='periodo' && f.ini && f.fim){
+      // Por período de datas (dia exato)
+      arr = arr.filter(x => {
+        const d = (x.venc||x.comp||'');
+        return d >= f.ini && d <= f.fim;
+      });
+    } else if(f.tipo==='ano' && f.ano){
+      arr = arr.filter(x => (x.venc||x.comp||'').slice(0,4) === String(f.ano));
+    }
+  }
   // ── Aplica ordenação ──
   arr = _sortLanc(arr, _pgSort.col, _pgSort.dir);
 
@@ -16479,6 +16879,96 @@ function saveEditPagar(){
 // BAIXA EM LOTE — Contas a Pagar
 // ══════════════════════════════════════
 
+function abrirBaixaLoteRC(){
+  document.getElementById('bloterc-ini').value = '';
+  document.getElementById('bloterc-fim').value = '';
+  document.getElementById('bloterc-dtbaixa').value = new Date().toISOString().slice(0,10);
+  document.getElementById('bloterc-contador').textContent = '';
+  document.getElementById('bloterc-lista-wrap').style.display = 'none';
+  document.getElementById('bloterc-vazio').style.display = 'none';
+  document.getElementById('bloterc-btn-baixar').style.display = 'none';
+  document.getElementById('bloterc-tbody').innerHTML = '';
+  openMod('mod-baixa-lote-rc');
+}
+
+function filtrarBaixaLoteRC(){
+  const ini = document.getElementById('bloterc-ini').value;
+  const fim = document.getElementById('bloterc-fim').value;
+  if(!ini || !fim){ alert('Informe o período completo (De e Até).'); return; }
+  if(ini > fim){ alert('A data inicial não pode ser maior que a data final.'); return; }
+
+  const arr = S.g('receber')||[];
+  const lote = arr.filter(c =>
+    (c.status === 'Pendente' || c.status === 'Recebido') &&
+    (c.venc||c.comp) >= ini &&
+    (c.venc||c.comp) <= fim
+  ).sort((a,b) => ((a.venc||a.comp)||'').localeCompare((b.venc||b.comp)||''));
+
+  const listaWrap = document.getElementById('bloterc-lista-wrap');
+  const vazioEl   = document.getElementById('bloterc-vazio');
+  const btnBaixar = document.getElementById('bloterc-btn-baixar');
+  const contador  = document.getElementById('bloterc-contador');
+
+  if(!lote.length){
+    listaWrap.style.display = 'none';
+    vazioEl.style.display   = 'block';
+    btnBaixar.style.display = 'none';
+    contador.textContent    = '';
+    return;
+  }
+
+  vazioEl.style.display   = 'none';
+  listaWrap.style.display = 'block';
+  btnBaixar.style.display = 'inline-flex';
+
+  const total = lote.reduce((a,b) => a + (b.val||0), 0);
+  contador.textContent = `${lote.length} lançamento(s) encontrado(s)`;
+  document.getElementById('bloterc-qtd').textContent = lote.length;
+  document.getElementById('bloterc-total-val').textContent = R(total);
+  document._baixaLoteRCIds = lote.map(c => c.id);
+
+  document.getElementById('bloterc-tbody').innerHTML = lote.map(c => `
+    <tr style="border-bottom:1px solid var(--bd)">
+      <td style="padding:8px 10px;font-size:11px;color:var(--or);font-weight:600">${fd(c.comp||c.venc)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx)">${fd(c.venc)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${c.cliente||c.desc||'—'}
+      </td>
+      <td style="padding:8px 10px">
+        ${c.forma ? `<span class="tg tg-bl" style="font-size:10px">${c.forma}</span>` : '—'}
+      </td>
+      <td style="padding:8px 10px">${stTag(c.status)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:var(--tx);text-align:right;font-weight:500">${R(c.val||0)}</td>
+    </tr>`).join('');
+}
+
+function confirmarBaixaLoteRC(){
+  const dtbaixa = document.getElementById('bloterc-dtbaixa').value;
+  if(!dtbaixa){ alert('Informe a data da baixa antes de confirmar.'); return; }
+  const ids = document._baixaLoteRCIds || [];
+  if(!ids.length){ alert('Nenhum lançamento selecionado.'); return; }
+  if(!confirm(`Confirma a baixa de ${ids.length} lançamento(s) com data ${fd(dtbaixa)}?\n\nEsta ação não pode ser desfeita.`)) return;
+
+  const arr = S.g('receber')||[];
+  let baixados = 0;
+  ids.forEach(id => {
+    const idx = arr.findIndex(x => x.id === id);
+    if(idx > -1 && (arr[idx].status === 'Pendente' || arr[idx].status === 'Recebido')){
+      arr[idx] = { ...arr[idx], status: 'Baixado', dtbaixa };
+      baixados++;
+    }
+  });
+  S.s('receber', arr);
+  closeMod('mod-baixa-lote-rc');
+  renderReceber();
+
+  const toast = document.createElement('div');
+  toast.textContent = `✓ ${baixados} recebimento(s) baixado(s) em ${fd(dtbaixa)}`;
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--gr);color:#fff;padding:12px 20px;border-radius:8px;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:opacity 0.4s';
+  document.body.appendChild(toast);
+  setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),400); }, 3200);
+}
+
 function abrirBaixaLote(){
   // Limpa estado anterior
   document.getElementById('blote-ini').value = '';
@@ -16680,9 +17170,10 @@ function editReceber(id){
   // Abre o modal primeiro
   openMod('mod-receber');
 
-  // Popula formas e produtos (funções seguras)
+  // Popula formas, produtos e contas do plano (funções seguras)
   mrPopularFormas();
   mrPopularProdutos();
+  fillSelectContasReceita('mr-conta');
 
   // Preenche todos os campos com delay para garantir DOM pronto
   setTimeout(()=>{
@@ -18629,8 +19120,8 @@ function rcSelecionarAno(ano){
 }
 
 function rcAplicarPeriodo(){
-  const ini = document.getElementById('rcc-dt-ini')?.value;
-  const fim = document.getElementById('rcc-dt-fim')?.value;
+  const ini = document.getElementById('rc-dt-ini')?.value;
+  const fim = document.getElementById('rc-dt-fim')?.value;
   if(!ini || !fim){ alert('Informe as duas datas.'); return; }
   if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
   _rcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
@@ -21477,6 +21968,18 @@ function initAll(){
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
+  // Inicializa picker de período do CAP com o mês atual
+  try{
+    const _pgNow = new Date();
+    const _pgMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const pgLabelEl = document.getElementById('pg-periodo-label');
+    if(pgLabelEl) pgLabelEl.textContent = `${_pgMeses[_pgNow.getMonth()]} de ${_pgNow.getFullYear()}`;
+    _pgFiltro  = { tipo:'mes', mes: _pgNow.toISOString().slice(0,7), ini:null, fim:null, ano:null };
+    _pgAnoNav  = _pgNow.getFullYear();
+    const pgNavEl = document.getElementById('pg-nav-ano');
+    if(pgNavEl) pgNavEl.textContent = _pgAnoNav;
+    setTimeout(()=>{ try{ pgRenderGridMeses(); pgRenderGridAnos(); }catch(e){} }, 100);
+  }catch(e){}
   _cxData=new Date().toISOString().slice(0,10);
   const cxSelEl=document.getElementById('cx-data-sel');if(cxSelEl)cxSelEl.value=_cxData;
   renderDashboard();renderPizzas();renderFluxo();renderCaixa();
