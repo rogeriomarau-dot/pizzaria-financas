@@ -639,24 +639,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn-out" style="flex:1;font-size:10px;padding:6px 4px" onclick="exportarBackup()" title="Exportar todos os dados"><i class="fa-solid fa-download"></i> Backup</button>
         <label class="btn-out" style="flex:1;font-size:10px;padding:6px 4px;text-align:center;cursor:pointer;margin:0" title="Restaurar dados de backup"><i class="fa-solid fa-upload"></i> Restaurar<input type="file" accept=".json" style="display:none" onchange="importarBackup(this)"></label>
       </div>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(229,57,53,0.3);color:var(--rd)" onclick="limparLancamentosDemo()" title="Remove lançamentos de demonstração do Contas a Receber">
-        <i class="fa-solid fa-broom"></i> Limpar demos do CAR
-      </button>
       <div id="sb-backup-info" style="font-size:10px;color:var(--tx3);text-align:center;margin-top:4px"><i class="fa-solid fa-database" style="color:var(--or)"></i> Firebase conectado</div>
       <button class="btn-out" style="width:100%;font-size:11px;padding:7px 4px;margin-top:6px;border-color:var(--or);color:var(--or);font-weight:700" onclick="recarregarDadosNuvem()" title="Busca os dados mais recentes da nuvem e atualiza a tela atual">
         <span id="sb-reload-info"><i class="fa-solid fa-rotate"></i> Recarregar dados da nuvem</span>
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(33,150,243,0.4);color:var(--bl)" onclick="cxCorrigirCAPsFaltantes()" title="Corrige lançamentos do caixa que não aparecem no DRE e Fluxo">
-        <i class="fa-solid fa-wrench"></i> Corrigir CAPs do Caixa
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(76,175,80,0.4);color:var(--gr)" onclick="diagPorCodigo(prompt('Código do lançamento (ex: PAG-00023):','PAG-00023'))" title="Diagnóstico detalhado de um lançamento específico">
-        <i class="fa-solid fa-stethoscope"></i> Diagnóstico por Código
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(255,143,0,0.4);color:var(--am)" onclick="diagCruzamentoMes(prompt('Mês (YYYY-MM):',new Date().toISOString().slice(0,7)))" title="Cruzamento Estoque x CAP por mês">
-        <i class="fa-solid fa-scale-balanced"></i> Cruzar Estoque x CAP
-      </button>
-      <button class="btn-out" style="width:100%;font-size:10px;padding:5px 4px;margin-top:4px;border-color:rgba(229,57,53,0.4);color:var(--rd)" onclick="eqRemoverOrfaosERessinc()" title="Remove movimentos do estoque sem vínculo ao CAP">
-        <i class="fa-solid fa-trash-can"></i> Remover Órfãos do Estoque
       </button>
       <button class="btn-out" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
     </div>
