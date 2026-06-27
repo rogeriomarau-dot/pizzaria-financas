@@ -223,6 +223,7 @@ th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort
   .print-target .no-print { display: none !important; }
 
   /* Oculta área de filtros especificamente (primeiro .cd direto da página) */
+  #page-rel-receber > .cd:first-of-type,
   #page-rel-pagar > .cd:first-of-type,
   #page-rel-compras > .cd:first-of-type { display: none !important; }
 
@@ -325,6 +326,8 @@ th.sortable:not(.asc):not(.desc) .sort-icon::before{content:'\f0dc';} /* fa-sort
 
 /* TABLE */
 .tw{overflow-x:auto;overflow-y:auto;max-height:var(--tw-max-h,calc(100vh - 220px));}
+.rr-bar-wrap{background:var(--dk3);border-radius:4px;height:8px;overflow:hidden;min-width:80px}
+.rr-bar{height:100%;border-radius:4px;transition:width .4s ease}
 table{width:100%;border-collapse:collapse;}
 th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--tx3);padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd);
   position:sticky;top:0;z-index:5;background:var(--dk2);box-shadow:0 1px 0 var(--bd);}
@@ -629,6 +632,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
     <button class="ni" onclick="go('rel-vendas',this)"><i class="fa-solid fa-chart-bar"></i>Rel. Vendas de Produtos</button>
+    <button class="ni" onclick="go('rel-receber',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Rel. Formas de Recebimento</button>
     <div class="sb-ft">
       <div class="cl-info"><div class="cl-name" id="cn">Finance Gestão Pro</div><div class="cl-seg">Pizzaria | Sushi | Massa</div></div>
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -752,6 +756,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <div class="perm-item" id="pi-cad-bancos" onclick="usrTogglePerm('cad-bancos')"><input type="checkbox" id="pc-cad-bancos"><label for="pc-cad-bancos"><i class="fa-solid fa-building-columns" style="margin-right:4px"></i> Cad. Bancos</label></div>
         <div class="perm-section">Relatórios</div>
         <div class="perm-item" id="pi-rel-pagar" onclick="usrTogglePerm('rel-pagar')"><input type="checkbox" id="pc-rel-pagar"><label for="pc-rel-pagar"><i class="fa-solid fa-file-lines" style="color:var(--gr);margin-right:4px"></i> Rel. Contas a Pagar</label></div>
+        <div class="perm-item" id="pi-rel-receber" onclick="usrTogglePerm('rel-receber')"><input type="checkbox" id="pc-rel-receber"><label for="pc-rel-receber"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--bl);margin-right:4px"></i> Rel. Faturamento por Forma</label></div>
         <div class="perm-item" id="pi-rel-compras" onclick="usrTogglePerm('rel-compras')"><input type="checkbox" id="pc-rel-compras"><label for="pc-rel-compras"><i class="fa-solid fa-basket-shopping" style="color:var(--gr);margin-right:4px"></i> Rel. Compras / Estoque</label></div>
         <div class="perm-item" id="pi-rel-vendas" onclick="usrTogglePerm('rel-vendas')"><input type="checkbox" id="pc-rel-vendas"><label for="pc-rel-vendas"><i class="fa-solid fa-chart-bar" style="color:var(--gr);margin-right:4px"></i> Rel. Vendas de Produtos</label></div>
       </div>
@@ -1906,6 +1911,118 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </tr></thead>
       <tbody id="tb-rc"></tbody>
     </table></div>
+  </div>
+</div>
+
+<!-- RELATÓRIO FATURAMENTO POR FORMA DE RECEBIMENTO -->
+<div class="page" id="page-rel-receber">
+  <div class="print-header" style="display:none"></div>
+
+  <!-- Filtros -->
+  <div class="cd" style="margin-bottom:12px">
+    <div class="ct" style="margin-bottom:14px">
+      <span><i class="fa-solid fa-sliders" style="color:var(--or);margin-right:8px"></i>Filtros</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="limparFiltrosRelRec()"><i class="fa-solid fa-eraser"></i> Limpar</button>
+        <button class="btn btn-p btn-sm" onclick="gerarRelReceber()"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+        <button class="btn btn-sm" onclick="exportarRelReceber()"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+        <button class="btn btn-sm" onclick="imprimirRelReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="fg">
+        <label>Vencimento — De</label>
+        <input type="date" id="rr-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <div class="fg">
+        <label>Vencimento — Até</label>
+        <input type="date" id="rr-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <div class="fg">
+        <label>Status</label>
+        <select id="rr-status" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+          <option value="">Todos</option>
+          <option value="Pendente">Pendente</option>
+          <option value="Recebido">Recebido</option>
+          <option value="Parcial">Parcial</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Forma de Recebimento</label>
+        <select id="rr-forma" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
+          <option value="">Todas as formas</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div id="rr-kpis" style="display:none;margin-bottom:12px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="cd" style="text-align:center;padding:16px">
+        <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Total Faturado</div>
+        <div id="rr-kpi-total" style="font-size:22px;font-weight:700;color:var(--gr)">R$ 0,00</div>
+      </div>
+      <div class="cd" style="text-align:center;padding:16px">
+        <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Lançamentos</div>
+        <div id="rr-kpi-lanc" style="font-size:22px;font-weight:700;color:var(--or)">0</div>
+      </div>
+      <div class="cd" style="text-align:center;padding:16px">
+        <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Ticket Médio</div>
+        <div id="rr-kpi-ticket" style="font-size:22px;font-weight:700;color:var(--bl)">R$ 0,00</div>
+      </div>
+      <div class="cd" style="text-align:center;padding:16px">
+        <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Formas Utilizadas</div>
+        <div id="rr-kpi-formas" style="font-size:22px;font-weight:700;color:var(--am)">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela + Gráfico -->
+  <div id="rr-resultado" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start">
+
+      <!-- Tabela -->
+      <div class="cd">
+        <div class="ct" style="margin-bottom:12px">
+          <span><i class="fa-solid fa-table" style="color:var(--or);margin-right:8px"></i>Faturamento por Forma de Recebimento</span>
+          <span id="rr-periodo-label" style="font-size:12px;color:var(--tx3)"></span>
+        </div>
+        <div class="tw">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1px solid var(--bd)">
+                <th style="text-align:left;padding:10px 12px;font-size:12px;color:var(--tx3);font-weight:600">FORMA DE RECEBIMENTO</th>
+                <th style="text-align:center;padding:10px 12px;font-size:12px;color:var(--tx3);font-weight:600">LANÇAMENTOS</th>
+                <th style="text-align:right;padding:10px 12px;font-size:12px;color:var(--tx3);font-weight:600">TOTAL</th>
+                <th style="text-align:right;padding:10px 12px;font-size:12px;color:var(--tx3);font-weight:600">%</th>
+                <th style="padding:10px 12px;font-size:12px;color:var(--tx3);font-weight:600">PARTICIPAÇÃO</th>
+              </tr>
+            </thead>
+            <tbody id="rr-tbody"></tbody>
+            <tfoot id="rr-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gráfico Pizza -->
+      <div class="cd" style="padding:20px">
+        <div class="ct" style="margin-bottom:16px;font-size:13px">
+          <span><i class="fa-solid fa-chart-pie" style="color:var(--or);margin-right:8px"></i>Distribuição</span>
+        </div>
+        <canvas id="rr-chart" style="max-width:100%;max-height:260px"></canvas>
+        <div id="rr-legenda" style="margin-top:16px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Estado vazio -->
+  <div id="rr-vazio" class="cd" style="text-align:center;padding:48px 24px">
+    <i class="fa-solid fa-chart-pie" style="font-size:40px;color:var(--tx3);margin-bottom:16px;display:block"></i>
+    <div style="font-size:16px;font-weight:600;color:var(--tx);margin-bottom:8px">Relatório de Faturamento por Forma de Recebimento</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:20px">Selecione um período e clique em <strong>Filtrar</strong> para gerar o relatório.</div>
   </div>
 </div>
 
@@ -5106,7 +5223,7 @@ function showExpired(){
 let _usrAtual = null; // { id, nome, login, perfil, perms:{} }
 
 // Permissões padrão do operador (nenhuma marcada por padrão)
-const USR_TODAS_PERMS = ['dashboard','pizzas','dre','fluxo','cad-fcx','caixa','pagar','receber','estoque','cmv','metas','plano','cad-insumos','cad-servicos','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-catprod','cad-catprod-venda','cad-pagamentos','cad-recebimentos','cad-bancos','rel-pagar','rel-compras','rel-vendas'];
+const USR_TODAS_PERMS = ['dashboard','pizzas','dre','fluxo','cad-fcx','caixa','pagar','receber','estoque','cmv','metas','plano','cad-insumos','cad-servicos','cad-fornecedores','cad-produtos','cad-produtos-venda','cad-catprod','cad-catprod-venda','cad-pagamentos','cad-recebimentos','cad-bancos','rel-pagar','rel-compras','rel-vendas','rel-receber'];
 
 function usrGetUsuarios(){
   return S.g('sys-usuarios') || [];
@@ -5608,6 +5725,7 @@ const titles={
   'cad-produtos-venda':['Cadastro de Produtos (Vendas)','Tabela de preços e produtos vendidos no salão'],
   'cad-bancos':['Cadastro de Conta Corrente / Banco','Cadastro de contas e bancos para pagamentos'],
   'rel-pagar':['Relatório — Contas a Pagar','Filtros completos · Exportação CSV · Impressão'],
+  'rel-receber':['Relatório — Faturamento por Forma de Recebimento','Análise por forma de pagamento · Gráfico · Exportação CSV'],
   'rel-compras':['Relatório — Compras por Categoria','Insumos · Bebidas · Descartáveis · Limpeza · Utensílios · Imobilizado'],
   'rel-vendas':['Relatório — Vendas de Produtos','Rodízios · Bebidas · Bebidas · Ranking · Gráficos automáticos'],
 };
@@ -5631,7 +5749,7 @@ function go(pg,btn){
   // Oculta botão Novo Lançamento no relatório
   const btnNovo = document.getElementById('btn-novo');
   if(btnNovo) btnNovo.style.display = (
-    pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' ||
+    pg === 'rel-pagar' || pg === 'rel-compras' || pg === 'rel-vendas' || pg === 'rel-receber' ||
     pg === 'dre' || pg === 'dashboard' ||
     pg === 'cad-catprod' || pg === 'cad-catprod-venda' || pg === 'cad-fcx' ||
     pg === 'plano' ||
@@ -5646,6 +5764,7 @@ function go(pg,btn){
   if(pg==='cad-fcx')       { renderFcxContas(); }
   if(pg==='fluxo')          { renderFluxo(); }
   if(pg==='rel-pagar')   initRelPagar();
+  if(pg==='rel-receber')  initRelReceber();
   if(pg==='rel-compras') initRelCompras();
   if(pg==='estoque'){
     // Reseta filtro de categoria ao entrar na página
@@ -16902,6 +17021,235 @@ function imprimirRelPagar(){
   if(comp && comp !== 'Todos os meses') partes.push('Competência: '+comp);
   const periodo = partes.length > 0 ? partes.join('  |  ') : 'Todos os períodos';
   imprimirPagina('page-rel-pagar', 'Relatório de Contas a Pagar', periodo);
+}
+
+
+// ══════════════════════════════════════
+// RELATÓRIO — FATURAMENTO POR FORMA DE RECEBIMENTO
+// ══════════════════════════════════════
+
+let _rrChart = null;
+
+function initRelReceber(){
+  // Popular select de formas de recebimento
+  const sel = document.getElementById('rr-forma');
+  if(sel){
+    sel.innerHTML = '<option value="">Todas as formas</option>';
+    const formas = S.g('formas-recebimento')||[];
+    formas.forEach(f=>{
+      const opt = document.createElement('option');
+      opt.value = f.nome; opt.textContent = f.nome;
+      sel.appendChild(opt);
+    });
+  }
+  // Definir período padrão: mês atual
+  const hoje = new Date();
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
+  const fmt = d => d.toISOString().slice(0,10);
+  const elIni = document.getElementById('rr-dt-ini');
+  const elFim = document.getElementById('rr-dt-fim');
+  if(elIni && !elIni.value) elIni.value = fmt(ini);
+  if(elFim && !elFim.value) elFim.value = fmt(fim);
+  gerarRelReceber();
+}
+
+function limparFiltrosRelRec(){
+  ['rr-dt-ini','rr-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const s=document.getElementById('rr-status'); if(s) s.value='';
+  const f=document.getElementById('rr-forma');  if(f) f.value='';
+  document.getElementById('rr-resultado').style.display='none';
+  document.getElementById('rr-kpis').style.display='none';
+  document.getElementById('rr-vazio').style.display='';
+}
+
+function gerarRelReceber(){
+  const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
+  const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
+  const status = document.getElementById('rr-status')?.value||'';
+  const forma  = document.getElementById('rr-forma')?.value||'';
+
+  const receber = S.g('receber')||[];
+
+  // Filtrar lançamentos
+  const filtrados = receber.filter(l=>{
+    const venc = (l.venc||'').slice(0,10);
+    if(dtIni && venc < dtIni) return false;
+    if(dtFim && venc > dtFim) return false;
+    if(status && l.status !== status) return false;
+    if(forma  && l.forma  !== forma)  return false;
+    return true;
+  });
+
+  if(!filtrados.length){
+    document.getElementById('rr-resultado').style.display='none';
+    document.getElementById('rr-kpis').style.display='none';
+    document.getElementById('rr-vazio').style.display='';
+    document.getElementById('rr-vazio').querySelector('div+div').textContent='Nenhum lançamento encontrado para os filtros selecionados.';
+    return;
+  }
+
+  // Agrupar por forma de recebimento
+  const grupos = {};
+  filtrados.forEach(l=>{
+    const f = l.forma || '(Não informado)';
+    if(!grupos[f]) grupos[f] = { forma:f, total:0, qtd:0 };
+    grupos[f].total += (l.val||0);
+    grupos[f].qtd++;
+  });
+
+  const totalGeral = Object.values(grupos).reduce((s,g)=>s+g.total,0);
+  const linhas = Object.values(grupos).sort((a,b)=>b.total-a.total);
+
+  // KPIs
+  const totalLanc = filtrados.length;
+  const ticket    = totalLanc > 0 ? totalGeral / totalLanc : 0;
+  document.getElementById('rr-kpi-total').textContent  = R(totalGeral);
+  document.getElementById('rr-kpi-lanc').textContent   = totalLanc.toLocaleString('pt-BR');
+  document.getElementById('rr-kpi-ticket').textContent = R(ticket);
+  document.getElementById('rr-kpi-formas').textContent = linhas.length;
+  document.getElementById('rr-kpis').style.display='';
+
+  // Label período
+  const label = document.getElementById('rr-periodo-label');
+  if(label){
+    let txt = '';
+    if(dtIni || dtFim) txt = (dtIni?fmtData(dtIni):'...') + ' a ' + (dtFim?fmtData(dtFim):'...');
+    label.textContent = txt;
+  }
+
+  const CORES_RR = ['#C0432A','#64B5F6','#4CAF50','#FFB74D','#9575CD','#26C6DA','#EF5350','#66BB6A','#FFA726','#42A5F5'];
+
+  // Tabela
+  const tbody = document.getElementById('rr-tbody');
+  tbody.innerHTML = linhas.map((g,i)=>{
+    const pct = totalGeral > 0 ? (g.total/totalGeral*100) : 0;
+    const cor = CORES_RR[i % CORES_RR.length];
+    return `<tr style="border-bottom:1px solid var(--bd)">
+      <td style="padding:10px 12px;font-size:13px;color:var(--tx);display:flex;align-items:center;gap:8px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${cor};display:inline-block;flex-shrink:0"></span>
+        ${g.forma}
+      </td>
+      <td style="padding:10px 12px;text-align:center;color:var(--tx2);font-size:13px">${g.qtd}</td>
+      <td style="padding:10px 12px;text-align:right;font-weight:600;color:var(--gr);font-size:13px">${R(g.total)}</td>
+      <td style="padding:10px 12px;text-align:right;color:var(--or);font-weight:600;font-size:13px">${pct.toFixed(1)}%</td>
+      <td style="padding:10px 12px;min-width:120px">
+        <div class="rr-bar-wrap"><div class="rr-bar" style="width:${pct.toFixed(1)}%;background:${cor}"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Rodapé totais
+  const tfoot = document.getElementById('rr-tfoot');
+  tfoot.innerHTML = `<tr style="border-top:2px solid var(--bd);background:var(--dk2)">
+    <td style="padding:10px 12px;font-weight:700;color:var(--tx);font-size:13px">TOTAL GERAL</td>
+    <td style="padding:10px 12px;text-align:center;font-weight:700;color:var(--tx);font-size:13px">${totalLanc}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:var(--gr);font-size:14px">${R(totalGeral)}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:var(--or);font-size:13px">100%</td>
+    <td></td>
+  </tr>`;
+
+  // Gráfico pizza
+  const ctx = document.getElementById('rr-chart');
+  if(ctx){
+    if(_rrChart){ _rrChart.destroy(); _rrChart=null; }
+    _rrChart = new Chart(ctx.getContext('2d'),{
+      type:'doughnut',
+      data:{
+        labels: linhas.map(g=>g.forma),
+        datasets:[{
+          data: linhas.map(g=>g.total),
+          backgroundColor: linhas.map((_,i)=>CORES_RR[i%CORES_RR.length]),
+          borderColor: 'var(--dk2)',
+          borderWidth: 2,
+          hoverOffset: 8
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:true,
+        cutout:'60%',
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            callbacks:{
+              label: ctx => {
+                const val = ctx.parsed;
+                const pct = totalGeral > 0 ? (val/totalGeral*100).toFixed(1) : 0;
+                return ` ${R(val)} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Legenda customizada
+  const leg = document.getElementById('rr-legenda');
+  if(leg){
+    leg.innerHTML = linhas.map((g,i)=>{
+      const pct = totalGeral > 0 ? (g.total/totalGeral*100).toFixed(1) : 0;
+      const cor = CORES_RR[i%CORES_RR.length];
+      return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0"></span>
+        <span style="color:var(--tx2);flex:1">${g.forma}</span>
+        <span style="color:var(--or);font-weight:600">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('rr-vazio').style.display='none';
+  document.getElementById('rr-resultado').style.display='';
+}
+
+function exportarRelReceber(){
+  const tbody = document.getElementById('rr-tbody');
+  if(!tbody || !tbody.innerHTML.trim()){
+    alert('Gere o relatório antes de exportar.');
+    return;
+  }
+  const receber = S.g('receber')||[];
+  const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
+  const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
+  const status = document.getElementById('rr-status')?.value||'';
+  const forma  = document.getElementById('rr-forma')?.value||'';
+  const filtrados = receber.filter(l=>{
+    const venc = (l.venc||'').slice(0,10);
+    if(dtIni && venc < dtIni) return false;
+    if(dtFim && venc > dtFim) return false;
+    if(status && l.status !== status) return false;
+    if(forma  && l.forma  !== forma)  return false;
+    return true;
+  });
+  const grupos = {};
+  filtrados.forEach(l=>{
+    const f = l.forma || '(Não informado)';
+    if(!grupos[f]) grupos[f] = { forma:f, total:0, qtd:0 };
+    grupos[f].total += (l.val||0);
+    grupos[f].qtd++;
+  });
+  const totalGeral = Object.values(grupos).reduce((s,g)=>s+g.total,0);
+  const linhas = Object.values(grupos).sort((a,b)=>b.total-a.total);
+  const cab = ['Forma de Recebimento','Lançamentos','Total (R$)','% do Total'];
+  const rows = linhas.map(g=>{
+    const pct = totalGeral > 0 ? (g.total/totalGeral*100).toFixed(1)+'%' : '0%';
+    return [g.forma, g.qtd, g.total.toFixed(2).replace('.',','), pct];
+  });
+  rows.push(['TOTAL GERAL', filtrados.length, totalGeral.toFixed(2).replace('.',','), '100%']);
+  const csv = [cab,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='faturamento_forma_recebimento.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function imprimirRelReceber(){
+  const dtIni = document.getElementById('rr-dt-ini')?.value||'';
+  const dtFim = document.getElementById('rr-dt-fim')?.value||'';
+  const periodo = (dtIni||dtFim) ? (dtIni?fmtData(dtIni):'...')+' a '+(dtFim?fmtData(dtFim):'...') : 'Todos os períodos';
+  imprimirPagina('page-rel-receber','Relatório — Faturamento por Forma de Recebimento', periodo);
 }
 
 // ══════════════════════════════════════
