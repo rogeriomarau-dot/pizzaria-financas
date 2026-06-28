@@ -1958,11 +1958,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <select id="rc-filtro-forma" onchange="renderReceber()"
           style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 10px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;outline:none">
           <option value="">Todas as formas</option>
-          <option value="PIX">PIX</option>
-          <option value="Cartão Crédito">Cartão Crédito</option>
-          <option value="Cartão Débito">Cartão Débito</option>
-          <option value="iFood / App">iFood / App</option>
-          <option value="Dinheiro">Dinheiro</option>
         </select>
 
         <!-- Botão de período -->
@@ -7894,14 +7889,25 @@ function saveParcelado(){
 }
 // ── variável temporária de itens da comanda ──
 let _mrItens = [];
+let _mrItemEditando = null; // guarda o item original durante edição — restaura se cancelar
 
 function saveReceber(){
+  // Se havia item em edição e o operador clicou Salvar sem confirmar/cancelar, restaura o original
+  if(_mrItemEditando){
+    const row = document.getElementById('mr-input-row');
+    if(row) row.remove();
+    _mrItens.push(_mrItemEditando);
+    _mrItens.sort((a,b)=>a.id-b.id);
+    _mrItemEditando = null;
+    mrRenderItens();
+    mrCalcTotais();
+  }
   const comp = document.getElementById('mr-comp').value;
   const venc = document.getElementById('mr-venc').value;
   const conta = document.getElementById('mr-conta').value;
   if(!comp){ alert('Informe a data de competência (mês da venda).'); return; }
   if(!venc){ alert('Informe a data de vencimento.'); return; }
-  const forma = document.getElementById('mr-forma')?.value||'';
+  const forma = document.getElementById('mr-forma')?.value||''; // vem diretamente do cadastro formas-recebimento
   if(!forma){
     alert('⚠️ Campo obrigatório!\n\nSelecione a Forma de Recebimento antes de salvar.\n\nEste campo define a data de crédito e é necessário para o Fluxo de Caixa.');
     const sel = document.getElementById('mr-forma');
@@ -7977,11 +7983,14 @@ function saveReceber(){
 }
 
 function resetModalReceber(){
+  _mrItemEditando = null; // limpa qualquer edição em andamento
   // Só limpa itens se não estiver em modo edição
   if(!document._mrEditId) _mrItens = [];
   const hoje = new Date().toISOString().slice(0,10);
-  document.getElementById('mr-comp').value     = hoje.slice(0,7)+'-01';
-  document.getElementById('mr-venc').value     = hoje;
+  // Usa o mês do filtro ativo — se usuário está vendo Janeiro, novo lançamento abre em Janeiro
+  const mesFiltro = (_rcFiltro && _rcFiltro.tipo==='mes' && _rcFiltro.mes) ? _rcFiltro.mes : hoje.slice(0,7);
+  document.getElementById('mr-comp').value     = mesFiltro+'-01';
+  document.getElementById('mr-venc').value     = mesFiltro===hoje.slice(0,7) ? hoje : mesFiltro+'-01';
   document.getElementById('mr-comanda').value  = '';
   document.getElementById('mr-cliente').value  = '';
   // mr-desc-geral resetado via try/catch abaixo
@@ -8024,7 +8033,7 @@ function mrPopularFormas(){
       return `<option value="${f.nome}">${f.nome} — ${prazoTxt}${taxaTxt}</option>`;
     }).join('');
   } else {
-    sel.innerHTML = '<option value="">— Selecione —</option><option value="PIX">PIX — Imediato</option><option value="Dinheiro">Dinheiro — Imediato</option><option value="Cartão Débito">Cartão Débito — D+1</option><option value="Cartão Crédito 1X">Cartão Crédito 1X — D+30 (3%)</option><option value="Vale Refeição">Vale Refeição — D+2 (3.5%)</option>';
+    sel.innerHTML = '<option value="">— Selecione —</option><option value="PIX">PIX — Imediato</option><option value="DINHEIRO">DINHEIRO — Imediato</option><option value="CARTÃO DE DÉBITO">CARTÃO DE DÉBITO — D+1</option><option value="CARTÃO DE CRÉDITO">CARTÃO DE CRÉDITO — D+30</option><option value="VALE REFEIÇÃO">VALE REFEIÇÃO — D+2</option>';
   }
   // Dispara cálculo automático se já tem valor selecionado
   if(sel.value) mrFormaChanged();
@@ -8091,7 +8100,9 @@ function mrAdicionarItem(){
 function mrEditarItem(id){
   const item = _mrItens.find(i=>i.id===id);
   if(!item) return;
-  // Remove o item da lista e abre linha de input preenchida com os dados
+  // Guarda o item original — será restaurado se o operador cancelar sem confirmar
+  _mrItemEditando = { ...item };
+  // Remove temporariamente da lista para abrir a linha de edição no lugar
   _mrItens = _mrItens.filter(i=>i.id!==id);
   mrRenderItens();
   mrCalcTotais();
@@ -8224,7 +8235,7 @@ function mrAddLinha(){
         onchange="mriPreencherPreco()">${optsHtml}</select>
     </td>
     <td style="padding:6px 4px;text-align:center">
-      <input type="number" id="mri-qtd" value="1" min="0.5" step="0.5"
+      <input type="number" id="mri-qtd" value="1" min="1" step="1"
         style="width:60px;background:var(--dk4);border:1px solid var(--bd);color:var(--tx);border-radius:4px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:12px;text-align:center"
         oninput="mriCalcTotal()">
     </td>
@@ -8303,7 +8314,7 @@ function mriConfirmar(){
   const sel   = document.getElementById('mri-prod');
   const opt   = sel.options[sel.selectedIndex];
   if(!opt||!opt.value){ alert('Selecione um produto.'); return; }
-  const qtd   = parseFloat(document.getElementById('mri-qtd').value)||1;
+  const qtd   = Math.max(1, Math.round(parseFloat(document.getElementById('mri-qtd').value)||1));
   const preco = parseFloat(document.getElementById('mri-preco').value)||0;
   const desc  = parseFloat(document.getElementById('mri-desc').value)||0;
   const tipo = opt.getAttribute('data-tipo')||'fixo';
@@ -8335,6 +8346,7 @@ function mriConfirmar(){
       qtd, preco, desc, total: totalItem
     });
   }
+  _mrItemEditando = null; // edição confirmada — descarta o backup
   mriCancelar();
   mrRenderItens();
   mrCalcTotais();
@@ -8343,6 +8355,15 @@ function mriConfirmar(){
 function mriCancelar(){
   const row = document.getElementById('mr-input-row');
   if(row) row.remove();
+  // Se havia item sendo editado e o operador cancelou, restaura o item original
+  if(_mrItemEditando){
+    _mrItens.push(_mrItemEditando);
+    // Reordena para manter a posição original (pelo id, que é timestamp)
+    _mrItens.sort((a,b)=>a.id-b.id);
+    _mrItemEditando = null;
+  }
+  mrRenderItens();
+  mrCalcTotais();
   // Restaura empty se sem itens
   if(!_mrItens.length){
     const tbody = document.getElementById('mr-itens-body');
@@ -13690,6 +13711,20 @@ function renderReceber(){
   const arr    = S.g('receber')||[];
   const hoje   = new Date().toISOString().slice(0,7);
 
+  // ── Popular select de formas com as formas reais cadastradas ──
+  const selForma = document.getElementById('rc-filtro-forma');
+  if(selForma){
+    const valAtual = selForma.value; // preserva seleção atual
+    // Fonte única: cadastro de Formas de Recebimento
+    const formasCad = (S.g('formas-recebimento')||[]).filter(f=>f.st==='Ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    selForma.innerHTML = '<option value="">Todas as formas</option>' +
+      formasCad.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join('');
+    // Restaura seleção anterior se ainda existir no cadastro
+    if(valAtual && [...selForma.options].some(o=>o.value===valAtual)){
+      selForma.value = valAtual;
+    }
+  }
+
   // ── Inicializa filtro na primeira carga ──
   if(!_rcFiltro || !_rcFiltro.tipo){
     _rcFiltro = { tipo:'mes', mes:hoje, ini:null, fim:null, ano:null };
@@ -16674,7 +16709,11 @@ function editPagar(id){
   // Fornecedor — resolve o nome a partir do ID salvo (nunca mostra o ID bruto)
   const fornBusca = document.getElementById('mpp-forn-busca');
   const fornHid   = document.getElementById('mpp-forn');
-  let fornObj   = lanc.forn ? (S.g('fornecedores')||[]).find(f=>String(f.id)===String(lanc.forn)) : null;
+  const forns = S.g('fornecedores')||[];
+  let fornObj = lanc.forn
+    ? forns.find(f=>String(f.id)===String(lanc.forn))   // 1º: busca por ID (padrão atual)
+      || forns.find(f=>(f.n||'').toLowerCase().trim()===(String(lanc.forn)||'').toLowerCase().trim()) // 2º: fallback por nome (lançamentos antigos)
+    : null;
   // Se não há fornecedor vinculado mas a NF-e original trouxe nome/CNPJ, tenta religar
   // agora — útil quando o fornecedor foi cadastrado DEPOIS de salvar o lançamento
   if(!fornObj && lanc.fornNFeInfo){
@@ -16688,6 +16727,7 @@ function editPagar(id){
     if(fornBusca){ fornBusca.value=''; fornBusca.placeholder = '⚠ NF-e era de "'+lanc.fornNFeInfo.nome+'"'+(cnpjFmt?' — CNPJ '+cnpjFmt:'')+' — busque e vincule'; }
     if(fornHid) fornHid.value = '';
   } else {
+    // Fornecedor não encontrado nem por ID nem por nome — exibe o valor bruto para orientar
     if(fornBusca){ fornBusca.value = lanc.forn ? '⚠ Fornecedor não encontrado (verifique o cadastro)' : ''; fornBusca.placeholder='Digite para buscar fornecedor...'; }
     if(fornHid)   fornHid.value   = lanc.forn||'';
   }
@@ -20965,14 +21005,34 @@ function fcxRenderSaldoLinhas(){
     <div style="font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px;text-align:right">Saldo Inicial (R$)</div>
   </div>` +
   contas.map(c=>{
-    const val = (saldos[ym]||{})[c.id]||'';
+    const num = (saldos[ym]||{})[c.id]||0;
+    const val = num ? num.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
     return `<div style="display:grid;grid-template-columns:1fr 180px;gap:8px;margin-bottom:8px;align-items:center">
       <div style="font-size:12px;color:var(--tx)"><i class="fa-solid fa-building-columns" style="color:var(--or);margin-right:6px;font-size:10px"></i>${c.nome}</div>
       <input type="text" id="fcx-sal-${c.id}" value="${val}" placeholder="0,00"
         style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none;text-align:right;width:100%"
-        onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'">
+        onfocus="this.style.borderColor='var(--or)'"
+        onblur="this.style.borderColor='var(--bd)';fcxSalFormatarCampo(this)"
+        oninput="fcxSalMascara(this)">
     </div>`;
   }).join('');
+}
+
+// Máscara monetária BR para campos de saldo inicial
+function fcxSalMascara(el){
+  let v = el.value.replace(/[^\d,]/g,''); // só dígitos e vírgula
+  // Permite apenas uma vírgula
+  const partes = v.split(',');
+  if(partes.length > 2) v = partes[0]+','+partes.slice(1).join('');
+  // Limita casas decimais a 2
+  if(partes[1] !== undefined && partes[1].length > 2) v = partes[0]+','+partes[1].slice(0,2);
+  el.value = v;
+}
+function fcxSalFormatarCampo(el){
+  // Ao sair do campo, formata para padrão BR completo com separador de milhar
+  const rawVal = (el.value||'').replace(/\./g,'').replace(',','.');
+  const num = parseFloat(rawVal)||0;
+  el.value = num ? num.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
 }
 
 function saveFcxSaldos(){
@@ -20983,7 +21043,9 @@ function saveFcxSaldos(){
   saldos[ym]   = {};
   contas.forEach(c=>{
     const el  = document.getElementById('fcx-sal-'+c.id);
-    const val = parseFloat((el?.value||'0').replace(',','.'))||0;
+    // Parse número no padrão BR: remove pontos de milhar, troca vírgula por ponto decimal
+    const rawVal = (el?.value||'0').replace(/\./g,'').replace(',','.');
+    const val = parseFloat(rawVal)||0;
     saldos[ym][c.id] = val;
   });
   S.s('fcx-saldos', saldos);
