@@ -341,7 +341,7 @@ tr:hover td{background:rgba(255,255,255,0.02);color:var(--tx);}
 .tg-rd{background:var(--rd-p);color:#EF9A9A;}
 .tg-am{background:var(--am-p);color:#FFB74D;}
 .tg-bl{background:var(--bl-p);color:#64B5F6;}
-.tg-gy{background:rgba(255,255,255,0.06);color:var(--tx2);}
+.tg-gy{background:rgba(255,255,255,0.06);color:var(--tx2);}.tg-cy{background:rgba(128,222,234,0.12);color:#80DEEA;}
 .tg-or{background:rgba(242,100,25,0.15);color:var(--or);}
 
 /* MODAL */
@@ -1136,16 +1136,95 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div class="cd" style="margin-bottom:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
 
-      <!-- Filtros de período -->
+      <!-- Filtros de período — picker premium igual ao CAP/CAR -->
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px">
-          <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">De</label>
-          <input type="month" id="dre-de" onchange="S.s('_dreDe',this.value);renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+        <!-- inputs ocultos mantidos para compatibilidade com renderDRE, dreMesAtual, dreAnoAtual -->
+        <input type="hidden" id="dre-de">
+        <input type="hidden" id="dre-ate">
+
+        <div style="position:relative">
+          <button id="dre-periodo-btn" onclick="dreTogglePicker()"
+            style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:200px;justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="dre-periodo-label">Mês Atual</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+          </button>
+
+          <div id="dre-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+            background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+            <!-- Tabs -->
+            <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+              <button id="dre-tab-mes"     onclick="drePickerSetModo('mes')"     style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-ativo">Por mês</button>
+              <button id="dre-tab-periodo" onclick="drePickerSetModo('periodo')" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-inativo">Por período</button>
+              <button id="dre-tab-ano"     onclick="drePickerSetModo('ano')"     style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-inativo">Por ano</button>
+            </div>
+
+            <!-- Modo: mês -->
+            <div id="dre-modo-mes">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <button onclick="drePickerNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                <span id="dre-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                <button onclick="drePickerNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+              </div>
+              <div id="dre-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Modo: período -->
+            <div id="dre-modo-periodo" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:6px">De (mês/ano)</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+                    <select id="dre-per-ini-m" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:11px;outline:none">
+                      <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                      <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                      <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                      <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                    </select>
+                    <select id="dre-per-ini-y" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:11px;outline:none"></select>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:6px">Até (mês/ano)</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+                    <select id="dre-per-fim-m" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:11px;outline:none">
+                      <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                      <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                      <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                      <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                    </select>
+                    <select id="dre-per-fim-y" style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 6px;font-family:Outfit,sans-serif;font-size:11px;outline:none"></select>
+                  </div>
+                </div>
+              </div>
+              <!-- inputs ocultos mantidos para compatibilidade -->
+              <input type="hidden" id="dre-per-ini">
+              <input type="hidden" id="dre-per-fim">
+              <button onclick="drePickerAplicarPeriodo()"
+                style="width:100%;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+                <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+              </button>
+            </div>
+
+            <!-- Modo: ano -->
+            <div id="dre-modo-ano" style="display:none">
+              <div id="dre-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Atalhos -->
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap">
+              <button onclick="drePickerAtalho('mes')"  class="rc-atalho">Este mês</button>
+              <button onclick="drePickerAtalho('ant')"  class="rc-atalho">Mês anterior</button>
+              <button onclick="drePickerAtalho('trim')" class="rc-atalho">Trimestre</button>
+              <button onclick="drePickerAtalho('ano')"  class="rc-atalho">Este ano</button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <label style="font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;white-space:nowrap">Até</label>
-          <input type="month" id="dre-ate" onchange="S.s('_dreAte',this.value);renderDRE()" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
-        </div>
+
         <!-- Toggle: consolidado vs mensal -->
         <div style="display:flex;align-items:center;gap:0;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;overflow:hidden">
           <button id="dre-modo-consol" onclick="dreSetModo('consolidado')"
@@ -1514,6 +1593,17 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <input type="text" id="cx-ent-resp" placeholder="Operador / Funcionário"></div>
       <div class="fg"><label>Observação</label>
         <input type="text" id="cx-ent-obs" placeholder="Opcional..."></div>
+    </div>
+
+    <!-- Aviso transferência interna — aparece só para Reposição Fundo Fixo -->
+    <div id="cx-ent-transf-wrap" style="display:none;background:rgba(128,222,234,0.06);border:1px solid rgba(128,222,234,0.25);border-radius:8px;padding:12px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-arrows-left-right" style="color:#80DEEA"></i>
+        <span style="font-size:11px;color:#80DEEA;font-weight:600">
+          Transferência interna — este lançamento <strong>não altera</strong> o Contas a Receber, DRE nem Fluxo de Caixa.<br>
+          <span style="font-weight:400;opacity:0.85">Apenas o saldo do Caixa Diário será atualizado.</span>
+        </span>
+      </div>
     </div>
 
     <!-- Envio automático ao Contas a Receber + Data de Competência -->
@@ -11261,16 +11351,17 @@ function dreSetModo(m){
 
 function dreMesAtual(){
   const ym = new Date().toISOString().slice(0,7);
-  document.getElementById('dre-de').value  = ym;
-  document.getElementById('dre-ate').value = ym;
-  S.s('_dreDe', ym); S.s('_dreAte', ym);
+  _drePickerFiltro = { tipo:'mes', mes:ym };
+  const [y,m] = ym.split('-');
+  drePickerAplicarFiltro(ym, ym, `${MESES_FULL_DRE[parseInt(m)-1]} de ${y}`);
+  // inputs ocultos já atualizados por drePickerAplicarFiltro
   renderDRE();
 }
 function dreAnoAtual(){
   const y = new Date().getFullYear();
-  document.getElementById('dre-de').value  = y+'-01';
-  document.getElementById('dre-ate').value = y+'-12';
-  S.s('_dreDe', y+'-01'); S.s('_dreAte', y+'-12');
+  _drePickerFiltro = { tipo:'ano', ano:y };
+  drePickerAplicarFiltro(`${y}-01`, `${y}-12`, `Ano de ${y}`);
+  // inputs ocultos já atualizados por drePickerAplicarFiltro
   renderDRE();
 }
 
@@ -11854,6 +11945,24 @@ function fmtMes(ym){
 }
 
 function renderDRE(){
+  // Sincronizar label do picker com o período atual
+  const labelEl = document.getElementById('dre-periodo-label');
+  if(labelEl && labelEl.textContent === 'Mês Atual'){
+    // Primeira vez — inicializar com o período salvo
+    const deAtual = S.g('_dreDe') || new Date().toISOString().slice(0,7);
+    const ateAtual = S.g('_dreAte') || deAtual;
+    const elDe = document.getElementById('dre-de');
+    const elAte = document.getElementById('dre-ate');
+    if(elDe && !elDe.value)  elDe.value  = deAtual;
+    if(elAte && !elAte.value) elAte.value = ateAtual;
+    if(deAtual === ateAtual){
+      const [y,m] = deAtual.split('-');
+      drePickerAtualizarLabel(`${MESES_FULL_DRE[parseInt(m)-1]} de ${y}`);
+    } else {
+      const fmtM = v => { const [y,m]=v.split('-'); return `${MESES_FULL_DRE[parseInt(m)-1].slice(0,3)}/${y}`; };
+      drePickerAtualizarLabel(`${fmtM(deAtual)} → ${fmtM(ateAtual)}`);
+    }
+  }
   const de  = document.getElementById('dre-de')?.value  || '';
   const ate = document.getElementById('dre-ate')?.value || '';
   const regime = _dreRegime;
@@ -12409,12 +12518,14 @@ const CX_CAT_ICON = {
   'Venda Rodízio':'fa-pizza-slice','Venda Delivery':'fa-motorcycle',
   'Venda Balcão':'fa-store','Venda iFood / App':'fa-mobile-screen-button',
   'Venda WhatsApp':'fa-comment-dots','Recebimento Banco':'fa-building-columns',
+  'Reposição Fundo Fixo':'fa-arrows-left-right',
   'Outros Recebimentos':'fa-circle-dollar-to-slot','Saldo Inicial':'fa-lock-open'
 };
 const CX_CAT_COR = {
   'Venda Rodízio':'#81C784','Venda Delivery':'#FFB74D','Venda Balcão':'#64B5F6',
   'Venda iFood / App':'#EF9A9A','Venda WhatsApp':'#80DEEA',
-  'Recebimento Banco':'#CE93D8','Outros Recebimentos':'#A5D6A7','Saldo Inicial':'#FFD54F'
+  'Recebimento Banco':'#CE93D8','Outros Recebimentos':'#A5D6A7','Saldo Inicial':'#FFD54F',
+  'Reposição Fundo Fixo':'#80DEEA'
 };
 
 function cxTodayISO(){ return new Date().toISOString().slice(0,10); }
@@ -12598,9 +12709,13 @@ function cxAbrirModal(tipo){
 // ══════════════════════════════════════════════════
 const CX_CATS_PADRAO = [
   'Venda Rodízio','Venda Delivery','Venda Balcão',
-  'Venda iFood / App','Venda WhatsApp','Recebimento Banco','Outros Recebimentos'
+  'Venda iFood / App','Venda WhatsApp','Recebimento Banco','Outros Recebimentos',
+  'Reposição Fundo Fixo'
 ];
 const CX_CAT_FIXA = 'Saldo Inicial'; // nunca removida
+// Categorias de transferência interna — não geram lançamento em CAR/DRE/Fluxo
+const CX_CATS_TRANSFERENCIA = ['Reposição Fundo Fixo'];
+function cxEhTransferencia(cat){ return CX_CATS_TRANSFERENCIA.includes(cat); }
 
 function cxGetCats(){
   const salvas = S.g('caixa-cats-entrada');
@@ -13052,9 +13167,13 @@ function cxEntCatChange(){
   const desc=document.getElementById('cx-ent-desc');
   if(!desc.value && cat) desc.value=cat;
 
-  // Saldo Inicial não é receita — oculta bloco de competência/conta e não lança em Receber
+  // Saldo Inicial e Transferências internas não são receita — ocultam bloco de competência/conta
+  const ehTransf = cxEhTransferencia(cat);
   const wrap=document.getElementById('cx-ent-comp-wrap');
-  if(wrap) wrap.style.display = (cat==='Saldo Inicial') ? 'none' : 'block';
+  if(wrap) wrap.style.display = (cat==='Saldo Inicial' || ehTransf) ? 'none' : 'block';
+  // Mostra aviso de transferência interna quando aplicável
+  const transfWrap = document.getElementById('cx-ent-transf-wrap');
+  if(transfWrap) transfWrap.style.display = ehTransf ? 'block' : 'none';
 
   // Sugere conta padrão conforme categoria (usuário pode trocar)
   const contaSel=document.getElementById('cx-ent-conta');
@@ -13085,8 +13204,9 @@ function cxSalvarEntrada(){
   if(!valor){alert('Informe o valor.');return;}
 
   const tipo = cat==='Saldo Inicial'?'Saldo Inicial':'Entrada';
-  // Saldo Inicial não é receita — não alimenta o Contas a Receber / DRE
-  const lancarReceber = tipo!=='Saldo Inicial';
+  // Transferências internas mantêm tipo 'Entrada' (afetam saldo do caixa normalmente)
+  // mas NÃO alimentam o Contas a Receber / DRE / Fluxo de Caixa
+  const lancarReceber = tipo==='Entrada' && !cxEhTransferencia(cat);
   if(lancarReceber && !conta){
     alert('⚠️ CONTA DO PLANO DE CONTAS OBRIGATÓRIA\n\nPara que esta entrada alimente o Contas a Receber e o DRE em Regime de Competência, selecione a conta de receita correspondente.');
     document.getElementById('cx-ent-conta').focus();return;
@@ -13141,7 +13261,14 @@ function cxSalvarEntrada(){
   renderCaixa();
   if(typeof renderDRE==='function') renderDRE();
   if(typeof renderFluxo==='function') renderFluxo();
-  showToast(lancarReceber?'✓ Entrada registrada e lançada no Contas a Receber — alimenta o DRE em Competência!':'✓ Entrada registrada!','var(--gr)');
+  showToast(
+    lancarReceber
+      ? '✓ Entrada registrada e lançada no Contas a Receber — alimenta o DRE em Competência!'
+      : cxEhTransferencia(cat)
+        ? '✓ Transferência interna registrada — não altera CAR, DRE nem Fluxo de Caixa.'
+        : '✓ Entrada registrada!',
+    'var(--gr)'
+  );
 }
 
 // ── SALVAR SAÍDA — integração com Contas a Pagar + Itens ──
@@ -13438,6 +13565,7 @@ function renderCaixa(){
 
   tbEl.innerHTML=sorted.map(mov=>{
     const isEnt = mov.tipo==='Entrada';
+    const isTransf = isEnt && cxEhTransferencia(mov.cat);
     const isSai = mov.tipo==='Saída';
     const isSI  = mov.tipo==='Saldo Inicial';
     const valEnt = isEnt ? (mov.valor||0) : 0;
@@ -13460,6 +13588,8 @@ function renderCaixa(){
       ? `<span class="tg tg-bl" style="font-size:9px" title="Lançado no Contas a Receber">REC ✓</span>`
       : '';
     const tipoCor = {Entrada:'tg-gr','Saldo Inicial':'tg-or',Saída:'tg-rd'};
+    const tipoLabel = isTransf ? 'Transferencia' : mov.tipo;
+    const tipoCss   = isTransf ? 'tg-cy' : (tipoCor[mov.tipo]||'tg-gy');
     const corSaldo = saldoCorrente>=0?'#81C784':'#EF9A9A';
 
     return`<tr>
@@ -13488,7 +13618,7 @@ function renderCaixa(){
         ${R(saldoCorrente)}
       </td>
       <td>
-        <span class="tg ${tipoCor[mov.tipo]||'tg-gy'}" style="font-size:10px">${mov.tipo}</span>
+        <span class="tg ${tipoCss}" style="font-size:10px">${tipoLabel}</span>
         ${capBadge}${recBadge}
       </td>
       <td><div class="ac-btns" style="opacity:1">
@@ -13745,6 +13875,170 @@ function excluirPagar(id){
 // ══════════════════════════════════════
 // PICKER DE PERÍODO — CONTAS A PAGAR (idêntico ao CAR)
 // ══════════════════════════════════════
+// ══════════════════════════════════════════════════
+// PICKER DE PERÍODO — DRE
+// ══════════════════════════════════════════════════
+const MESES_FULL_DRE = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let _drePickerModo   = 'mes';
+let _drePickerAnoNav = new Date().getFullYear();
+let _drePickerFiltro = { tipo:'mes', mes: new Date().toISOString().slice(0,7) };
+
+function dreTogglePicker(){
+  const p = document.getElementById('dre-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){
+    drePickerRenderMeses();
+    drePickerRenderAnos();
+    // Popular selects de ano dinamicamente — sempre ano atual -3 até +2
+    const anoAtual = new Date().getFullYear();
+    const mesAtual = String(new Date().getMonth()+1).padStart(2,'0');
+    const iniY = document.getElementById('dre-per-ini-y');
+    const fimY = document.getElementById('dre-per-fim-y');
+    const iniM = document.getElementById('dre-per-ini-m');
+    const fimM = document.getElementById('dre-per-fim-m');
+    [iniY, fimY].forEach(sel => {
+      if(!sel) return;
+      const valAtual = sel.value || String(anoAtual);
+      sel.innerHTML = '';
+      for(let y = anoAtual - 3; y <= anoAtual + 2; y++){
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = String(y);
+        sel.appendChild(opt);
+      }
+      sel.value = valAtual;
+      if(!sel.value) sel.value = String(anoAtual);
+    });
+    if(iniM && !iniM.value) iniM.value = mesAtual;
+    if(fimM && !fimM.value) fimM.value = mesAtual;
+  }
+}
+function dreFecharPicker(){
+  const p = document.getElementById('dre-picker');
+  if(p) p.style.display = 'none';
+}
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('dre-picker');
+  const btn    = document.getElementById('dre-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)) dreFecharPicker();
+});
+function drePickerSetModo(modo){
+  _drePickerModo = modo;
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('dre-tab-'+m);
+    const div = document.getElementById('dre-modo-'+m);
+    if(tab) tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo';
+    if(div) div.style.display = m===modo ? 'block' : 'none';
+  });
+  if(modo==='mes') drePickerRenderMeses();
+  if(modo==='ano') drePickerRenderAnos();
+}
+function drePickerNavAno(delta){
+  _drePickerAnoNav += delta;
+  const el = document.getElementById('dre-nav-ano');
+  if(el) el.textContent = _drePickerAnoNav;
+  drePickerRenderMeses();
+}
+function drePickerRenderMeses(){
+  const grid = document.getElementById('dre-grid-meses');
+  if(!grid) return;
+  const ano = _drePickerAnoNav;
+  const sel = _drePickerFiltro.tipo==='mes' ? _drePickerFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val   = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button onclick="drePickerSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+      onmouseover="this.style.borderColor='var(--or)'" onmouseout="this.style.borderColor='${ativo?'var(--or)':'var(--bd)'}'
+    ">${m}</button>`;
+  }).join('');
+}
+function drePickerRenderAnos(){
+  const grid = document.getElementById('dre-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _drePickerFiltro.tipo==='ano' ? _drePickerFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button onclick="drePickerSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+function drePickerAtualizarLabel(txt){
+  const el = document.getElementById('dre-periodo-label');
+  if(el) el.textContent = txt;
+}
+function drePickerAplicarFiltro(de, ate, label){
+  // Atualiza os inputs ocultos que renderDRE() usa
+  const elDe  = document.getElementById('dre-de');
+  const elAte = document.getElementById('dre-ate');
+  if(elDe)  elDe.value  = de;
+  if(elAte) elAte.value = ate;
+  S.s('_dreDe', de); S.s('_dreAte', ate);
+  drePickerAtualizarLabel(label);
+  dreFecharPicker();
+  renderDRE();
+}
+function drePickerSelecionarMes(val){
+  _drePickerFiltro = { tipo:'mes', mes:val };
+  const [y,m] = val.split('-');
+  drePickerAplicarFiltro(val, val, `${MESES_FULL_DRE[parseInt(m)-1]} de ${y}`);
+}
+function drePickerSelecionarAno(ano){
+  _drePickerFiltro = { tipo:'ano', ano };
+  drePickerAplicarFiltro(`${ano}-01`, `${ano}-12`, `Ano de ${ano}`);
+}
+function drePickerAplicarPeriodo(){
+  const iniM = document.getElementById('dre-per-ini-m')?.value;
+  const iniY = document.getElementById('dre-per-ini-y')?.value;
+  const fimM = document.getElementById('dre-per-fim-m')?.value;
+  const fimY = document.getElementById('dre-per-fim-y')?.value;
+  if(!iniM || !iniY || !fimM || !fimY){ alert('Selecione os meses.'); return; }
+  const ini = `${iniY}-${iniM}`;
+  const fim = `${fimY}-${fimM}`;
+  if(ini > fim){ alert('O mês inicial deve ser anterior ao final.'); return; }
+  _drePickerFiltro = { tipo:'periodo', ini, fim };
+  const fmtM = v => { const [y,m]=v.split('-'); return `${MESES_FULL_DRE[parseInt(m)-1].slice(0,3)}/${y}`; };
+  drePickerAplicarFiltro(ini, fim, `${fmtM(ini)} → ${fmtM(fim)}`);
+}
+function drePickerAtalho(tipo){
+  const hoje = new Date();
+  const fmtM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  if(tipo==='mes'){
+    const val = fmtM(hoje);
+    _drePickerFiltro = { tipo:'mes', mes:val };
+    drePickerAplicarFiltro(val, val, `${MESES_FULL_DRE[hoje.getMonth()]} de ${hoje.getFullYear()}`);
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    const val = fmtM(ant);
+    _drePickerFiltro = { tipo:'mes', mes:val };
+    drePickerAplicarFiltro(val, val, `${MESES_FULL_DRE[ant.getMonth()]} de ${ant.getFullYear()}`);
+  } else if(tipo==='trim'){
+    const q   = Math.floor(hoje.getMonth()/3);
+    const ini = fmtM(new Date(hoje.getFullYear(), q*3, 1));
+    const fim = fmtM(new Date(hoje.getFullYear(), q*3+2, 1));
+    _drePickerFiltro = { tipo:'periodo', ini, fim };
+    drePickerAplicarFiltro(ini, fim, `${q+1}º Tri ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    _drePickerFiltro = { tipo:'ano', ano:hoje.getFullYear() };
+    drePickerAplicarFiltro(`${hoje.getFullYear()}-01`, `${hoje.getFullYear()}-12`, `Ano de ${hoje.getFullYear()}`);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// PICKER DE PERÍODO — CAP
+// ══════════════════════════════════════════════════
 let _pgModo   = 'mes';
 let _pgAnoNav = new Date().getFullYear();
 let _pgFiltro = { tipo:'mes', mes: new Date().toISOString().slice(0,7), ini:null, fim:null, ano:null };
@@ -22716,12 +23010,41 @@ function cxCorrigirDatasCAP(){
 }
 
 let _initAllRunning = false;
+// ── Limpa do CAR lançamentos origemCaixa que pertencem a categorias de transferência ──
+// Roda uma vez no boot para corrigir lançamentos já existentes antes da regra ser implementada.
+function cxLimparTransferenciasDoCAR(){
+  const movs = S.g('caixa-mov') || [];
+  // IDs de movimentos do caixa que são transferências internas
+  const recIdsParaRemover = new Set();
+  movs.forEach(m => {
+    if(m.recId && cxEhTransferencia(m.cat)){
+      recIdsParaRemover.add(m.recId);
+    }
+  });
+  if(!recIdsParaRemover.size) return;
+  let receber = S.g('receber') || [];
+  const antes = receber.length;
+  receber = receber.filter(r => !recIdsParaRemover.has(r.id));
+  if(receber.length < antes){
+    S.s('receber', receber);
+    console.log('[Migração] ' + (antes - receber.length) + ' lançamento(s) de transferência interna removidos do CAR.');
+  }
+  // Remove também o recId do movimento do caixa para não tentar limpar de novo
+  const movsMigrados = movs.map(m =>
+    (m.recId && cxEhTransferencia(m.cat)) ? {...m, recId: undefined} : m
+  );
+  if(JSON.stringify(movsMigrados) !== JSON.stringify(movs)){
+    S.s('caixa-mov', movsMigrados);
+  }
+}
+
 function initAll(){
   usrInit();
   if(_initAllRunning) return;
   _initAllRunning = true;
   try{
   initData();
+  cxLimparTransferenciasDoCAR();
   // cxCorrigirDatasCAP: removido do boot — disponível via Saneamento de Dados → Manutenção do Caixa
   // Carry-forward: removido do boot — roda ao navegar no Caixa Diário (comportamento do módulo)
   // ou manualmente via Saneamento de Dados → Manutenção do Caixa
