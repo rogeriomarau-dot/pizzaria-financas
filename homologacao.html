@@ -587,7 +587,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <div class="fg"><label>Usuário</label><input id="iu" type="text" placeholder="Seu usuário ou e-mail" autofocus></div>
     <div class="fg"><label>Senha</label><input id="ip" type="password" placeholder="Sua senha"></div>
     <button class="btn-lg" onclick="login()">Entrar no Sistema</button>
-    <div class="lg-hint">Demo: <span>demo@pizzaria.com</span> / <span>123456</span></div>
+
     <div id="trial-info" style="text-align:center;margin-top:10px;font-size:11px;color:var(--tx3)"></div>
     <div style="text-align:center;margin-top:12px"><a href="javascript:void(0)" onclick="egTrocarEmpresa()" style="font-size:10px;color:var(--tx3);text-decoration:underline;cursor:pointer">Não é essa a sua empresa? Trocar código</a></div>
   </div>
@@ -656,6 +656,9 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div id="sb-backup-info" style="font-size:10px;color:var(--tx3);text-align:center;margin-top:4px"><i class="fa-solid fa-database" style="color:var(--or)"></i> Firebase conectado</div>
       <button class="btn-out" style="width:100%;font-size:11px;padding:7px 4px;margin-top:6px;border-color:var(--or);color:var(--or);font-weight:700" onclick="recarregarDadosNuvem()" title="Busca os dados mais recentes da nuvem e atualiza a tela atual">
         <span id="sb-reload-info"><i class="fa-solid fa-rotate"></i> Recarregar dados da nuvem</span>
+      </button>
+      <button class="btn-out" style="width:100%;font-size:11px;padding:7px 4px;margin-top:4px;border-color:#F9A825;color:#F9A825" onclick="abrirSaneamento()" title="Detecta e corrige lançamentos com forma de recebimento fora do cadastro">
+        <i class="fa-solid fa-wrench"></i> Saneamento de Dados
       </button>
       <button class="btn-out" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
     </div>
@@ -1409,7 +1412,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <div class="tw">
       <table><thead id="thead-cx"><tr>
-        <th>Data</th><th>Hora</th><th>Histórico</th><th>Categoria / Conta</th>
+        <th>Data</th><th>Hora</th><th>Histórico</th><th>Fornecedor</th><th>Categoria / Conta</th>
         <th style="text-align:right">Entrada</th>
         <th style="text-align:right">Saída</th>
         <th style="text-align:right">Saldo</th>
@@ -1578,8 +1581,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <div class="fg"><label>Hora</label><input type="time" id="cx-sai-hora"></div>
       </div>
       <div class="fr">
-        <div class="fg"><label>Fornecedor / Beneficiário</label>
-          <select id="cx-sai-forn"><option value="">— Selecione ou deixe em branco —</option></select>
+        <div class="fg"><label>Fornecedor / Beneficiário <span style="color:var(--rd)">★ OBRIGATÓRIO</span></label>
+          <select id="cx-sai-forn"><option value="">— Selecione o fornecedor —</option></select>
         </div>
         <div class="fg"><label>Descrição / NF *</label>
           <input type="text" id="cx-sai-desc" placeholder="Ex: Compra de insumos, Conta de luz, NF 1234...">
@@ -2097,15 +2100,76 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn btn-sm" onclick="imprimirRelReceber()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div class="fg">
-        <label>Vencimento — De</label>
-        <input type="date" id="rr-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+    <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;margin-bottom:10px;align-items:end">
+      <!-- Picker de período -->
+      <div class="fg" style="position:relative">
+        <label>Período</label>
+        <button id="rr-periodo-btn" onclick="rrTogglePicker()"
+          style="display:flex;align-items:center;gap:6px;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:7px 14px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;min-width:200px;justify-content:space-between;height:36px">
+          <span style="display:flex;align-items:center;gap:6px">
+            <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+            <span id="rr-periodo-label">Selecione o período</span>
+          </span>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--tx3)" id="rr-periodo-chevron"></i>
+        </button>
+
+        <!-- Picker dropdown -->
+        <div id="rr-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+          background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+          box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+          <!-- Tabs -->
+          <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+            <button id="rr-tab-mes" onclick="rrSetModo('mes')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-ativo">Por mês</button>
+            <button id="rr-tab-periodo" onclick="rrSetModo('periodo')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-inativo">Por período</button>
+            <button id="rr-tab-ano" onclick="rrSetModo('ano')"
+              style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+              class="rc-tab-inativo">Por ano</button>
+          </div>
+
+          <!-- Modo mês -->
+          <div id="rr-modo-mes">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <button onclick="rrNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+              <span id="rr-nav-ano" style="font-size:13px;font-weight:600;color:var(--tx)">2026</span>
+              <button onclick="rrNavAno(1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+            </div>
+            <div id="rr-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+          </div>
+
+          <!-- Modo período -->
+          <div id="rr-modo-periodo" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div><label style="font-size:11px;color:var(--tx3)">De</label>
+                <input type="date" id="rr-dt-ini" style="width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+              </div>
+              <div><label style="font-size:11px;color:var(--tx3)">Até</label>
+                <input type="date" id="rr-dt-fim" style="width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+              </div>
+              <button onclick="rrAplicarPeriodo()" class="btn btn-p btn-sm" style="width:100%">Aplicar Período</button>
+            </div>
+          </div>
+
+          <!-- Modo ano -->
+          <div id="rr-modo-ano" style="display:none">
+            <div id="rr-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+          </div>
+
+          <!-- Atalhos -->
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
+            <button onclick="rrAtalho('hoje')"    class="btn btn-sm" style="font-size:11px;padding:3px 8px">Hoje</button>
+            <button onclick="rrAtalho('semana')"  class="btn btn-sm" style="font-size:11px;padding:3px 8px">Esta semana</button>
+            <button onclick="rrAtalho('mes')"     class="btn btn-sm" style="font-size:11px;padding:3px 8px">Este mês</button>
+            <button onclick="rrAtalho('trimestre')" class="btn btn-sm" style="font-size:11px;padding:3px 8px">Trimestre</button>
+            <button onclick="rrAtalho('ano')"     class="btn btn-sm" style="font-size:11px;padding:3px 8px">Este ano</button>
+          </div>
+        </div>
       </div>
-      <div class="fg">
-        <label>Vencimento — Até</label>
-        <input type="date" id="rr-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
+
       <div class="fg">
         <label>Status</label>
         <select id="rr-status" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
@@ -3131,9 +3195,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   <div id="rv-aviso-modo" style="display:none;background:rgba(255,143,0,0.1);border:1px solid rgba(255,143,0,0.3);border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:var(--am)">
     <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
     <strong>Modo Catálogo:</strong> Não há vendas com itens discriminados no período. Exibindo produtos cadastrados com suas margens. Para ver quantidades vendidas, registre vendas em <strong>Contas a Receber</strong> usando o botão <em>"+ Nova Venda"</em> e adicione os itens da comanda.
-    <button onclick="rvAtualizarDadosDemo()" style="margin-left:12px;background:rgba(255,143,0,0.2);border:1px solid rgba(255,143,0,0.4);color:var(--am);border-radius:4px;padding:3px 10px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">
-      <i class="fa-solid fa-rotate" style="margin-right:4px"></i>Carregar dados demo
-    </button>
+
   </div>
 
   <!-- KPIs — oculto até haver dados -->
@@ -3311,6 +3373,123 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   </div>
 </div>
 
+<!-- MODAL SANEAMENTO DE DADOS -->
+<div class="mo" id="mod-saneamento">
+  <div class="mb" style="max-width:820px;width:95vw">
+    <div class="mt">
+      <span><i class="fa-solid fa-wrench" style="color:#F9A825;margin-right:8px"></i>Saneamento de Dados</span>
+      <span class="mc" onclick="closeMod('mod-saneamento')">✕</span>
+    </div>
+    <!-- Abas -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--bd);padding-bottom:0">
+      <button id="san-aba-formas" onclick="sanTrocarAba('formas')"
+        style="padding:7px 16px;font-size:12px;font-family:Outfit,sans-serif;border:none;border-bottom:2px solid var(--or);background:transparent;color:var(--or);cursor:pointer;font-weight:600">
+        <i class="fa-solid fa-credit-card" style="margin-right:6px"></i>Formas de Recebimento
+      </button>
+      <button id="san-aba-nomes" onclick="sanTrocarAba('nomes')"
+        style="padding:7px 16px;font-size:12px;font-family:Outfit,sans-serif;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--tx3);cursor:pointer">
+        <i class="fa-solid fa-font" style="margin-right:6px"></i>Padronizar Nomenclaturas
+      </button>
+      <button id="san-aba-manut" onclick="sanTrocarAba('manut')"
+        style="padding:7px 16px;font-size:12px;font-family:Outfit,sans-serif;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--tx3);cursor:pointer">
+        <i class="fa-solid fa-screwdriver-wrench" style="margin-right:6px"></i>Manutenção
+      </button>
+    </div>
+    <!-- Conteúdo aba Formas -->
+    <div id="san-painel-formas">
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.6">
+        Detecta lançamentos em <strong style="color:var(--tx)">Contas a Receber</strong> cujas formas não correspondem ao cadastro atual.
+      </div>
+      <div id="san-conteudo">
+        <div style="text-align:center;padding:30px;color:var(--tx3)"><i class="fa-solid fa-spinner fa-spin"></i> Analisando...</div>
+      </div>
+    </div>
+    <!-- Conteúdo aba Manutenção -->
+    <div id="san-painel-manut" style="display:none">
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.6">
+        Utilitários de manutenção do <strong style="color:var(--tx)">Caixa Diário</strong> e <strong style="color:var(--tx)">Estoque</strong>.
+        Execute apenas quando necessário — cada ação mostra o que será feito antes de confirmar.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+        <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:6px">
+            <i class="fa-solid fa-rotate" style="color:var(--or);margin-right:6px"></i>Carry-Forward do Caixa
+          </div>
+          <div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:10px">
+            Calcula o saldo final do mês anterior e cria o Saldo Inicial do mês atual no Caixa Diário.
+            Útil se o saldo inicial não apareceu automaticamente ao trocar de mês.
+          </div>
+          <button onclick="sanRunCarryForward()" style="width:100%;background:var(--or);color:#fff;border:none;border-radius:6px;padding:7px 12px;font-family:Outfit,sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+            <i class="fa-solid fa-play" style="margin-right:6px"></i>Executar
+          </button>
+        </div>
+
+        <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:6px">
+            <i class="fa-solid fa-calendar-check" style="color:var(--bl);margin-right:6px"></i>Corrigir Datas CAP/Caixa
+          </div>
+          <div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:10px">
+            Sincroniza as datas de vencimento dos lançamentos do Contas a Pagar com as datas reais do Caixa Diário.
+            Use se notar datas divergentes entre os dois módulos.
+          </div>
+          <button onclick="sanRunCorrigirDatas()" style="width:100%;background:var(--bl);color:#fff;border:none;border-radius:6px;padding:7px 12px;font-family:Outfit,sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+            <i class="fa-solid fa-play" style="margin-right:6px"></i>Executar
+          </button>
+        </div>
+
+        <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:6px">
+            <i class="fa-solid fa-boxes-stacked" style="color:var(--gr);margin-right:6px"></i>Corrigir Inventários
+          </div>
+          <div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:10px">
+            Detecta e corrige quantidades de estoque com arredondamento incorreto (ex: 0,001 que deveria ser 1).
+            Use se notar quantidades com vírgula estranha no Estoque.
+          </div>
+          <button onclick="sanRunCorrigirInventarios()" style="width:100%;background:var(--gr);color:#fff;border:none;border-radius:6px;padding:7px 12px;font-family:Outfit,sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+            <i class="fa-solid fa-play" style="margin-right:6px"></i>Executar
+          </button>
+        </div>
+
+        <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:6px">
+            <i class="fa-solid fa-barcode" style="color:var(--am);margin-right:6px"></i>Gerar Códigos EST-
+          </div>
+          <div style="font-size:11px;color:var(--tx3);line-height:1.6;margin-bottom:10px">
+            Atribui código sequencial (EST-0001, EST-0002...) a produtos do Estoque que ainda não têm código.
+            Use após importar produtos sem código definido.
+          </div>
+          <button onclick="sanRunMigrarCodigos()" style="width:100%;background:rgba(255,193,7,0.8);color:#1a1a1a;border:none;border-radius:6px;padding:7px 12px;font-family:Outfit,sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+            <i class="fa-solid fa-play" style="margin-right:6px"></i>Executar
+          </button>
+        </div>
+
+      </div>
+      <div id="san-manut-log" style="margin-top:12px;display:none;background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font-size:11px;font-family:monospace;color:var(--gr)"></div>
+    </div>
+
+    <!-- Conteúdo aba Nomenclaturas -->
+    <div id="san-painel-nomes" style="display:none">
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.6">
+        Padroniza nomes de <strong style="color:var(--tx)">categorias, produtos, insumos e fornecedores</strong> para
+        <strong style="color:var(--tx)">LETRAS MAIÚSCULAS</strong>. Veja a prévia abaixo antes de confirmar.
+      </div>
+      <div id="san-nomes-conteudo">
+        <div style="text-align:center;padding:30px;color:var(--tx3)"><i class="fa-solid fa-spinner fa-spin"></i> Analisando...</div>
+      </div>
+    </div>
+    <div class="mf" style="margin-top:16px">
+      <button class="bc" onclick="closeMod('mod-saneamento')">Fechar</button>
+      <button class="bs" id="san-btn-aplicar" onclick="sanAplicarCorrecoes()" style="display:none">
+        <i class="fa-solid fa-check-double"></i> Aplicar Correções de Formas
+      </button>
+      <button class="bs" id="san-btn-nomes" onclick="sanAplicarNomes()" style="display:none;background:var(--bl)">
+        <i class="fa-solid fa-text-slash"></i> Padronizar Agora
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL SALDOS INICIAIS FCX -->
 <div class="mo" id="mod-fcx-saldos">
   <div class="mb wide" style="width:580px">
@@ -3338,7 +3517,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <input type="hidden" id="mcp-id">
     <div class="fr">
       <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcp-cod" placeholder="Ex: CAT-01" readonly style="background:var(--dk4);cursor:default"></div>
-      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcp-nome" placeholder="Ex: Insumos, Bebidas, Descartáveis…" oninput="this.value=toSentenceCase(this.value)"></div>
+      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcp-nome" placeholder="EX: INSUMOS, BEBIDAS, DESCARTÁVEIS…" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Cor de Identificação</label>
@@ -3366,7 +3545,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <input type="hidden" id="mcpv-id">
     <div class="fr">
       <div class="fg" style="max-width:110px"><label>Código</label><input type="text" id="mcpv-cod" placeholder="Ex: RV-01" readonly style="background:var(--dk4);cursor:default"></div>
-      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcpv-nome" placeholder="Ex: Rodízio, Pizzas, Bebidas, Sobremesas…" oninput="this.value=toSentenceCase(this.value)"></div>
+      <div class="fg"><label>Nome da Categoria</label><input type="text" id="mcpv-nome" placeholder="EX: RODÍZIO, PIZZAS, BEBIDAS, SOBREMESAS…" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Cor de Identificação</label>
@@ -4151,7 +4330,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <div class="mo" id="mod-ficha">
   <div class="mb">
     <div class="mt"><span>Nova Ficha Técnica</span><span class="mc" onclick="closeMod('mod-ficha')">✕</span></div>
-    <div class="fr"><div class="fg"><label>Produto</label><input type="text" id="mf-nome"></div><div class="fg"><label>Tamanho</label><select id="mf-tam"><option>P (25cm)</option><option>M (30cm)</option><option>G (35cm)</option><option>GG (40cm)</option></select></div></div>
+    <div class="fr"><div class="fg"><label>Produto</label><input type="text" id="mf-nome" oninput="this.value=this.value.toUpperCase()"></div><div class="fg"><label>Tamanho</label><select id="mf-tam"><option>P (25cm)</option><option>M (30cm)</option><option>G (35cm)</option><option>GG (40cm)</option></select></div></div>
     <div class="fr"><div class="fg"><label>Custo (R$)</label><input type="number" id="mf-custo" step="0.01" oninput="calcCMV()"></div><div class="fg"><label>Venda (R$)</label><input type="number" id="mf-venda" step="0.01" oninput="calcCMV()"></div></div>
     <div style="background:var(--dk3);border-radius:6px;padding:12px;margin-bottom:12px;display:flex;gap:24px">
       <div style="text-align:center"><div style="font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">CMV%</div><div style="font-size:20px;font-weight:500" id="pv-cmv">—</div></div>
@@ -4166,7 +4345,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <div class="mo" id="mod-meta">
   <div class="mb">
     <div class="mt"><span>Nova Meta</span><span class="mc" onclick="closeMod('mod-meta')">✕</span></div>
-    <div class="fg"><label>Descrição</label><input type="text" id="mm-desc"></div>
+    <div class="fg"><label>Descrição</label><input type="text" id="mm-desc" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="fr"><div class="fg"><label>Alvo</label><input type="number" id="mm-alvo"></div><div class="fg"><label>Atual</label><input type="number" id="mm-atual"></div></div>
     <div class="fr"><div class="fg"><label>Prazo</label><input type="date" id="mm-pz"></div><div class="fg"><label>Ícone</label><select id="mm-ic"><option value="📈">📈 Faturamento</option><option value="💰">💰 Lucro</option><option value="🍕">🍕 Pizzas</option><option value="👥">👥 Pessoal</option><option value="🏪">🏪 Expansão</option></select></div></div>
     <div class="mf"><button class="bc" onclick="closeMod('mod-meta')">Cancelar</button><button class="bs" onclick="saveMeta()">Salvar</button></div>
@@ -5390,8 +5569,8 @@ function initData(){
       {id:6,n:'Embalagens Express',doc:'',cat:'Material Descartável',conta:'5.3.08',tel:'',email:'',cond:'30 dias',st:'Ativo',obs:''},
     ]);
     S.s('produtos',[
-      {id:1,cod:'PRD-001',n:'Mussarela',cat:'CAT-01',un:'kg',custo:18.50,min:15,conta:'4.1',forn:'Laticínios RS Ltda',ncm:'0406.10.10',st:'Ativo'},
-      {id:2,cod:'PRD-002',n:'Farinha de Trigo',cat:'CAT-01',un:'kg',custo:4.20,min:20,conta:'4.1',forn:'Distribuidora Trigo Sul',ncm:'1101.00.10',st:'Ativo'},
+      {id:1,cod:'PRD-001',n:'Mussarela',cat:'CAT-01',un:'kg',custo:18.50,min:15,conta:'4.1',forn:'',ncm:'0406.10.10',st:'Ativo'},
+      {id:2,cod:'PRD-002',n:'Farinha de Trigo',cat:'CAT-01',un:'kg',custo:4.20,min:20,conta:'4.1',forn:'',ncm:'1101.00.10',st:'Ativo'},
       {id:3,cod:'PRD-003',n:'Caixa Pizza G',cat:'CAT-03',un:'cx',custo:1.80,min:100,conta:'5.3.08',forn:'',ncm:'',st:'Ativo'},
       {id:4,cod:'PRD-004',n:'Detergente 5L',cat:'CAT-04',un:'un',custo:12.90,min:5,conta:'5.3.07',forn:'',ncm:'',st:'Ativo'},
     ]);
@@ -5548,8 +5727,8 @@ function usrInit(){
     lista = [{
       id: 'admin_default',
       nome: 'Administrador',
-      login: 'demo@pizzaria.com',
-      senha: '123456',
+      login: 'admin',
+      senha: 'admin123',
       perfil: 'admin',
       perms: {}
     }];
@@ -7491,16 +7670,19 @@ function resetModalPagar(){
 
 // ── Gera linhas manuais de parcelas ──
 function getFormasPagamento(){
-  // Retorna formas do cadastro (ativas) ou as padrão se não houver cadastro
-  const cadastradas = (S.g('formas-pagamento')||[]).filter(f=>f.st==='Ativo');
-  if(cadastradas.length) return cadastradas.map(f=>f.nome);
-  return ['PIX','Boleto','Débito Automático','Transferência','Dinheiro','Cartão de Débito','Cartão de Crédito'];
+  // Fonte única: cadastro de formas-pagamento
+  // Se ainda não há cadastro, retorna array vazio — o sistema pede ao usuário que cadastre
+  return (S.g('formas-pagamento')||[]).filter(f=>f.st==='Ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(f=>f.nome);
 }
 
 function buildFormaOptions(selId, valorAtual){
   const sel=document.getElementById(selId); if(!sel)return;
   const formas=getFormasPagamento();
-  sel.innerHTML=formas.map(f=>`<option${f===valorAtual?' selected':''}>${f}</option>`).join('');
+  if(!formas.length){
+    sel.innerHTML='<option value="">— Cadastre formas em Cadastros → Formas de Pagamento —</option>';
+    return;
+  }
+  sel.innerHTML='<option value="">— Selecione —</option>'+formas.map(f=>`<option${f===valorAtual?' selected':''}>${f}</option>`).join('');
 }
 
 function gerarParcelasManual(){
@@ -7735,7 +7917,7 @@ function saveParcelado(){
 
     const venc1  = document.getElementById('mpp-venc-1')?.value||arr[idx].venc||'';
     const val1   = parseFloat(document.getElementById('mpp-val-1')?.value)||arr[idx].val||0;
-    const forma1 = document.getElementById('mpp-forma-1')?.value||arr[idx].forma||'PIX';
+    const forma1 = document.getElementById('mpp-forma-1')?.value||arr[idx].forma||'';
     const st1    = document.getElementById('mpp-st-1')?.value||arr[idx].status||'Pendente';
     const dtpag1 = document.getElementById('mpp-dtpag-1')?.value||'';
     const banco  = document.getElementById('mpp-banco')?.value||'';
@@ -7822,7 +8004,7 @@ function saveParcelado(){
   for(let i=1;i<=linhasQtd;i++){
     const venc =document.getElementById('mpp-venc-'+i)?.value||'';
     const val  =parseFloat(document.getElementById('mpp-val-'+i)?.value)||0;
-    const forma=document.getElementById('mpp-forma-'+i)?.value||'PIX';
+    const forma=document.getElementById('mpp-forma-'+i)?.value||'';
     const st   =document.getElementById('mpp-st-'+i)?.value||'Pendente';
     if(!val&&!venc)continue;
     novasLinhas++;
@@ -8033,7 +8215,7 @@ function mrPopularFormas(){
       return `<option value="${f.nome}">${f.nome} — ${prazoTxt}${taxaTxt}</option>`;
     }).join('');
   } else {
-    sel.innerHTML = '<option value="">— Selecione —</option><option value="PIX">PIX — Imediato</option><option value="DINHEIRO">DINHEIRO — Imediato</option><option value="CARTÃO DE DÉBITO">CARTÃO DE DÉBITO — D+1</option><option value="CARTÃO DE CRÉDITO">CARTÃO DE CRÉDITO — D+30</option><option value="VALE REFEIÇÃO">VALE REFEIÇÃO — D+2</option>';
+    sel.innerHTML = '<option value="">— Cadastre formas em Cadastros → Formas de Recebimento —</option>';
   }
   // Dispara cálculo automático se já tem valor selecionado
   if(sel.value) mrFormaChanged();
@@ -11095,7 +11277,7 @@ function cxCorrigirCAPsFaltantes(){
         venc:m.data, comp:m.data,
         forn:m.forn||m.desc||'Caixa', desc:m.desc||'',
         conta, val:m.valor||0,
-        forma:'Dinheiro', status:'Pago',
+        forma:m.forma||cxGetFormaDinheiro(), status:'Pago',
         reg:'caixa', dtpag:m.data,
         contaCorrente:'Caixa', banco:'Caixa',
         origemCaixa:true,
@@ -11116,7 +11298,7 @@ function cxCorrigirCAPsFaltantes(){
         venc:m.data, comp:m.data,
         forn:m.forn||m.desc||'Caixa', desc:m.desc||'',
         conta, val:m.valor||0,
-        forma:'Dinheiro', status:'Pago',
+        forma:m.forma||cxGetFormaDinheiro(), status:'Pago',
         reg:'caixa', dtpag:m.data,
         contaCorrente:'Caixa', banco:'Caixa',
         origemCaixa:true,
@@ -12195,6 +12377,19 @@ const CX_CAT_COR = {
 function cxTodayISO(){ return new Date().toISOString().slice(0,10); }
 function cxFmtData(iso){ if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`; }
 function cxFmtHora(){ return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+
+// Helper: retorna o nome da forma "dinheiro/espécie" do cadastro ativo
+// Busca por nome contendo "dinheiro" ou "espécie" — case insensitive
+// Fallback: primeiro forma À Vista do cadastro; último recurso: 'Dinheiro'
+function cxGetFormaDinheiro(){
+  const formas = (S.g('formas-recebimento')||[]).filter(f=>f.st==='Ativo');
+  const match = formas.find(f=>/dinheiro|espécie|especie/i.test(f.nome||''));
+  if(match) return match.nome;
+  const avista = formas.find(f=>(f.tipo||'').toLowerCase().includes('vista'));
+  if(avista) return avista.nome;
+  return 'Dinheiro'; // fallback final apenas se cadastro vazio
+}
+
 function cxNextId(arr){ return arr.length?Math.max(...arr.map(x=>x.id||0))+1:1; }
 
 // ── Navegação de data ──
@@ -12866,7 +13061,7 @@ function cxSalvarEntrada(){
         const idx=recArr.findIndex(x=>x.id===recId);
         if(idx>-1){
           recArr[idx]={...recArr[idx],desc,conta,val:valor,liq:valor,subtotal:valor,
-            venc:data,comp,status:'Recebido',forma:'Dinheiro',obs};
+            venc:data,comp,status:'Recebido',forma:cxGetFormaDinheiro(),obs};
         }
       }
     }
@@ -12875,7 +13070,7 @@ function cxSalvarEntrada(){
       recArr.push({
         id:recId, cliente:'Caixa Diário', desc, conta,
         val:valor, liq:valor, subtotal:valor, desconto:0, taxa:0,
-        venc:data, comp, status:'Recebido', forma:'Dinheiro',
+        venc:data, comp, status:'Recebido', forma:cxGetFormaDinheiro(),
         obs:obs||(resp?'Operador: '+resp:''),
         origemCaixa:true
       });
@@ -12896,7 +13091,7 @@ function cxSalvarEntrada(){
   if(editId){
     arr=arr.map(x=>x.id===editId?{...x,data,hora,cat,desc,valor,conta,comp,resp,obs,tipo,recId:lancarReceber?recId:undefined}:x);
   }else{
-    arr.push({id:cxNextId(arr),data,hora,cat,desc,valor,conta,comp,forma:'Dinheiro',resp,obs,tipo,recId:lancarReceber?recId:undefined});
+    arr.push({id:cxNextId(arr),data,hora,cat,desc,valor,conta,comp,forma:cxGetFormaDinheiro(),resp,obs,tipo,recId:lancarReceber?recId:undefined});
   }
   S.s('caixa-mov',arr);
   closeMod('mod-cx-entrada');
@@ -12933,6 +13128,10 @@ function cxSalvarSaida(){
     if(melhor) conta=melhor[0];
   }
 
+  if(!forn){
+    alert('⚠️ FORNECEDOR / BENEFICIÁRIO OBRIGATÓRIO\n\nInforme quem recebeu este pagamento.\nEste campo é necessário para os relatórios de Contas a Pagar e Fluxo de Caixa.');
+    document.getElementById('cx-sai-forn').focus();return;
+  }
   if(!desc){alert('Informe a descrição / NF.');return;}
   if(!valor){alert('Informe o valor ou adicione itens ao lançamento.');return;}
   if(!conta){
@@ -12952,7 +13151,7 @@ function cxSalvarSaida(){
         const idx=pagArr.findIndex(x=>x.id===capId);
         if(idx>-1){
           pagArr[idx]={...pagArr[idx],forn,desc,conta,val:valor,venc:data,comp,
-            forma:'Dinheiro',status:statusCAP,obs,
+            forma:cxGetFormaDinheiro(),status:statusCAP,obs,
             dtpag:statusCAP==='Pago'?data:undefined,
             contaCorrente:'Caixa',banco:'Caixa',
             reg:comp?'competencia':'caixa',
@@ -12974,7 +13173,7 @@ function cxSalvarSaida(){
         cod:typeof gerarCodigoPagar==='function'?gerarCodigoPagar():'PAG-CX-'+Date.now(),
         venc:data, comp:comp||data,
         forn, desc, conta, val:valor,
-        forma:'Dinheiro',
+        forma:cxGetFormaDinheiro(),
         status:statusCAP,
         reg:comp?'competencia':'caixa',
         obs:obs||(resp?'Operador: '+resp:''),
@@ -13006,7 +13205,7 @@ function cxSalvarSaida(){
   }else{
     arr.push({
       id:cxNextId(arr),data,hora,forn,desc,conta,valor,
-      forma:'Dinheiro',resp,obs,tipo:'Saída',
+      forma:cxGetFormaDinheiro(),resp,obs,tipo:'Saída',
       itens:cxSaiItens.length?[...cxSaiItens]:undefined,
       capId:lancarCAP?capId:undefined
     });
@@ -13146,7 +13345,7 @@ function renderCaixa(){
   if(!tbEl)return;
 
   if(!todos.length){
-    tbEl.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--tx3)">
+    tbEl.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--tx3)">
       <i class="fa-solid fa-cash-register" style="display:block;font-size:22px;margin-bottom:8px;color:var(--or)"></i>
       Nenhum lançamento em <strong style="color:var(--tx)">${_cxModo==='dia'?cxFmtData(_cxData):_cxModo==='mes'?document.getElementById('cx-dt').textContent:'período selecionado'}</strong>.<br>
       <span style="font-size:11px">Use <strong style="color:var(--or)">↑ Entrada</strong> ou <strong style="color:#EF9A9A">↓ Saída</strong> para registrar movimentos.</span>
@@ -13154,7 +13353,7 @@ function renderCaixa(){
     return;
   }
   if(!movFilt.length){
-    tbEl.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--tx3);font-size:12px">
+    tbEl.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--tx3);font-size:12px">
       Nenhum lançamento do tipo <strong style="color:var(--or)">${filtro}</strong> neste dia.</td></tr>`;
     return;
   }
@@ -13171,13 +13370,25 @@ function renderCaixa(){
   const thead = document.getElementById('thead-cx');
   if(thead){
     thead.innerHTML = '<tr>' +
-      '<th>Data</th><th>Hora</th><th>Histórico</th><th>Categoria / Conta</th>' +
+      '<th>Data</th><th>Hora</th><th>Histórico</th><th>Fornecedor</th><th>Categoria / Conta</th>' +
       '<th style="text-align:right;color:#81C784">Entrada</th>' +
       '<th style="text-align:right;color:#EF9A9A">Saída</th>' +
       '<th style="text-align:right;color:var(--or)">Saldo</th>' +
       '<th>Situação</th><th></th>' +
       '</tr>';
   }
+
+  // Helper: resolve nome do fornecedor pelo ID ou texto livre
+  const fornsArr = S.g('fornecedores')||[];
+  const nomeForn = fv => {
+    if(!fv) return '';
+    // Tenta por ID numérico
+    const f = fornsArr.find(x=>String(x.id)===String(fv));
+    if(f) return f.n;
+    // Fallback: texto livre (ex: 'Caixa', nome digitado)
+    if(String(fv).length > 1 && !/^\d+$/.test(String(fv))) return fv;
+    return '';
+  };
 
   // Calcula saldo corrido linha a linha
   let saldoCorrente = saldoInicial;
@@ -13215,6 +13426,9 @@ function renderCaixa(){
         <div style="color:var(--tx);font-weight:500;font-size:13px">${mov.desc||'—'}</div>
         ${mov.obs?`<div style="font-size:10px;color:var(--tx3);margin-top:1px">${mov.obs}</div>`:''}
       </td>
+      <td style="font-size:12px;color:var(--tx2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${nomeForn(mov.forn)}">
+        ${nomeForn(mov.forn)||'<span style="color:var(--tx3)">—</span>'}
+      </td>
       <td>
         <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:${catCor}">
           <i class="fa-solid ${catIcon}"></i>${mov.cat||'—'}
@@ -13246,7 +13460,7 @@ function renderCaixa(){
     const totEnt = sorted.filter(m=>m.tipo==='Entrada').reduce((a,b)=>a+(b.valor||0),0);
     const totSai = sorted.filter(m=>m.tipo==='Saída').reduce((a,b)=>a+(b.valor||0),0);
     tbEl.innerHTML += `<tr style="border-top:2px solid rgba(255,255,255,0.1);background:rgba(242,100,25,0.06)">
-      <td colspan="4" style="font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;padding:10px">
+      <td colspan="5" style="font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:1px;padding:10px">
         <i class="fa-solid fa-equals" style="color:var(--or);margin-right:6px"></i>Totais do período
       </td>
       <td style="text-align:right;font-weight:700;color:#81C784;font-size:13px">${R(totEnt)}</td>
@@ -13355,7 +13569,7 @@ function cxSalvarAbertura(){
   let arr=S.g('caixa-mov')||[];
   if(arr.find(x=>x.data===_cxData&&x.tipo==='Saldo Inicial')){alert('Já existe saldo inicial nesta data.');return;}
   arr.push({id:cxNextId(arr),data:_cxData,hora:cxFmtHora(),cat:'Saldo Inicial',
-    desc:'Saldo Inicial de Caixa',valor:saldo,forma:'Dinheiro',resp,obs,tipo:'Saldo Inicial'});
+    desc:'Saldo Inicial de Caixa',valor:saldo,forma:cxGetFormaDinheiro(),resp,obs,tipo:'Saldo Inicial'});
   S.s('caixa-mov',arr);
   closeMod('mod-cx-abertura');
   renderCaixa();
@@ -13419,7 +13633,7 @@ function cxConfirmarFechamento(){
     const tipo=diff>0?'Entrada':'Saída';
     const descDiff=diff>0?'Sobra de Caixa (Fechamento)':'Quebra de Caixa (Fechamento)';
     arr.push({id:cxNextId(arr),data:_cxData,hora:cxFmtHora(),
-      cat:descDiff,desc:descDiff,valor:Math.abs(diff),forma:'Dinheiro',resp,obs:'Diferença no fechamento',tipo});
+      cat:descDiff,desc:descDiff,valor:Math.abs(diff),forma:cxGetFormaDinheiro(),resp,obs:'Diferença no fechamento',tipo});
     S.s('caixa-mov',arr);
   }
   closeMod('mod-cx-fechamento');
@@ -13690,24 +13904,11 @@ function renderPagar(){
 }
 
 function rcLimparClienteComConta(){
-  // Corrige lançamentos onde campo cliente foi gravado com código de conta (ex: "1.1")
-  const arr = S.g('receber')||[];
-  const pc  = getPC();
-  const codsConta = new Set(pc.map(x=>x.cod));
-  let alterou = false;
-  const corrigido = arr.map(l=>{
-    const cli = (l.cliente||'').trim();
-    if(codsConta.has(cli) || /^\d+\.\d/.test(cli)){
-      alterou = true;
-      return {...l, cliente: ''};
-    }
-    return l;
-  });
-  if(alterou) S.s('receber', corrigido);
+  // Removido: não altera dados automaticamente — o usuário controla o campo cliente
 }
 
 function renderReceber(){
-  rcLimparClienteComConta();
+  // rcLimparClienteComConta: removido — não altera dados automaticamente
   const arr    = S.g('receber')||[];
   const hoje   = new Date().toISOString().slice(0,7);
 
@@ -15676,79 +15877,13 @@ function initCatProdVendaPadrao(){
 }
 
 // Migração: garante que categorias de Serviços/Impostos e Imobilizado existam
-function migrarCatProdPadrao(){
-  const arr = S.g('cat-produtos')||[];
-  if(!arr.length) return; // será populado pelo initCatProdPadrao
-  const nomes = arr.map(c=>c.nome.toLowerCase());
-  let alterou = false;
-  const NOVAS = [
-    {id:7, cod:'CAT-07', nome:'Serviços e Impostos', conta:'', cor:'tg-rd', st:'Ativo', obs:'Serviços contratados, impostos, taxas e tributos'},
-    {id:8, cod:'CAT-08', nome:'Imobilizado',          conta:'', cor:'tg-gy', st:'Ativo', obs:'Equipamentos, máquinas e bens duráveis'},
-  ];
-  NOVAS.forEach(nova=>{
-    if(!nomes.includes(nova.nome.toLowerCase())){
-      // Garante ID único
-      const maxId = Math.max(0, ...arr.map(c=>c.id||0));
-      arr.push({...nova, id: Math.max(nova.id, maxId+1)});
-      alterou = true;
-    }
-  });
-  if(alterou) S.s('cat-produtos', arr);
-}
+// migrarCatProdPadrao: removido — não insere categorias no cadastro sem comando do usuário
+function migrarCatProdPadrao(){ }
 
 function getCatProdsVenda(){ return S.g('cat-produtos-venda')||[]; }
 
-// Migração única: converte nomes de categorias existentes para sentence case
-function migrarCategoriasSentenceCase(){
-  const chave = 'cats_sentencecase_v2'; // v2: inclui produtos e insumos
-  if(localStorage.getItem('homolog_'+chave)) return;
-  const sc = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
-  let alterou = false;
-
-  // 1. Corrige nomes no cadastro de categorias
-  ['cat-produtos','cat-produtos-venda'].forEach(key=>{
-    const arr = S.g(key)||[];
-    arr.forEach(c=>{ if(c.nome && c.nome !== sc(c.nome)){ c.nome = sc(c.nome); alterou = true; } });
-    S.s(key, arr);
-  });
-
-  // 2. Monta mapa de nome antigo → nome correto para lookup rápido
-  const mapaCorreto = {};
-  ['cat-produtos','cat-produtos-venda'].forEach(key=>{
-    (S.g(key)||[]).forEach(c=>{ if(c.nome) mapaCorreto[c.nome.toUpperCase().trim()] = c.nome; });
-  });
-
-  // 3. Corrige campo cat nos produtos de revenda
-  const prods = S.g('produtos')||[];
-  prods.forEach(p=>{
-    if(!p.cat) return;
-    const corrigido = mapaCorreto[p.cat.toUpperCase().trim()] || sc(p.cat);
-    if(p.cat !== corrigido){ p.cat = corrigido; alterou = true; }
-  });
-  if(prods.length) S.s('produtos', prods);
-
-  // 4. Corrige campo cat nos insumos
-  const insumos = S.g('insumos')||[];
-  insumos.forEach(i=>{
-    if(!i.cat) return;
-    const corrigido = mapaCorreto[i.cat.toUpperCase().trim()] || sc(i.cat);
-    if(i.cat !== corrigido){ i.cat = corrigido; alterou = true; }
-  });
-  if(insumos.length) S.s('insumos', insumos);
-
-  // 5. Corrige campo cat nos produtos do estoque (eq-produtos)
-  const eqProds = S.g('eq-produtos')||[];
-  const CATS_EQ = {'CMV_INSUMOS':'Insumos','CMV_BEBIDAS':'Bebidas','CMV_SERVICOS':'Serviços'};
-  eqProds.forEach(p=>{
-    if(!p.cat) return;
-    const corrigido = CATS_EQ[p.cat] || mapaCorreto[p.cat.toUpperCase().trim()] || p.cat;
-    if(p.cat !== corrigido){ p.cat = corrigido; alterou = true; }
-  });
-  if(eqProds.length) S.s('eq-produtos', eqProds);
-
-  localStorage.setItem('homolog_'+chave, '1');
-  if(alterou) console.log('[Migração v2] Categorias e produtos convertidos para sentence case.');
-}
+// migrarCategoriasSentenceCase: removido — não altera nomes cadastrados pelo usuário
+function migrarCategoriasSentenceCase(){ }
 
 function gerarCodigoCatVenda(){
   const arr=getCatProdsVenda();
@@ -15759,7 +15894,7 @@ function gerarCodigoCatVenda(){
 
 function saveCatProdVenda(){
   const idVal=document.getElementById('mcpv-id').value;
-  const nome=toSentenceCase(document.getElementById('mcpv-nome').value.trim());
+  const nome=(document.getElementById('mcpv-nome').value.trim()).toUpperCase();
   if(!nome){alert('Informe o nome da categoria.');return;}
   const arr=getCatProdsVenda();
   if(idVal){
@@ -15882,7 +16017,7 @@ function gerarCodigoCat(){
 
 function saveCategoriaProd(){
   const idVal=document.getElementById('mcp-id').value;
-  const nome=toSentenceCase(document.getElementById('mcp-nome').value.trim());
+  const nome=(document.getElementById('mcp-nome').value.trim()).toUpperCase();
   if(!nome){alert('Informe o nome da categoria.');return;}
   const arr=getCatProds();
   if(idVal){
@@ -16809,7 +16944,7 @@ function editPagar(id){
     const dtpagEl = document.getElementById('mpp-dtpag-1');
     if(vencEl)  vencEl.value  = lanc.venc||'';
     if(valEl)   valEl.value   = lanc.val||'';
-    if(formaEl) formaEl.value = lanc.forma||'PIX';
+    if(formaEl) formaEl.value = lanc.forma||'';
     if(stEl)    stEl.value    = lanc.status||'Pendente';
     if(dtpagEl) dtpagEl.value = lanc.dtpag||'';
   }, 50);
@@ -16850,7 +16985,7 @@ function mepEditarItem(idx){
   const row = document.getElementById('mep-row-'+idx);
   if(!row) return;
   row.innerHTML = `
-    <td style="padding:4px 6px"><input id="mep-it-nome-${idx}" type="text" value="${it.nome||''}" style="width:100%;background:var(--dk3);border:1px solid var(--or);border-radius:4px;padding:4px 6px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px"></td>
+    <td style="padding:4px 6px"><input id="mep-it-nome-${idx}" type="text" value="${it.nome||''}" oninput="this.value=this.value.toUpperCase()" style="width:100%;background:var(--dk3);border:1px solid var(--or);border-radius:4px;padding:4px 6px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px"></td>
     <td style="padding:4px 6px;text-align:center">
       <input id="mep-it-qtd-${idx}" type="number" value="${it.qtd||1}" step="0.001" style="width:60px;background:var(--dk3);border:1px solid var(--bd);border-radius:4px;padding:4px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;text-align:center">
     </td>
@@ -17676,18 +17811,14 @@ function initRelPagar(){
     {v:'Vencida',l:'Vencida'},
   ]);
 
-  // Formas: do cadastro + padrões
-  const formasCad = (S.g('formas-pag')||[]).map(f=>({v:f.nome,l:f.nome}));
-  const formasPad = ['PIX','Boleto','Transferência','Dinheiro','Cartão'].map(f=>({v:f,l:f}));
-  const todasFormas = [...new Map([...formasPad,...formasCad].map(x=>[x.v,x])).values()];
+  // Formas: fonte única = cadastro de formas-pagamento
+  const formasCad = (S.g('formas-pagamento')||[]).filter(f=>f.st==='Ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  const todasFormas = formasCad.map(f=>({v:f.nome,l:f.nome}));
   msInit('forma', todasFormas);
 
-  // Categorias: do cadastro de categoria de produtos + Serviços/Impostos fixos
-  const catsProd = getCatProds().map(c=>({v:c.nome, l:c.nome}));
-  const catsExtra = ['Serviços/Impostos','Produtos'].map(n=>({v:n,l:n}));
-  // Junta sem duplicatas
-  const todasCats = [...new Map([...catsProd,...catsExtra].map(x=>[x.v,x])).values()];
-  msInit('cat', todasCats);
+  // Categorias: fonte única = cadastro de categorias de produtos (ativas, ordem alfabética)
+  const catsProd = getCatProds().filter(c=>c.st==='Ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({v:c.nome, l:c.nome}));
+  msInit('cat', catsProd);
 
   // Inicializa month picker — só reinicia se não houver seleção ativa
   if(!mpState['comp'] || mpState['comp'].sel.size === 0){
@@ -17789,6 +17920,15 @@ function gerarRelPagar(){
       '5.5.04':'imobilizado','5.5.05':'imobilizado','5.5.06':'imobilizado',
     };
     // Grupo 5 cobre todos os serviços/despesas operacionais
+    // Normalização para categorias de serviços: cobre "serviços/impostos", "serviços e impostos"
+    // e qualquer variante que o cliente tenha cadastrado
+    const isServicosImpostos = v => /servico|imposto|servic/.test(v) && !v.includes('imobilizado');
+    // Expande selCatNorm para incluir aliases de servicos/impostos
+    const temServicos = [...selCatNorm].some(isServicosImpostos);
+    if(temServicos){
+      selCatNorm.add('servicos/impostos');
+      selCatNorm.add('servicos e impostos');
+    }
     const GRUPO_CAT = {'3':'servicos/impostos','5':'servicos/impostos'}; // grupo 4 tratado pela conta completa no CONTA_CAT
 
     arr = arr.filter(x => {
@@ -17861,7 +18001,7 @@ function gerarRelPagar(){
         'utensilios':['utensilio','panela','cozinha'],
         'material de expediente':['expediente','papelaria','escritorio'],
         'imobilizado':['equipamento','maquina','reforma','obra'],
-        'servicos/impostos':['aluguel','energia','luz','gas','folha','salario','imposto','taxa','contab','inss','fgts','telefone','servico','consultoria','honorario','seguro','internet','manutencao'],
+        'servicos/impostos':['aluguel','energia','luz','gas','folha','salario','imposto','taxa','contab','inss','fgts','telefone','servico','consultoria','honorario','seguro','internet'],
       };
       for(const [cat, palavras] of Object.entries(palavrasCat)){
         if(selCatNorm.has(cat) && palavras.some(p=>texto.includes(p))) return true;
@@ -18215,6 +18355,145 @@ function rrPopularFormasDropdown(){
   });
 }
 
+// ══════════════════════════════════════════════════════
+// REL. FORMAS DE RECEBIMENTO — PICKER DE PERÍODO
+// ══════════════════════════════════════════════════════
+let _rrFiltro  = { tipo:'mes', mes: new Date().toISOString().slice(0,7), ini:null, fim:null, ano:null };
+let _rrAnoNav  = new Date().getFullYear();
+const _rrMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const _rrMesesFull = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function rrTogglePicker(){
+  const p = document.getElementById('rr-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : '';
+  const chev = document.getElementById('rr-periodo-chevron');
+  if(chev) chev.style.transform = aberto ? '' : 'rotate(180deg)';
+  if(!aberto){ rrRenderGridMeses(); rrRenderGridAnos(); }
+}
+
+function rrFecharPicker(){
+  const p = document.getElementById('rr-picker');
+  if(p) p.style.display = 'none';
+  const chev = document.getElementById('rr-periodo-chevron');
+  if(chev) chev.style.transform = '';
+}
+
+function rrAtualizarLabel(txt){
+  const el = document.getElementById('rr-periodo-label');
+  if(el) el.textContent = txt;
+}
+
+function rrSetModo(modo){
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('rr-tab-'+m);
+    const div = document.getElementById('rr-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div) div.style.display = m===modo ? '' : 'none';
+  });
+  if(modo==='mes') rrRenderGridMeses();
+  if(modo==='ano') rrRenderGridAnos();
+}
+
+function rrNavAno(delta){
+  _rrAnoNav += delta;
+  document.getElementById('rr-nav-ano').textContent = _rrAnoNav;
+  rrRenderGridMeses();
+}
+
+function rrRenderGridMeses(){
+  const grid = document.getElementById('rr-grid-meses');
+  if(!grid) return;
+  const mesSel = _rrFiltro.tipo==='mes' ? _rrFiltro.mes : null;
+  grid.innerHTML = _rrMeses.map((m,i)=>{
+    const ym = _rrAnoNav+'-'+String(i+1).padStart(2,'0');
+    const ativo = mesSel === ym;
+    return `<button onclick="rrSelecionarMes('${ym}')"
+      style="padding:7px 4px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+      border-radius:6px;background:${ativo?'rgba(242,100,25,0.15)':'transparent'};
+      color:${ativo?'var(--or)':'var(--tx2)'};font-family:Outfit,sans-serif;
+      font-size:12px;cursor:pointer;font-weight:${ativo?'600':'400'}">${m}</button>`;
+  }).join('');
+}
+
+function rrRenderGridAnos(){
+  const grid = document.getElementById('rr-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let a=anoAtual-2; a<=anoAtual+1; a++) anos.push(a);
+  const anoSel = _rrFiltro.tipo==='ano' ? _rrFiltro.ano : null;
+  grid.innerHTML = anos.map(a=>{
+    const ativo = anoSel===a;
+    return `<button onclick="rrSelecionarAno(${a})"
+      style="padding:8px 4px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+      border-radius:6px;background:${ativo?'rgba(242,100,25,0.15)':'transparent'};
+      color:${ativo?'var(--or)':'var(--tx2)'};font-family:Outfit,sans-serif;
+      font-size:13px;cursor:pointer;font-weight:${ativo?'600':'400'}">${a}</button>`;
+  }).join('');
+}
+
+function rrSelecionarMes(ym){
+  _rrFiltro = { tipo:'mes', mes:ym, ini:null, fim:null, ano:null };
+  const [y,m] = ym.split('-').map(Number);
+  rrAtualizarLabel(_rrMesesFull[m-1]+' de '+y);
+  rrFecharPicker();
+  gerarRelReceber();
+}
+
+function rrSelecionarAno(ano){
+  _rrFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano };
+  rrAtualizarLabel('Ano de '+ano);
+  rrFecharPicker();
+  gerarRelReceber();
+}
+
+function rrAplicarPeriodo(){
+  const ini = document.getElementById('rr-dt-ini')?.value||'';
+  const fim = document.getElementById('rr-dt-fim')?.value||'';
+  if(!ini||!fim){ alert('Informe as datas de início e fim.'); return; }
+  if(ini>fim){ alert('A data inicial deve ser anterior à data final.'); return; }
+  _rrFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  const fmt = d => { const [y,m,dd]=d.split('-'); return dd+'/'+m+'/'+y; };
+  rrAtualizarLabel(fmt(ini)+' a '+fmt(fim));
+  rrFecharPicker();
+  gerarRelReceber();
+}
+
+function rrAtalho(tipo){
+  const hoje = new Date();
+  const fmt  = d => d.toISOString().slice(0,10);
+  const fmtM = d => d.toISOString().slice(0,7);
+  if(tipo==='hoje'){
+    const d = fmt(hoje);
+    _rrFiltro = { tipo:'periodo', mes:null, ini:d, fim:d, ano:null };
+    rrAtualizarLabel('Hoje — '+d.split('-').reverse().join('/'));
+  } else if(tipo==='semana'){
+    const seg = new Date(hoje); seg.setDate(hoje.getDate()-hoje.getDay()+1);
+    const dom = new Date(seg); dom.setDate(seg.getDate()+6);
+    _rrFiltro = { tipo:'periodo', mes:null, ini:fmt(seg), fim:fmt(dom), ano:null };
+    rrAtualizarLabel('Esta semana');
+  } else if(tipo==='mes'){
+    const ym = fmtM(hoje);
+    const ini = new Date(hoje.getFullYear(),hoje.getMonth(),1);
+    const fim = new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+    _rrFiltro = { tipo:'periodo', mes:null, ini:fmt(ini), fim:fmt(fim), ano:null };
+    rrAtualizarLabel(_rrMesesFull[hoje.getMonth()]+' de '+hoje.getFullYear());
+  } else if(tipo==='trimestre'){
+    const t = Math.floor(hoje.getMonth()/3);
+    const ini = new Date(hoje.getFullYear(),t*3,1);
+    const fim = new Date(hoje.getFullYear(),t*3+3,0);
+    _rrFiltro = { tipo:'periodo', mes:null, ini:fmt(ini), fim:fmt(fim), ano:null };
+    rrAtualizarLabel((t+1)+'º Trimestre '+hoje.getFullYear());
+  } else if(tipo==='ano'){
+    _rrFiltro = { tipo:'ano', mes:null, ini:null, fim:null, ano:hoje.getFullYear() };
+    rrAtualizarLabel('Ano de '+hoje.getFullYear());
+  }
+  rrFecharPicker();
+  gerarRelReceber();
+}
+
 function initRelReceber(){
   // Popular multi-select de formas de recebimento
   rrPopularFormasDropdown();
@@ -18226,15 +18505,17 @@ function initRelReceber(){
       drop.style.display = 'none';
     }
   }, { capture: true });
-  // Definir período padrão: mês atual
+  // Período padrão: mês atual
   const hoje = new Date();
-  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
-  const fmt = d => d.toISOString().slice(0,10);
-  const elIni = document.getElementById('rr-dt-ini');
-  const elFim = document.getElementById('rr-dt-fim');
-  if(elIni && !elIni.value) elIni.value = fmt(ini);
-  if(elFim && !elFim.value) elFim.value = fmt(fim);
+  _rrAnoNav = hoje.getFullYear();
+  _rrFiltro = { tipo:'mes', mes: hoje.toISOString().slice(0,7), ini:null, fim:null, ano:null };
+  rrAtualizarLabel(_rrMesesFull[hoje.getMonth()]+' de '+hoje.getFullYear());
+  // Fechar picker ao clicar fora
+  document.addEventListener('click', function rrOutside(e){
+    const p = document.getElementById('rr-picker');
+    const b = document.getElementById('rr-periodo-btn');
+    if(p && b && !p.contains(e.target) && !b.contains(e.target)) rrFecharPicker();
+  }, { capture:true });
   gerarRelReceber();
 }
 
@@ -18274,7 +18555,9 @@ function rrGetFormasSelecionadas(){
 }
 
 function limparFiltrosRelRec(){
-  ['rr-dt-ini','rr-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const hoje = new Date();
+  _rrFiltro = { tipo:'mes', mes: hoje.toISOString().slice(0,7), ini:null, fim:null, ano:null };
+  rrAtualizarLabel(_rrMesesFull[hoje.getMonth()]+' de '+hoje.getFullYear());
   const s=document.getElementById('rr-status'); if(s) s.value='';
   rrFormaToggleTodos();
   document.getElementById('rr-resultado').style.display='none';
@@ -18283,18 +18566,22 @@ function limparFiltrosRelRec(){
 }
 
 function gerarRelReceber(){
-  const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
-  const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
   const status = document.getElementById('rr-status')?.value||'';
-  const formasSel = rrGetFormasSelecionadas(); // array, vazio = todas
-
+  const formasSel = rrGetFormasSelecionadas();
   const receber = S.g('receber')||[];
 
-  // Filtrar lançamentos
+  // Filtrar lançamentos usando _rrFiltro
   const filtrados = receber.filter(l=>{
     const venc = (l.venc||'').slice(0,10);
-    if(dtIni && venc < dtIni) return false;
-    if(dtFim && venc > dtFim) return false;
+    const comp = (l.comp||'').slice(0,7);
+    // Filtro de período
+    if(_rrFiltro.tipo==='mes' && _rrFiltro.mes){
+      if(venc.slice(0,7) !== _rrFiltro.mes) return false;
+    } else if(_rrFiltro.tipo==='periodo' && _rrFiltro.ini && _rrFiltro.fim){
+      if(venc < _rrFiltro.ini || venc > _rrFiltro.fim) return false;
+    } else if(_rrFiltro.tipo==='ano' && _rrFiltro.ano){
+      if(venc.slice(0,4) !== String(_rrFiltro.ano)) return false;
+    }
     if(status && l.status !== status) return false;
     if(formasSel.length > 0 && !formasSel.includes((l.forma||'').toUpperCase())) return false;
     return true;
@@ -18329,13 +18616,7 @@ function gerarRelReceber(){
   document.getElementById('rr-kpi-formas').textContent = linhas.length;
   document.getElementById('rr-kpis').style.display='';
 
-  // Label período
-  const label = document.getElementById('rr-periodo-label');
-  if(label){
-    let txt = '';
-    if(dtIni || dtFim) txt = (dtIni?fmtData(dtIni):'...') + ' a ' + (dtFim?fmtData(dtFim):'...');
-    label.textContent = txt;
-  }
+  // Label período — já atualizado pelo picker, não precisa sobrescrever
 
   const CORES_RR = ['#C0432A','#64B5F6','#4CAF50','#FFB74D','#9575CD','#26C6DA','#EF5350','#66BB6A','#FFA726','#42A5F5'];
 
@@ -18429,8 +18710,8 @@ function exportarRelReceber(){
     return;
   }
   const receber = S.g('receber')||[];
-  const dtIni  = document.getElementById('rr-dt-ini')?.value||'';
-  const dtFim  = document.getElementById('rr-dt-fim')?.value||'';
+  const dtIni  = _rrFiltro.ini || (_rrFiltro.mes ? _rrFiltro.mes+'-01' : '');
+  const dtFim  = _rrFiltro.fim || (_rrFiltro.mes ? _rrFiltro.mes+'-31' : '');
   const status = document.getElementById('rr-status')?.value||'';
   const formasSel = rrGetFormasSelecionadas();
   const filtrados = receber.filter(l=>{
@@ -21610,6 +21891,318 @@ function renderFluxo(){
   }
 }
 
+
+// ══════════════════════════════════════════════════════════
+// SANEAMENTO DE DADOS — FORMAS DE RECEBIMENTO
+// ══════════════════════════════════════════════════════════
+
+function abrirSaneamento(){
+  openMod('mod-saneamento');
+  sanTrocarAba('formas');
+  setTimeout(sanAnalisar, 100);
+}
+
+function sanAnalisar(){
+  const div = document.getElementById('san-conteudo');
+  const btnAplicar = document.getElementById('san-btn-aplicar');
+  if(!div) return;
+
+  const formasCad = (S.g('formas-recebimento')||[]).filter(f=>f.st==='Ativo');
+  const nomesValidos = new Set(formasCad.map(f=>f.nome));
+  const lancamentos  = S.g('receber')||[];
+
+  // Agrupar lançamentos com forma inválida por nome de forma
+  const grupos = {}; // { "nomeInvalido": [lanc, lanc, ...] }
+  lancamentos.forEach(l=>{
+    if(l.forma && !nomesValidos.has(l.forma)){
+      if(!grupos[l.forma]) grupos[l.forma] = [];
+      grupos[l.forma].push(l);
+    }
+  });
+
+  const nGrupos = Object.keys(grupos).length;
+
+  if(nGrupos === 0){
+    div.innerHTML = `
+      <div style="text-align:center;padding:30px">
+        <i class="fa-solid fa-circle-check" style="font-size:40px;color:var(--gr);margin-bottom:12px;display:block"></i>
+        <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:6px">Tudo consistente!</div>
+        <div style="font-size:12px;color:var(--tx3)">Todos os lançamentos utilizam formas de recebimento válidas do cadastro.</div>
+      </div>`;
+    if(btnAplicar) btnAplicar.style.display='none';
+    return;
+  }
+
+  // Monta opções do select com formas cadastradas
+  const optsFormas = '<option value="">— Selecione a forma correta —</option>' +
+    formasCad.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join('');
+
+  let html = `
+    <div style="background:rgba(249,168,37,0.08);border:1px solid rgba(249,168,37,0.3);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#F9A825">
+      <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px"></i>
+      <strong>${lancamentos.filter(l=>l.forma&&!nomesValidos.has(l.forma)).length} lançamento(s)</strong> com formas divergentes em <strong>${nGrupos} grupo(s)</strong>.
+      Para cada grupo, escolha qual forma do cadastro deve substituir.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:10px">`;
+
+  Object.entries(grupos).sort((a,b)=>a[0].localeCompare(b[0],'pt-BR')).forEach(([nomeInvalido, lans])=>{
+    const total = lans.reduce((s,l)=>s+(l.val||0),0);
+    const meses = [...new Set(lans.map(l=>(l.comp||l.venc||'').slice(0,7)))].sort().join(', ');
+    html += `
+      <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Forma inválida encontrada</div>
+            <div style="font-size:13px;font-weight:700;color:#F44336;background:rgba(244,67,54,0.1);display:inline-block;padding:3px 10px;border-radius:4px">${nomeInvalido}</div>
+          </div>
+          <div style="font-size:11px;color:var(--tx3);text-align:right;line-height:1.8">
+            <div><i class="fa-solid fa-hashtag" style="color:var(--or);margin-right:4px"></i>${lans.length} lançamento(s)</div>
+            <div><i class="fa-solid fa-dollar-sign" style="color:var(--gr);margin-right:4px"></i>Total: <strong style="color:var(--tx)">${total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div>
+            <div><i class="fa-solid fa-calendar" style="color:var(--bl);margin-right:4px"></i>${meses||'—'}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:11px;color:var(--tx3);white-space:nowrap"><i class="fa-solid fa-arrow-right" style="color:#F9A825;margin-right:4px"></i>Corrigir para:</div>
+          <select data-forma-invalida="${nomeInvalido.replace(/"/g,'&quot;')}" class="san-select"
+            style="flex:1;background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none"
+            onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='var(--bd)'">
+            ${optsFormas}
+          </select>
+        </div>
+      </div>`;
+  });
+
+  html += '</div>';
+  div.innerHTML = html;
+  if(btnAplicar) btnAplicar.style.display='';
+}
+
+function sanAplicarCorrecoes(){
+  const selects = document.querySelectorAll('.san-select');
+  if(!selects.length) return;
+
+  // Valida que todos têm seleção
+  let temVazio = false;
+  selects.forEach(sel=>{ if(!sel.value) temVazio=true; });
+  if(temVazio){
+    alert('⚠️ Selecione a forma correta para todos os grupos antes de aplicar.');
+    return;
+  }
+
+  // Monta mapa de correção: { formaInvalida → formaCorreta }
+  const mapa = {};
+  selects.forEach(sel=>{ mapa[sel.getAttribute('data-forma-invalida')] = sel.value; });
+
+  const formasCad = (S.g('formas-recebimento')||[]).filter(f=>f.st==='Ativo');
+  const nomesValidos = new Set(formasCad.map(f=>f.nome));
+
+  const lancamentos = S.g('receber')||[];
+  let corrigidos = 0;
+
+  lancamentos.forEach(l=>{
+    if(l.forma && !nomesValidos.has(l.forma) && mapa[l.forma]){
+      l.forma = mapa[l.forma];
+      corrigidos++;
+    }
+  });
+
+  S.s('receber', lancamentos);
+
+  showToast(`✓ ${corrigidos} lançamento(s) corrigido(s) com sucesso!`, 'var(--gr)');
+  closeMod('mod-saneamento');
+  if(typeof renderReceber==='function') renderReceber();
+}
+
+// ══════════════════════════════════════════════════════
+// SANEAMENTO — MANUTENÇÃO DO CAIXA E ESTOQUE
+// ══════════════════════════════════════════════════════
+
+function sanRunCarryForward(){
+  if(!confirm('Executar Carry-Forward do Caixa?\n\nCalculará o saldo final do mês anterior e criará o Saldo Inicial do mês atual.')) return;
+  const ym = new Date().toISOString().slice(0,7);
+  cxCarryForwardMensal(ym);
+  sanLog('✓ Carry-Forward executado para ' + ym + '. Verifique o Caixa Diário.');
+  if(typeof renderCaixa==='function') renderCaixa();
+}
+
+function sanRunCorrigirDatas(){
+  if(!confirm('Sincronizar datas do CAP com o Caixa Diário?\n\nAjusta datas de vencimento divergentes.')) return;
+  cxCorrigirDatasCAP();
+  sanLog('✓ Datas do CAP sincronizadas com o Caixa Diário.');
+  if(typeof renderPagar==='function') renderPagar();
+}
+
+function sanRunCorrigirInventarios(){
+  if(!confirm('Corrigir arredondamentos no Estoque?\n\nDetecta quantidades como 0,001 e converte para o valor inteiro correto.')) return;
+  eqCorrigirInventariosErrados();
+  sanLog('✓ Inventários verificados e corrigidos.');
+  if(typeof renderEstoque==='function') renderEstoque();
+}
+
+function sanRunMigrarCodigos(){
+  if(!confirm('Gerar códigos EST- para produtos sem código?\n\nAtribui EST-0001, EST-0002... sequencialmente.')) return;
+  eqMigrarCodigosProdutos();
+  sanLog('✓ Códigos EST- gerados para produtos sem código.');
+  if(typeof renderEstoque==='function') renderEstoque();
+}
+
+function sanLog(msg){
+  const el = document.getElementById('san-manut-log');
+  if(!el) return;
+  el.style.display = '';
+  el.innerHTML = '<i class="fa-solid fa-circle-check" style="margin-right:6px"></i>' + msg;
+}
+
+// ══════════════════════════════════════════════════════
+// SANEAMENTO — PADRONIZAÇÃO DE NOMENCLATURAS
+// ══════════════════════════════════════════════════════
+
+function sanTrocarAba(aba){
+  const painelFormas = document.getElementById('san-painel-formas');
+  const painelNomes  = document.getElementById('san-painel-nomes');
+  const painelManut  = document.getElementById('san-painel-manut');
+  const abaFormas    = document.getElementById('san-aba-formas');
+  const abaNomes     = document.getElementById('san-aba-nomes');
+  const abaManut     = document.getElementById('san-aba-manut');
+  const btnAplicar   = document.getElementById('san-btn-aplicar');
+  const btnNomes     = document.getElementById('san-btn-nomes');
+  const logEl        = document.getElementById('san-manut-log');
+
+  // Esconde tudo
+  [painelFormas, painelNomes, painelManut].forEach(p=>{ if(p) p.style.display='none'; });
+  [abaFormas, abaNomes, abaManut].forEach(a=>{ if(a){ a.style.borderBottomColor='transparent'; a.style.color='var(--tx3)'; a.style.fontWeight='normal'; } });
+  if(btnAplicar) btnAplicar.style.display='none';
+  if(btnNomes)   btnNomes.style.display='none';
+  if(logEl)      logEl.style.display='none';
+
+  if(aba === 'formas'){
+    if(painelFormas) painelFormas.style.display='';
+    if(abaFormas){ abaFormas.style.borderBottomColor='var(--or)'; abaFormas.style.color='var(--or)'; abaFormas.style.fontWeight='600'; }
+    const selects = document.querySelectorAll('.san-select');
+    if(btnAplicar) btnAplicar.style.display = selects.length ? '' : 'none';
+  } else if(aba === 'nomes'){
+    if(painelNomes) painelNomes.style.display='';
+    if(abaNomes){ abaNomes.style.borderBottomColor='var(--or)'; abaNomes.style.color='var(--or)'; abaNomes.style.fontWeight='600'; }
+    if(btnNomes) btnNomes.style.display='none';
+    sanAnalisarNomes();
+  } else if(aba === 'manut'){
+    if(painelManut) painelManut.style.display='';
+    if(abaManut){ abaManut.style.borderBottomColor='var(--or)'; abaManut.style.color='var(--or)'; abaManut.style.fontWeight='600'; }
+  }
+}
+
+function sanTitleCase(str){
+  // Converte para MAIÚSCULAS — padrão do sistema
+  return str ? str.toUpperCase() : str;
+}
+
+function sanAnalisarNomes(){
+  const div = document.getElementById('san-nomes-conteudo');
+  const btn = document.getElementById('san-btn-nomes');
+  if(!div) return;
+
+  const sc = s => s ? s.toUpperCase() : s; // padrão do sistema: MAIÚSCULAS
+
+  // Coleta todos os itens que seriam alterados
+  const alteracoes = [];
+
+  const checar = (store, labelStore, campo) => {
+    (S.g(store)||[]).forEach(item => {
+      const val = item[campo]||'';
+      const novo = sc(val);
+      if(val && val !== novo) alteracoes.push({ store, id: item.id, campo, de: val, para: novo, label: labelStore });
+    });
+  };
+
+  checar('cat-produtos',      'Categorias de Compras',  'nome');
+  checar('cat-produtos-venda','Categorias de Vendas',   'nome');
+  checar('fornecedores',      'Fornecedores',            'n');
+  checar('produtos',          'Produtos (Estoque)',       'n');
+  checar('insumos',           'Insumos',                 'n');
+
+  if(!alteracoes.length){
+    div.innerHTML = `
+      <div style="text-align:center;padding:30px">
+        <i class="fa-solid fa-circle-check" style="font-size:40px;color:var(--gr);margin-bottom:12px;display:block"></i>
+        <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:6px">Tudo padronizado!</div>
+        <div style="font-size:12px;color:var(--tx3)">Todos os nomes já estão no formato Primeira Letra Maiúscula.</div>
+      </div>`;
+    if(btn) btn.style.display = 'none';
+    return;
+  }
+
+  // Agrupar por store
+  const porStore = {};
+  alteracoes.forEach(a => {
+    if(!porStore[a.label]) porStore[a.label] = [];
+    porStore[a.label].push(a);
+  });
+
+  let html = `
+    <div style="background:rgba(33,150,243,0.08);border:1px solid rgba(33,150,243,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#1976D2">
+      <i class="fa-solid fa-info-circle" style="margin-right:6px"></i>
+      <strong>${alteracoes.length} nome(s)</strong> serão convertidos para LETRAS MAIÚSCULAS.
+    </div>`;
+
+  Object.entries(porStore).forEach(([label, items]) => {
+    html += `<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+        <i class="fa-solid fa-tag" style="color:var(--or);margin-right:5px"></i>${label} — ${items.length} item(s)
+      </div>
+      <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:8px;overflow:hidden">`;
+    items.slice(0, 8).forEach((a, i) => {
+      html += `<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:7px 12px;${i>0?'border-top:1px solid rgba(255,255,255,0.04)':''}">
+        <span style="font-size:12px;color:#F44336;font-family:monospace">${a.de}</span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--tx3);font-size:10px"></i>
+        <span style="font-size:12px;color:var(--gr);font-family:monospace">${a.para}</span>
+      </div>`;
+    });
+    if(items.length > 8){
+      html += `<div style="padding:6px 12px;font-size:11px;color:var(--tx3);border-top:1px solid rgba(255,255,255,0.04)">
+        + mais ${items.length - 8} item(s)...
+      </div>`;
+    }
+    html += `</div></div>`;
+  });
+
+  div.innerHTML = html;
+  // Guarda alterações para aplicar
+  div.dataset.alteracoes = JSON.stringify(alteracoes);
+  if(btn) btn.style.display = '';
+}
+
+function sanAplicarNomes(){
+  const div = document.getElementById('san-nomes-conteudo');
+  if(!div || !div.dataset.alteracoes) return;
+
+  const alteracoes = JSON.parse(div.dataset.alteracoes);
+  if(!alteracoes.length) return;
+
+  if(!confirm(`Padronizar ${alteracoes.length} nome(s) para Primeira Letra Maiúscula?\n\nEsta ação não pode ser desfeita.`)) return;
+
+  // Agrupa por store para salvar de uma vez
+  const stores = [...new Set(alteracoes.map(a => a.store))];
+  stores.forEach(store => {
+    const arr = S.g(store)||[];
+    const mods = alteracoes.filter(a => a.store === store);
+    mods.forEach(mod => {
+      const item = arr.find(x => x.id === mod.id);
+      if(item) item[mod.campo] = mod.para;
+    });
+    S.s(store, arr);
+  });
+
+  const total = alteracoes.length;
+  showToast(`✓ ${total} nome(s) padronizado(s)!`, 'var(--gr)');
+  closeMod('mod-saneamento');
+
+  // Atualiza renders relevantes
+  if(typeof renderForn==='function') renderForn();
+  if(typeof renderProd==='function') renderProd();
+  if(typeof renderInsumos==='function') renderInsumos();
+  if(typeof renderCategoriasProd==='function') renderCategoriasProd();
+}
+
 function exportarBackup(){
   const backup = { versao:'fpg2_v12_cloud', exportadoEm: new Date().toISOString(), dados:{} };
   // Exporta a partir do cache em memória (já sincronizado com a nuvem)
@@ -22016,17 +22609,14 @@ function initAll(){
   _initAllRunning = true;
   try{
   initData();
-  cxCorrigirDatasCAP(); // corrige datas de lançamentos caixa→CAP
-  // Carry-forward automático: garante saldo inicial do mês atual
-  try{
-    const mesAtualYM = new Date().toISOString().slice(0,7);
-    cxCarryForwardMensal(mesAtualYM);
-  }catch(e){ console.warn('carry-forward init:', e); }
+  // cxCorrigirDatasCAP: removido do boot — disponível via Saneamento de Dados → Manutenção do Caixa
+  // Carry-forward: removido do boot — roda ao navegar no Caixa Diário (comportamento do módulo)
+  // ou manualmente via Saneamento de Dados → Manutenção do Caixa
   // Corrige inventários com arredondamento incorreto (ex: 0.001 que deveria ser 1)
-  try{ eqCorrigirInventariosErrados(); }catch(e){ console.warn('eqCorrigir:', e); }
+  // eqCorrigirInventariosErrados: removido do boot — disponível via Saneamento de Dados → Estoque
   // Garante código legível (EST-0001...) para produtos antigos do estoque
-  try{ eqMigrarCodigosProdutos(); }catch(e){ console.warn('eqMigrarCodigos:', e); }
-  try{ migrarCategoriasSentenceCase(); }catch(e){ console.warn('migrarCategoriasSentenceCase:', e); }
+  // eqMigrarCodigosProdutos: removido do boot — roda automaticamente após importação NF-e
+  // migrarCategoriasSentenceCase: removido — não altera nomes cadastrados pelo usuário
   const now=new Date();
   document.getElementById('bdg-mes').textContent=now.toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
   dreMesAtual(); // inicializa DRE com mês atual
@@ -22049,7 +22639,7 @@ function initAll(){
   const pzCompEl=document.getElementById('pz-comp-mes-sel'); if(pzCompEl) pzCompEl.value=_pzMes;
   eqInitMes();dbInitMes();renderPagar();renderReceber();renderEstoque();renderCMV();renderMetas();
   renderPlano();renderCadContas();renderForn();renderProd();renderInsumos();renderServicos();renderFormasRec();
-  initCatProdPadrao(); migrarCatProdPadrao(); renderCategoriasProd();
+  initCatProdPadrao(); renderCategoriasProd(); // migrarCatProdPadrao removido — não insere categorias sem comando do usuário
   initCatProdVendaPadrao(); renderCatProdVenda();
   fillSelectCatProdVenda('mpv-cat');
   fillSelectCatVendaRel('rv-cat');
