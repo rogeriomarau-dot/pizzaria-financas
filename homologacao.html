@@ -49,6 +49,24 @@
 .tema-op .tema-dot{border-color:rgba(0,0,0,0.15);}
 .tema-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);padding:4px 10px 2px;}
 
+
+/* ── TUTORIAL ── */
+.tut-menu-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;border-radius:6px;background:transparent;color:var(--tx2);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;transition:.15s;text-align:left}
+.tut-menu-btn:hover{background:rgba(255,255,255,0.05);color:var(--tx)}
+.tut-menu-btn.tut-ativo{background:rgba(249,167,37,0.12);color:#F9A825;font-weight:600}
+.tut-titulo{font-size:18px;font-weight:700;color:var(--tx);margin-bottom:10px}
+.tut-intro{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:24px;border-left:3px solid var(--or);padding-left:12px}
+.tut-step-group{margin-bottom:24px;background:rgba(255,255,255,0.02);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.tut-group-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--or);padding:10px 14px;background:rgba(242,100,25,0.07);border-bottom:1px solid var(--bd)}
+.tut-step{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:var(--tx2);line-height:1.6}
+.tut-step:last-child{border-bottom:none}
+.tut-step strong{color:var(--tx)}
+.tut-num{min-width:22px;height:22px;background:var(--or);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.tut-dica{background:rgba(249,167,37,0.07);border:1px solid rgba(249,167,37,0.2);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--tx2);line-height:1.6;margin-top:8px}
+.tut-dica strong{color:var(--tx)}
+.tut-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.tut-card-mod{background:var(--dk3);border:1px solid var(--bd);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:.15s}
+.tut-card-mod:hover{border-color:var(--or);background:rgba(242,100,25,0.06)}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dk);color:var(--tx);font-size:14px;}
 .rc-tab-ativo   { background:var(--or)!important; color:#fff!important; font-weight:500!important; }
@@ -659,6 +677,8 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     <button class="ni" onclick="go('cad-bancos',this)"><i class="fa-solid fa-building-columns"></i>Cadastro de Conta Corrente / Banco</button>
     <div class="sb-sec" id="sb-sec-admin">Administração</div>
     <button class="ni" id="menu-usuarios" onclick="go('usuarios',this)"><i class="fa-solid fa-users-gear"></i>Usuários e Acesso</button>
+    <div class="sb-sec">Suporte</div>
+    <button class="ni" onclick="go('tutorial',this)" style="color:#F9A825"><i class="fa-solid fa-circle-question"></i>Tutorial — Guia do Sistema</button>
     <div class="sb-sec">Relatórios</div>
     <button class="ni" onclick="go('rel-pagar',this)"><i class="fa-solid fa-file-lines"></i>Rel. Contas a Pagar</button>
     <button class="ni" onclick="go('rel-compras',this)"><i class="fa-solid fa-basket-shopping"></i>Rel. Compras / Estoque</button>
@@ -1128,6 +1148,580 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 </div>
 
 
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- TUTORIAL — GUIA COMPLETO DO SISTEMA                               -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-tutorial">
+  <div style="max-width:1100px;margin:0 auto;padding:0 0 60px">
+
+    <!-- Cabeçalho -->
+    <div style="margin-bottom:28px">
+      <h2 style="font-size:22px;font-weight:700;color:var(--tx);margin-bottom:4px">
+        <i class="fa-solid fa-circle-question" style="color:#F9A825;margin-right:10px"></i>Tutorial — Guia Completo do Sistema
+      </h2>
+      <p style="font-size:13px;color:var(--tx2)">Navegue pelos módulos no menu à esquerda e siga o passo a passo detalhado para tirar todas as suas dúvidas.</p>
+    </div>
+
+    <!-- Layout: menu lateral + conteúdo -->
+    <div style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:start">
+
+      <!-- Menu lateral do tutorial -->
+      <div style="background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:12px;position:sticky;top:80px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);padding:4px 8px 8px">Módulos</div>
+
+        <button onclick="tutShow('inicio')" id="tut-btn-inicio" class="tut-menu-btn tut-ativo">
+          <i class="fa-solid fa-house" style="width:16px"></i> Início
+        </button>
+
+        <div style="font-size:10px;color:var(--tx3);padding:10px 8px 4px;letter-spacing:1px;text-transform:uppercase">Financeiro</div>
+        <button onclick="tutShow('cap')" id="tut-btn-cap" class="tut-menu-btn">
+          <i class="fa-solid fa-file-invoice-dollar" style="width:16px"></i> Contas a Pagar
+        </button>
+        <button onclick="tutShow('car')" id="tut-btn-car" class="tut-menu-btn">
+          <i class="fa-solid fa-hand-holding-dollar" style="width:16px"></i> Contas a Receber
+        </button>
+        <button onclick="tutShow('caixa')" id="tut-btn-caixa" class="tut-menu-btn">
+          <i class="fa-solid fa-cash-register" style="width:16px"></i> Caixa Diário
+        </button>
+        <button onclick="tutShow('dre')" id="tut-btn-dre" class="tut-menu-btn">
+          <i class="fa-solid fa-file-chart-column" style="width:16px"></i> DRE
+        </button>
+        <button onclick="tutShow('fluxo')" id="tut-btn-fluxo" class="tut-menu-btn">
+          <i class="fa-solid fa-arrows-left-right" style="width:16px"></i> Fluxo de Caixa
+        </button>
+        <button onclick="tutShow('pe')" id="tut-btn-pe" class="tut-menu-btn">
+          <i class="fa-solid fa-bullseye" style="width:16px"></i> Ponto de Equilíbrio
+        </button>
+        <button onclick="tutShow('dashboard')" id="tut-btn-dashboard" class="tut-menu-btn">
+          <i class="fa-solid fa-chart-pie" style="width:16px"></i> Dashboard
+        </button>
+
+        <div style="font-size:10px;color:var(--tx3);padding:10px 8px 4px;letter-spacing:1px;text-transform:uppercase">Operacional</div>
+        <button onclick="tutShow('estoque')" id="tut-btn-estoque" class="tut-menu-btn">
+          <i class="fa-solid fa-boxes-stacked" style="width:16px"></i> Estoque / CMV
+        </button>
+        <button onclick="tutShow('pizzas')" id="tut-btn-pizzas" class="tut-menu-btn">
+          <i class="fa-solid fa-pizza-slice" style="width:16px"></i> Pizzas Vendidas
+        </button>
+
+        <div style="font-size:10px;color:var(--tx3);padding:10px 8px 4px;letter-spacing:1px;text-transform:uppercase">Cadastros</div>
+        <button onclick="tutShow('cadastros')" id="tut-btn-cadastros" class="tut-menu-btn">
+          <i class="fa-solid fa-database" style="width:16px"></i> Cadastros Base
+        </button>
+        <button onclick="tutShow('plano')" id="tut-btn-plano" class="tut-menu-btn">
+          <i class="fa-solid fa-sitemap" style="width:16px"></i> Plano de Contas
+        </button>
+
+        <div style="font-size:10px;color:var(--tx3);padding:10px 8px 4px;letter-spacing:1px;text-transform:uppercase">Sistema</div>
+        <button onclick="tutShow('integracao')" id="tut-btn-integracao" class="tut-menu-btn">
+          <i class="fa-solid fa-link" style="width:16px"></i> Integrações entre Módulos
+        </button>
+        <button onclick="tutShow('backup')" id="tut-btn-backup" class="tut-menu-btn">
+          <i class="fa-solid fa-cloud" style="width:16px"></i> Backup e Segurança
+        </button>
+      </div>
+
+      <!-- Conteúdo do tutorial -->
+      <div id="tut-content" style="background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:28px">
+
+        <!-- ── INÍCIO ── -->
+        <div class="tut-sec" id="tut-inicio">
+          <h3 class="tut-titulo"><i class="fa-solid fa-house" style="color:#F9A825;margin-right:8px"></i>Bem-vindo ao Finance Gestão Pro</h3>
+          <p class="tut-intro">Este tutorial explica passo a passo como utilizar cada módulo do sistema. Use o menu à esquerda para navegar entre os tópicos.</p>
+
+          <div class="tut-card-grid">
+            <div class="tut-card-mod" onclick="tutShow('cap')">
+              <i class="fa-solid fa-file-invoice-dollar" style="color:#FFB74D;font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">Contas a Pagar</div>
+              <div style="font-size:11px;color:var(--tx3)">Gerencie todas as suas despesas</div>
+            </div>
+            <div class="tut-card-mod" onclick="tutShow('car')">
+              <i class="fa-solid fa-hand-holding-dollar" style="color:#81C784;font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">Contas a Receber</div>
+              <div style="font-size:11px;color:var(--tx3)">Controle suas vendas e recebimentos</div>
+            </div>
+            <div class="tut-card-mod" onclick="tutShow('caixa')">
+              <i class="fa-solid fa-cash-register" style="color:#64B5F6;font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">Caixa Diário</div>
+              <div style="font-size:11px;color:var(--tx3)">Entradas e saídas do caixinha</div>
+            </div>
+            <div class="tut-card-mod" onclick="tutShow('dre')">
+              <i class="fa-solid fa-file-chart-column" style="color:#CE93D8;font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">DRE</div>
+              <div style="font-size:11px;color:var(--tx3)">Demonstrativo de Resultado</div>
+            </div>
+            <div class="tut-card-mod" onclick="tutShow('fluxo')">
+              <i class="fa-solid fa-arrows-left-right" style="color:#4DB6AC;font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">Fluxo de Caixa</div>
+              <div style="font-size:11px;color:var(--tx3)">Movimentação financeira</div>
+            </div>
+            <div class="tut-card-mod" onclick="tutShow('estoque')">
+              <i class="fa-solid fa-boxes-stacked" style="color:var(--or);font-size:22px;margin-bottom:8px"></i>
+              <div style="font-size:13px;font-weight:600;color:var(--tx)">Estoque / CMV</div>
+              <div style="font-size:11px;color:var(--tx3)">Controle de insumos e custo</div>
+            </div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica:</strong> Recomendamos começar pelos <strong>Cadastros Base</strong> antes de lançar qualquer informação — fornecedores, plano de contas, formas de pagamento e recebimento precisam estar configurados primeiro.
+          </div>
+        </div>
+
+        <!-- ── CONTAS A PAGAR ── -->
+        <div class="tut-sec" id="tut-cap" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-file-invoice-dollar" style="color:#FFB74D;margin-right:8px"></i>Contas a Pagar (CAP)</h3>
+          <p class="tut-intro">O módulo de Contas a Pagar é onde você registra todas as despesas e obrigações financeiras da empresa — boletos, fornecedores, salários, impostos e qualquer saída de dinheiro programada.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Visão Geral da Tela</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Cards de resumo (topo)</strong> — exibem o Total a Pagar no período, valor Vencido (em vermelho se houver), quantidade de contas e o valor a vencer nos próximos 7 dias.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Filtro de período</strong> — clique no botão de calendário (canto superior direito) para selecionar Por mês, Por período ou Por ano. Use os atalhos "Este mês", "Mês anterior", "Trimestre" ou "Este ano" para agilizar.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Filtro de status</strong> — filtre por Todos, Pendente, Pago ou Baixado para localizar lançamentos específicos.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Botão Baixa em Lote</strong> — permite quitar vários pagamentos de uma vez, selecionando múltiplos lançamentos e registrando a baixa com data, forma de pagamento e banco.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como lançar uma Conta a Pagar</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique no botão <strong>+ Novo Lançamento</strong> (laranja, canto superior direito).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Fornecedor / Descrição</strong> — selecione o fornecedor cadastrado ou digite uma descrição livre para o lançamento.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Valor</strong> — informe o valor total da conta.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Vencimento</strong> — data em que a conta deve ser paga.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>Competência</strong> — mês a que a despesa pertence (pode ser diferente do vencimento). Exemplo: conta de energia de dezembro com vencimento em janeiro.</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>Plano de Contas</strong> — selecione a conta contábil correspondente (ex: 5.3.02 — SEMAE/Água). Isso alimenta o DRE automaticamente.</div></div>
+            <div class="tut-step"><span class="tut-num">7</span><div><strong>Forma de Pagamento</strong> — selecione como será pago (boleto, PIX, cartão, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">8</span><div><strong>Parcelamento</strong> — se a conta é parcelada, marque a opção e informe o número de parcelas. O sistema cria automaticamente todos os vencimentos.</div></div>
+            <div class="tut-step"><span class="tut-num">9</span><div><strong>Recorrência</strong> — para contas mensais fixas (aluguel, internet), marque como recorrente e defina por quantos meses. O sistema cria todas as ocorrências de uma vez.</div></div>
+            <div class="tut-step"><span class="tut-num">10</span><div>Clique em <strong>Salvar</strong>. O lançamento aparecerá na lista com status <span style="color:#F9A825">Pendente</span>.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como registrar o Pagamento (Baixa)</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Localize a conta na lista e clique no botão <strong>Pagar</strong> (ícone de cifrão verde).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Informe a <strong>data do pagamento</strong>, a <strong>forma utilizada</strong> e o <strong>banco/conta</strong> de onde saiu o dinheiro.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Clique em <strong>Confirmar Pagamento</strong>. O status muda para <span style="color:#4CAF50">Pago</span>.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>Para finalizar o ciclo, clique em <strong>Baixar</strong> — o status passa para <span style="color:#64B5F6">Baixado</span>, indicando que o lançamento foi conciliado.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Importação de NF-e XML</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique no botão <strong>Importar NF-e</strong> e selecione o arquivo XML da nota fiscal do fornecedor.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>O sistema lê a nota e preenche automaticamente fornecedor, valor, data e itens.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Revise os dados na tela de importação, vincule os itens da nota aos produtos do seu cadastro e confirme.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>O lançamento é criado no CAP e os itens alimentam automaticamente o Estoque.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-link" style="color:#64B5F6;margin-right:8px"></i>
+            <strong>Integração:</strong> Todo lançamento no CAP alimenta automaticamente o <strong>DRE</strong> (na conta selecionada) e o <strong>Fluxo de Caixa</strong> (na data de vencimento). Lançamentos classificados nas contas de <strong>Compras de Insumos</strong> e <strong>Compras de Bebidas</strong> alimentam também o módulo de <strong>Estoque / CMV</strong> automaticamente — sem necessidade de lançamento duplo.
+            <div style="margin-top:8px;font-size:11px;color:var(--tx3)"><i class="fa-solid fa-circle-info" style="margin-right:5px"></i>Este recurso está disponível para clientes que possuem o módulo de Estoque contratado.</div>
+          </div>
+        </div>
+
+        <!-- ── CONTAS A RECEBER ── -->
+        <div class="tut-sec" id="tut-car" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-hand-holding-dollar" style="color:#81C784;margin-right:8px"></i>Contas a Receber (CAR)</h3>
+          <p class="tut-intro">O módulo de Contas a Receber registra todas as vendas e entradas de dinheiro da empresa — vendas de rodízio, delivery, iFood, WhatsApp e outras receitas.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Visão Geral da Tela</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Cards de resumo</strong> — Faturamento Bruto, Valor Líquido (após descontos/taxas), A Receber (pendente + vencido) e Descontos do período.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Filtro de período</strong> — selecione por mês, período ou ano. O filtro pode ser aplicado por <strong>Caixa</strong> (data de vencimento/recebimento) ou <strong>Competência</strong> (data que a venda ocorreu).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Filtro de formas</strong> — filtre por forma de recebimento (PIX, Cartão de Débito, Dinheiro, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Baixa em Lote</strong> — quite vários recebimentos de uma vez selecionando múltiplas linhas.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como lançar uma Venda / Recebimento</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique em <strong>+ Nova Venda</strong> (canto superior direito).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Produto de Venda</strong> — selecione o produto (ex: Rodízio Adulto, Delivery). O valor é preenchido automaticamente conforme o cadastro.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Quantidade</strong> — informe o número de pessoas (rodízio) ou unidades vendidas.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Forma de Recebimento</strong> — selecione como foi recebido (PIX, Cartão de Débito, Cartão de Crédito, Dinheiro, iFood, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>Data de Competência</strong> — quando a venda ocorreu. <strong>Data de Vencimento</strong> — quando o dinheiro entra (pode ser diferente no caso de cartão de débito que cai no dia seguinte).</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>Desconto / Taxa</strong> — informe taxas de cartão ou descontos concedidos se houver.</div></div>
+            <div class="tut-step"><span class="tut-num">7</span><div>Clique em <strong>Salvar</strong>. O lançamento alimenta automaticamente o <strong>DRE</strong> e o <strong>Fluxo de Caixa</strong>.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como confirmar o Recebimento</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Localize a venda na lista com status <span style="color:#F9A825">Pendente</span>.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Clique no ícone de confirmação (✓). O status muda para <span style="color:#4CAF50">Recebido</span>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Para concluir o ciclo, clique em <strong>Baixar</strong> — status vai para <span style="color:#64B5F6">Baixado</span>.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-link" style="color:#64B5F6;margin-right:8px"></i>
+            <strong>Integração:</strong> Lançamentos no CAR alimentam o <strong>DRE</strong> (receitas operacionais), o <strong>Fluxo de Caixa</strong> e o módulo de <strong>Pizzas Vendidas</strong> automaticamente.
+          </div>
+        </div>
+
+        <!-- ── CAIXA DIÁRIO ── -->
+        <div class="tut-sec" id="tut-caixa" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-cash-register" style="color:#64B5F6;margin-right:8px"></i>Caixa Diário</h3>
+          <p class="tut-intro">O Caixa Diário controla as entradas e saídas físicas do caixinha do estabelecimento — dinheiro em espécie, trocas, reposições e sangrias.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Modos de visualização</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Dia</strong> — visualiza o movimento de um dia específico.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Mês</strong> — visualiza todos os lançamentos do mês selecionado.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Período</strong> — define um intervalo de datas personalizado.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como registrar uma Entrada de Caixa</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique no botão <strong>↑ Entrada</strong> (verde, canto superior direito).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Data e Hora</strong> — preenchidos automaticamente com o momento atual. Altere se necessário.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Categoria</strong> — selecione o tipo de entrada. As categorias disponíveis são: Venda Rodízio, Venda Delivery, Venda Balcão, Venda iFood/App, Venda WhatsApp, Recebimento Banco, Reposição Fundo Fixo e Outros Recebimentos.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>⚠️ Reposição Fundo Fixo</strong> — use esta categoria quando for repor o caixinha com dinheiro vindo do banco. Ela <strong>não gera lançamento</strong> no DRE nem no Fluxo de Caixa pois é uma transferência interna, não uma receita.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>Descrição</strong> — preenchida automaticamente com o nome da categoria. Pode editar.</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>Valor</strong> — informe o valor da entrada.</div></div>
+            <div class="tut-step"><span class="tut-num">7</span><div><strong>Conta do Plano de Contas</strong> — selecione a conta de receita correspondente (aparece apenas para categorias de receita, não para Reposição Fundo Fixo).</div></div>
+            <div class="tut-step"><span class="tut-num">8</span><div>Clique em <strong>Registrar Entrada</strong>. O saldo do caixinha é atualizado na hora.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como registrar uma Saída de Caixa</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique no botão <strong>↓ Saída</strong> (vermelho, canto superior direito).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Preencha <strong>Data, Hora, Fornecedor</strong> (opcional), <strong>Descrição</strong> e <strong>Valor</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Conta do Plano de Contas</strong> — selecione a conta de despesa. Isso cria um lançamento automático no <strong>Contas a Pagar</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>Clique em <strong>Registrar Saída</strong>. O valor é debitado do saldo do caixinha e lançado no CAP automaticamente.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Saldo Inicial e Fechamento</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>O <strong>Saldo Inicial</strong> do mês é carregado automaticamente como carry-forward do saldo final do mês anterior.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Clique em <strong>Fechar Caixa</strong> para registrar o fechamento do dia com o saldo físico contado.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>O histórico de fechamentos fica disponível na parte inferior da tela.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Atenção:</strong> Saídas do caixinha geram lançamento automático no <strong>CAP</strong> e no <strong>Fluxo de Caixa</strong>. Entradas de receita (vendas) geram lançamento no <strong>CAR</strong> e alimentam o <strong>DRE</strong> e o <strong>Fluxo de Caixa</strong>. Apenas a <strong>Reposição Fundo Fixo</strong> não gera lançamentos em outros módulos.
+          </div>
+        </div>
+
+        <!-- ── DRE ── -->
+        <div class="tut-sec" id="tut-dre" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-file-chart-column" style="color:#CE93D8;margin-right:8px"></i>DRE — Demonstrativo de Resultado</h3>
+          <p class="tut-intro">O DRE mostra se sua empresa está dando lucro ou prejuízo. Ele organiza todas as receitas e despesas em grupos contábeis e calcula os principais indicadores de resultado.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Regimes de Apuração</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Regime de Caixa</strong> — considera as despesas pela data de pagamento (vencimento) e as receitas pela data de recebimento. Mostra o dinheiro que efetivamente saiu e entrou.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Regime de Competência</strong> — considera as despesas e receitas pelo mês a que pertencem, independente de quando foram pagas ou recebidas. É o regime contábil padrão.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Clique nas abas <strong>Regime de Caixa</strong> ou <strong>Regime de Competência</strong> para alternar entre os dois.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Modos de Visualização</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Consolidado</strong> — soma todos os meses do período selecionado em uma única coluna.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Mensal (lado a lado)</strong> — exibe cada mês em uma coluna separada, permitindo comparar a evolução mês a mês.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>AV% (Análise Vertical)</strong> — coluna ao lado de cada valor mostrando o percentual em relação à Receita Bruta. Fundamental para analisar margens.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como selecionar o Período</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique no botão de calendário no canto superior esquerdo.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Escolha <strong>Por mês</strong> (único mês), <strong>Por período</strong> (selecione mês/ano de início e fim) ou <strong>Por ano</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Use os atalhos: <strong>Este mês, Mês anterior, Trimestre</strong> ou <strong>Este ano</strong>.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Estrutura do DRE</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>(+) Receitas Operacionais</strong> — todas as vendas e receitas cadastradas no CAR.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>(–) CMV</strong> — Custo da Mercadoria Vendida (calculado pelo Estoque: EI + Compras − EF).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>= Lucro Bruto</strong> — Receita menos CMV.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>(–) Despesas Operacionais</strong> — todas as despesas lançadas no CAP.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>= EBITDA</strong> — resultado antes de juros, impostos, depreciação e amortização.</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>= Resultado Final do Exercício</strong> — lucro ou prejuízo líquido do período.</div></div>
+            <div class="tut-step"><span class="tut-num">7</span><div><strong>Drill-down</strong> — clique em qualquer valor do DRE para ver os lançamentos que compõem aquele resultado.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica:</strong> O DRE é alimentado automaticamente pelo CAP e CAR. Você não precisa lançar nada diretamente nele — basta manter os outros módulos atualizados.
+          </div>
+        </div>
+
+        <!-- ── FLUXO DE CAIXA ── -->
+        <div class="tut-sec" id="tut-fluxo" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-arrows-left-right" style="color:#4DB6AC;margin-right:8px"></i>Fluxo de Caixa</h3>
+          <p class="tut-intro">O Fluxo de Caixa mostra a movimentação financeira dia a dia, semana a semana e mês a mês — entradas, saídas, saldos e aplicações financeiras.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Modos de Visualização</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Analítico</strong> — visão diária detalhada com cada conta separada por linha.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Semanal</strong> — agrupa os valores por semana do mês.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Consolidado</strong> — visão resumida com totais de entradas, saídas e saldo por dia.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Estrutura do Fluxo</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Saldos Iniciais</strong> — saldo de abertura de cada conta bancária (Caixa Econômica, PagBank, Caixinha, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>(+) Receitas Operacionais</strong> — vendas do CAR distribuídas pelos dias de vencimento.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>(–) Saídas</strong> — pagamentos do CAP distribuídos pelos dias de vencimento.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>= Geração de Caixa do Dia</strong> — resultado diário (entradas menos saídas).</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>= Geração de Caixa Acumulada</strong> — resultado acumulado desde o início do mês.</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>Aplicações Financeiras</strong> — saldos de investimentos e aplicações cadastradas separadamente.</div></div>
+            <div class="tut-step"><span class="tut-num">7</span><div><strong>Clique em qualquer valor</strong> para ver os lançamentos que compõem aquele total naquele dia.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Contas do Fluxo de Caixa</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Acesse o menu <strong>Contas FCX</strong> no menu lateral para cadastrar suas contas bancárias (Banco do Brasil, PagBank, Caixinha física, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Defina o <strong>Saldo Inicial</strong> de cada conta — esse valor é o ponto de partida do Fluxo.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Contas do tipo <strong>Aplicação</strong> aparecem separadas no bloco de Aplicações Financeiras.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica:</strong> O Fluxo de Caixa é 100% automático — alimentado pelo CAP e CAR. Para que os valores apareçam corretamente, mantenha os lançamentos atualizados com as datas de vencimento corretas.
+          </div>
+        </div>
+
+        <!-- ── PONTO DE EQUILÍBRIO ── -->
+        <div class="tut-sec" id="tut-pe" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-bullseye" style="color:#CE93D8;margin-right:8px"></i>Ponto de Equilíbrio</h3>
+          <p class="tut-intro">O Ponto de Equilíbrio (PE) indica o faturamento mínimo que a empresa precisa atingir para cobrir todos os seus custos sem gerar lucro nem prejuízo.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Tipos de Ponto de Equilíbrio</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>PE Operacional</strong> — considera apenas os gastos fixos e variáveis operacionais. Indica o faturamento mínimo para cobrir a operação.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>PE Financeiro</strong> — inclui também o pró-labore do empresário e investimentos. É o PE real da sustentabilidade do negócio.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como interpretar os resultados</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>O <strong>gauge (velocímetro)</strong> mostra visualmente se a empresa está abaixo, no ou acima do ponto de equilíbrio.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Vermelho</strong> — faturamento abaixo do PE. A empresa está no prejuízo.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Amarelo</strong> — faturamento próximo ao PE. Situação de atenção.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Verde</strong> — faturamento acima do PE. A empresa está cobrindo seus custos e gerando resultado.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div>O módulo é alimentado automaticamente pelos dados do <strong>CAP</strong> (despesas fixas e variáveis) e do <strong>CAR</strong> (faturamento).</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica do Consultor:</strong> Compare o PE Operacional com o PE Financeiro. A diferença é o quanto o empresário precisa faturar a mais para garantir sua própria remuneração e a sustentabilidade do negócio a longo prazo.
+          </div>
+        </div>
+
+        <!-- ── DASHBOARD ── -->
+        <div class="tut-sec" id="tut-dashboard" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-chart-pie" style="color:var(--or);margin-right:8px"></i>Dashboard Geral</h3>
+          <p class="tut-intro">O Dashboard é a tela principal de indicadores — uma visão consolidada do desempenho financeiro do negócio em um único painel.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">KPIs Principais</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Faturamento Bruto</strong> — total de vendas do período (vem do CAR).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>CMV — Custo de Mercadoria</strong> — percentual do custo sobre a receita (vem do Estoque).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Margem de Contribuição</strong> — Faturamento menos CMV.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Despesas Operacionais</strong> — total de despesas do CAP no período.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>EBITDA</strong> — resultado operacional antes de impostos e depreciação.</div></div>
+            <div class="tut-step"><span class="tut-num">6</span><div><strong>Pizzas / Rodízios</strong> — quantidade de pessoas atendidas no período.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Período e Navegação</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Selecione o período com os botões <strong>Mensal, Trimestral, Quadrimestral</strong> ou <strong>Anual</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Use as setas <strong>‹ ›</strong> para navegar entre períodos.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Clique em <strong>Atual</strong> para voltar ao período corrente.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>Clique em qualquer KPI para expandir o gráfico de barras com a evolução histórica.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica:</strong> O Dashboard é 100% automático — não há nada para lançar aqui. Mantenha o CAP e o CAR atualizados e os indicadores se atualizam sozinhos.
+          </div>
+        </div>
+
+        <!-- ── ESTOQUE / CMV ── -->
+        <div class="tut-sec" id="tut-estoque" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-boxes-stacked" style="color:var(--or);margin-right:8px"></i>Estoque / CMV</h3>
+          <p class="tut-intro">O módulo de Estoque calcula o Custo da Mercadoria Vendida (CMV) usando a fórmula: <strong>EI + Compras − EF</strong>. Também realiza a Curva ABC dos produtos.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como lançar o Estoque Mensal</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Selecione o mês no seletor superior.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Estoque Inicial (EI)</strong> — é preenchido automaticamente com o Estoque Final do mês anterior. No primeiro mês, informe manualmente.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Compras</strong> — são puxadas automaticamente dos lançamentos do CAP que têm conta do grupo 4 (Compras de Insumos, Compras de Bebidas, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Estoque Final (EF)</strong> — informe o valor do estoque físico contado no final do mês.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div>O sistema calcula automaticamente: <strong>CMV = EI + Compras − EF</strong> e o percentual sobre a receita.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Curva ABC</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>A Curva ABC classifica os insumos por impacto no CMV total.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Classe A</strong> — produtos que representam até 80% do custo. Precisam de controle rigoroso.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Classe B</strong> — produtos de impacto médio (80% a 95% acumulado).</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Classe C</strong> — produtos de baixo impacto individual (acima de 95% acumulado).</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica do Consultor:</strong> Mantenha o CMV abaixo de 35% do faturamento para pizzarias de rodízio. Se o CMV estiver alto, use a Curva ABC para identificar quais insumos estão pesando mais e revise fornecedores ou porções.
+          </div>
+        </div>
+
+        <!-- ── PIZZAS VENDIDAS ── -->
+        <div class="tut-sec" id="tut-pizzas" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-pizza-slice" style="color:var(--or);margin-right:8px"></i>Pizzas Vendidas</h3>
+          <p class="tut-intro">O módulo de Pizzas Vendidas mostra a quantidade de pessoas atendidas nos rodízios e outros produtos de venda, com análise por período e categoria.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como os dados aparecem aqui</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Os dados vêm automaticamente do módulo <strong>Contas a Receber</strong>. Cada venda lançada com produto de rodízio (Rodízio Adulto, Infantil, etc.) é contabilizada aqui.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>A quantidade de <strong>pessoas</strong> é calculada com base no campo quantidade lançado no CAR.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>O <strong>Ticket Médio</strong> é calculado dividindo o faturamento pelo número de pessoas atendidas.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Modos de visualização</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Diário</strong> — quantidade por dia do mês.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Semanal</strong> — totais por semana.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Mensal</strong> — comparativo mês a mês.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Por produto</strong> — separado por categoria (Rodízio Adulto, Infantil, Delivery, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>Comparativo</strong> — compara dois períodos lado a lado.</div></div>
+          </div>
+        </div>
+
+        <!-- ── CADASTROS BASE ── -->
+        <div class="tut-sec" id="tut-cadastros" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-database" style="color:#64B5F6;margin-right:8px"></i>Cadastros Base</h3>
+          <p class="tut-intro">Os cadastros base são a fundação do sistema. Configure-os antes de começar a lançar qualquer informação nos módulos financeiros.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Fornecedores</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Acesse <strong>Cadastro de Fornecedores</strong> no menu lateral.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Cadastre todos os fornecedores com <strong>Nome, CNPJ, Telefone</strong> e <strong>Categoria</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Fornecedores cadastrados aparecem automaticamente no CAP e na importação de NF-e.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Produtos de Venda (CAR)</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Acesse <strong>Cadastro de Produtos (Vendas)</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Cadastre cada produto com <strong>Nome, Categoria, Preço de Venda, Conta Contábil</strong> e tipo (Rodízio Adulto, Rodízio Infantil, Balcão, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Esses produtos aparecem no modal de Nova Venda do CAR.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Formas de Pagamento e Recebimento</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Acesse <strong>Cadastro de Formas de Cobrança</strong> para configurar como você paga (Boleto, PIX, Cartão, etc.).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Acesse <strong>Cadastro de Formas de Recebimento</strong> para configurar como você recebe (PIX, Cartão de Débito, Cartão de Crédito, Dinheiro, iFood, etc.).</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Contas Bancárias</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Acesse <strong>Cadastro de Conta Corrente / Banco</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Cadastre cada conta com <strong>Nome</strong> (ex: Banco do Brasil, PagBank, Caixinha) e o <strong>Saldo Inicial</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Essas contas aparecem nas baixas do CAP e CAR e alimentam o Fluxo de Caixa.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Atenção:</strong> Configure os cadastros base <strong>antes</strong> de iniciar os lançamentos. Sem fornecedores, produtos e formas de pagamento cadastrados, os módulos financeiros não funcionam corretamente.
+          </div>
+        </div>
+
+        <!-- ── PLANO DE CONTAS ── -->
+        <div class="tut-sec" id="tut-plano" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-sitemap" style="color:#64B5F6;margin-right:8px"></i>Plano de Contas</h3>
+          <p class="tut-intro">O Plano de Contas é a estrutura contábil que organiza todas as receitas e despesas em grupos e subgrupos. Ele determina como as informações aparecem no DRE.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Estrutura Hierárquica</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Grupo</strong> — nível mais alto (ex: 1 — Receitas, 4 — Custos, 5 — Despesas).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Subgrupo</strong> — divisão dentro do grupo (ex: 5.3 — Despesas Administrativas).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Conta</strong> — nível mais detalhado (ex: 5.3.02 — SEMAE/Água). É aqui que os lançamentos são classificados.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como adicionar uma nova Conta</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Clique em <strong>+ Nova Conta</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Selecione o <strong>Grupo</strong> e o <strong>Subgrupo</strong> onde a conta se encaixa.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Informe o <strong>Código</strong> (ex: 5.3.10) e o <strong>Nome</strong> da conta.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>Defina se é <strong>Fixo</strong> (mesmo valor todo mês, como aluguel) ou <strong>Variável</strong> (muda conforme uso, como energia).</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div>Clique em <strong>Salvar</strong>. A conta fica disponível imediatamente no CAP e CAR.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Dica:</strong> O sistema já vem com um Plano de Contas padrão para pizzarias. Você pode personalizar adicionando contas específicas do seu negócio sem excluir as existentes.
+          </div>
+        </div>
+
+        <!-- ── INTEGRAÇÕES ── -->
+        <div class="tut-sec" id="tut-integracao" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-link" style="color:#4DB6AC;margin-right:8px"></i>Integrações entre Módulos</h3>
+          <p class="tut-intro">O Finance Gestão Pro é um sistema integrado — um lançamento em um módulo alimenta automaticamente os outros. Entenda como funciona o fluxo de dados.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">CAP → Outros módulos</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Um lançamento no <strong>Contas a Pagar</strong> alimenta automaticamente o <strong>DRE</strong> (na conta contábil selecionada) e o <strong>Fluxo de Caixa</strong> (na data de vencimento).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Compras lançadas no CAP com contas do grupo 4 (Compras de Insumos, Bebidas) alimentam automaticamente as <strong>Compras do Estoque</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Saídas do <strong>Caixa Diário</strong> criam automaticamente um lançamento no <strong>CAP</strong>, que por sua vez alimenta o <strong>DRE</strong> e o <strong>Fluxo de Caixa</strong>. Se a saída for classificada como compra de insumos ou bebidas, alimenta também o <strong>Estoque</strong> (quando o módulo estiver contratado).</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">CAR → Outros módulos</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Um lançamento no <strong>Contas a Receber</strong> alimenta o <strong>DRE</strong> (receitas operacionais) e o <strong>Fluxo de Caixa</strong> (data de vencimento).</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Vendas de rodízio no CAR alimentam automaticamente o módulo de <strong>Pizzas Vendidas</strong>.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Entradas no <strong>Caixa Diário</strong> (exceto Reposição Fundo Fixo) criam automaticamente um lançamento no CAR.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Módulos automáticos (sem lançamento manual)</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>DRE</strong> — 100% automático. Alimentado pelo CAP e CAR.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Fluxo de Caixa</strong> — 100% automático. Alimentado pelo CAP e CAR.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Dashboard</strong> — 100% automático. Consolida dados de todos os módulos.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Ponto de Equilíbrio</strong> — automático. Usa dados do CAP e CAR.</div></div>
+            <div class="tut-step"><span class="tut-num">5</span><div><strong>Pizzas Vendidas</strong> — automático. Usa dados do CAR.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-lightbulb" style="color:#F9A825;margin-right:8px"></i>
+            <strong>Regra de ouro:</strong> Lance tudo no <strong>CAP</strong> (o que sai) e no <strong>CAR</strong> (o que entra). Os demais módulos se atualizam automaticamente. O Caixa Diário é complementar — para controle do dinheiro físico do caixinha.
+          </div>
+        </div>
+
+        <!-- ── BACKUP E SEGURANÇA ── -->
+        <div class="tut-sec" id="tut-backup" style="display:none">
+          <h3 class="tut-titulo"><i class="fa-solid fa-cloud" style="color:#81C784;margin-right:8px"></i>Backup e Segurança dos Dados</h3>
+          <p class="tut-intro">O Finance Gestão Pro armazena todos os dados na nuvem do Google (Firebase Firestore), garantindo segurança, disponibilidade e acesso de qualquer dispositivo.</p>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Como os dados são protegidos</div>
+            <div class="tut-step"><span class="tut-num">1</span><div><strong>Salvamento automático</strong> — cada ação (lançamento, edição, exclusão) é salva automaticamente na nuvem em menos de 1 segundo.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div><strong>Modo offline</strong> — se a internet cair, o sistema continua funcionando normalmente. Os dados ficam salvos no navegador e sobem para a nuvem assim que a conexão voltar.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Backup diário automático</strong> — um snapshot completo dos dados é salvo automaticamente todo dia.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div><strong>Acesso multi-dispositivo</strong> — acesse de qualquer computador ou celular. Os dados são sempre os mesmos.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Backup Manual</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>No menu lateral (rodapé), clique em <strong>Backup</strong> para exportar todos os dados em formato JSON.</div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Guarde o arquivo em local seguro (pen drive, Google Drive, e-mail).</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div>Para restaurar, clique em <strong>Restaurar</strong> e selecione o arquivo JSON salvo anteriormente.</div></div>
+          </div>
+
+          <div class="tut-step-group">
+            <div class="tut-group-title">Se a internet cair durante o uso</div>
+            <div class="tut-step"><span class="tut-num">1</span><div>Um aviso laranja aparecerá no canto superior da tela: <em>"Sem conexão — trabalhando offline."</em></div></div>
+            <div class="tut-step"><span class="tut-num">2</span><div>Continue trabalhando normalmente — os dados são salvos localmente.</div></div>
+            <div class="tut-step"><span class="tut-num">3</span><div><strong>Não pressione F5</strong> enquanto estiver offline — isso pode descartar dados ainda não sincronizados.</div></div>
+            <div class="tut-step"><span class="tut-num">4</span><div>Quando a internet voltar, o aviso some e a sincronização acontece automaticamente.</div></div>
+          </div>
+
+          <div class="tut-dica">
+            <i class="fa-solid fa-shield-halved" style="color:#4CAF50;margin-right:8px"></i>
+            <strong>Segurança:</strong> Seus dados estão protegidos na infraestrutura do Google Cloud, com criptografia em trânsito e em repouso. Apenas o sistema Finance Gestão Pro tem acesso aos dados da sua empresa.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
 <!-- DRE -->
 <div class="page" id="page-dre">
   <div class="print-header" style="display:none"></div>
@@ -3773,7 +4367,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <div class="fg">
           <label>Unidade de Medida *</label>
           <select id="mpv-un">
-            <option value="pax">pax (pessoa)</option>
+            <option value="pax">pessoa</option>
             <option value="un">un (unidade)</option>
             <option value="dose">dose</option>
             <option value="combo">combo</option>
@@ -23038,6 +23632,18 @@ function cxLimparTransferenciasDoCAR(){
   }
 }
 
+
+// ══════════════════════════════════════════════════
+// TUTORIAL — NAVEGAÇÃO INTERNA
+// ══════════════════════════════════════════════════
+function tutShow(id){
+  document.querySelectorAll('.tut-sec').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.tut-menu-btn').forEach(b => b.classList.remove('tut-ativo'));
+  const sec = document.getElementById('tut-'+id);
+  if(sec) sec.style.display = 'block';
+  const btn = document.getElementById('tut-btn-'+id);
+  if(btn) btn.classList.add('tut-ativo');
+}
 function initAll(){
   usrInit();
   if(_initAllRunning) return;
