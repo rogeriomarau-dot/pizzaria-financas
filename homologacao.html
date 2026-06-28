@@ -1231,6 +1231,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
       <!-- KPIs rápidos -->
       <div id="fcx-kpis" style="display:flex;gap:10px;flex:1;justify-content:flex-end"></div>
+      <button class="btn btn-sm" onclick="fcxAbrirSaldos()" title="Informar saldos iniciais por conta e mês" style="border-color:rgba(242,100,25,0.5);color:var(--or)"><i class="fa-solid fa-wallet"></i> Saldos Iniciais</button>
       <button class="btn btn-sm" onclick="fcxForcarCarry()" title="Recalcular saldo inicial deste mês a partir do saldo final do mês anterior"><i class="fa-solid fa-rotate"></i> Recalc. Saldo</button>
       <button class="btn btn-sm" onclick="imprimirFluxo()"><i class="fa-solid fa-print"></i> Imprimir</button>
     </div>
@@ -3494,14 +3495,22 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 <div class="mo" id="mod-fcx-saldos">
   <div class="mb wide" style="width:580px">
     <div class="mt"><span><i class="fa-solid fa-wallet" style="color:var(--or);margin-right:8px"></i>Saldos Iniciais por Mês</span><span class="mc" onclick="closeMod('mod-fcx-saldos')">✕</span></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <div class="fg" style="max-width:180px">
         <label>Mês de Referência</label>
         <input type="month" id="fcx-sal-mes" onchange="fcxRenderSaldoLinhas()"
           style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none;width:100%">
       </div>
+      <button onclick="fcxImportarDoCaixa()"
+        style="display:flex;align-items:center;gap:7px;background:rgba(33,150,243,0.12);border:1px solid rgba(33,150,243,0.4);color:#64B5F6;border-radius:6px;padding:7px 14px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;white-space:nowrap"
+        title="Calcula o saldo final do Caixa Diário do mês anterior e preenche as contas do tipo Caixa">
+        <i class="fa-solid fa-rotate" style="font-size:11px"></i> Importar do Caixa Diário
+      </button>
     </div>
-    <div style="font-size:11px;color:var(--tx3);margin-bottom:12px">Informe o saldo de abertura de cada conta no 1º dia do mês selecionado.</div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:12px">
+      Informe o saldo de abertura de cada conta no 1º dia do mês selecionado.
+      Use <strong style="color:#64B5F6">Importar do Caixa Diário</strong> para buscar automaticamente o saldo final do Caixa do mês anterior.
+    </div>
     <div id="fcx-sal-linhas"></div>
     <div class="mf">
       <button class="bc" onclick="closeMod('mod-fcx-saldos')">Cancelar</button>
@@ -21273,6 +21282,76 @@ function fcxAbrirSaldos(){
   document.getElementById('fcx-sal-mes').value = ym;
   fcxRenderSaldoLinhas();
   openMod('mod-fcx-saldos');
+}
+
+function fcxImportarDoCaixa(){
+  const ym = document.getElementById('fcx-sal-mes').value;
+  if(!ym){ alert('Selecione o mês de referência primeiro.'); return; }
+
+  const movs = S.g('caixa-mov')||[];
+  const [y,m] = ym.split('-').map(Number);
+
+  // Estratégia: busca saldo final do mês ANTERIOR ao selecionado
+  // Se não há dados no mês anterior, usa os lançamentos de Saldo Inicial do próprio mês
+  const mesAntD = new Date(y, m-2, 1);
+  const mesAnt  = mesAntD.getFullYear()+'-'+String(mesAntD.getMonth()+1).padStart(2,'0');
+  const movsMesAnt = movs.filter(x=>(x.data||'').slice(0,7)===mesAnt);
+
+  let saldoFinal = 0;
+  let mesNomeRef = '';
+
+  if(movsMesAnt.length){
+    // Tem dados no mês anterior — calcula saldo final
+    const siMesAnt  = movsMesAnt.filter(x=>x.tipo==='Saldo Inicial').reduce((a,b)=>a+(b.valor||0),0);
+    const entMesAnt = movsMesAnt.filter(x=>x.tipo==='Entrada').reduce((a,b)=>a+(b.valor||0),0);
+    const saiMesAnt = movsMesAnt.filter(x=>x.tipo==='Saída').reduce((a,b)=>a+(b.valor||0),0);
+    const saldoIniMesAnt = siMesAnt > 0 ? siMesAnt : cxGetSaldoInicialDia(mesAnt+'-01');
+    saldoFinal = parseFloat((saldoIniMesAnt + entMesAnt - saiMesAnt).toFixed(2));
+    mesNomeRef = 'saldo final de '+mesAntD.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  } else {
+    // Sem dados no mês anterior — usa Saldos Iniciais do próprio mês selecionado
+    const movsMesAtual = movs.filter(x=>(x.data||'').slice(0,7)===ym);
+    const siMesAtual = movsMesAtual.filter(x=>x.tipo==='Saldo Inicial').reduce((a,b)=>a+(b.valor||0),0);
+    saldoFinal = parseFloat(siMesAtual.toFixed(2));
+    const mesAtualD = new Date(y, m-1, 1);
+    mesNomeRef = 'saldo inicial de '+mesAtualD.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  }
+
+  if(saldoFinal === 0){
+    alert('⚠️ Nenhum saldo encontrado no Caixa Diário para importar.\n\n'+
+      'Verifique se há lançamentos de Saldo Inicial registrados no Caixa Diário.');
+    return;
+  }
+
+  // Encontrar contas FCX do tipo "caixa" para preencher
+  const contas = getFcxContas();
+  const contasCaixa = contas.filter(c=>c.tipo==='caixa');
+
+  if(!contasCaixa.length){
+    alert('⚠️ Nenhuma conta do tipo "Caixa / Tesouraria" cadastrada no FCX.\n\n'+
+      'Para usar esta função, cadastre uma conta com tipo "Caixa / Tesouraria" em Fluxo de Caixa → Contas.');
+    return;
+  }
+
+  // Formatar saldo para exibição
+  const saldoFmt = saldoFinal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  // Preencher os campos das contas tipo caixa
+  contasCaixa.forEach(c=>{
+    const el = document.getElementById('fcx-sal-'+c.id);
+    if(el){
+      el.value = saldoFmt;
+      el.style.borderColor = 'var(--bl)'; // destaque azul para indicar preenchimento automático
+      setTimeout(()=>{ el.style.borderColor='var(--bd)'; }, 3000);
+    }
+  });
+
+  // Feedback visual
+  const nomesCaixa = contasCaixa.map(c=>c.nome).join(', ');
+  showToast(
+    `✓ Importado (${mesNomeRef}): R$ ${saldoFmt} → ${nomesCaixa}`,
+    'var(--bl)'
+  );
 }
 
 function fcxRenderSaldoLinhas(){
