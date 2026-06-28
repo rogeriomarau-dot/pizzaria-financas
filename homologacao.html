@@ -613,6 +613,23 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     Não foi possível carregar seus dados da nuvem agora (provável instabilidade de conexão). Os dados não foram perdidos — só não chegaram até a tela ainda.
     <button onclick="recarregarDadosNuvem()" style="margin-left:12px;background:#fff;color:#B71C1C;border:none;border-radius:6px;padding:4px 14px;font-weight:700;cursor:pointer">Tentar novamente</button>
   </div>
+
+  <!-- INDICADOR OFFLINE -->
+  <div id="aviso-offline" style="display:none;position:fixed;top:12px;right:16px;z-index:9999;background:var(--am);color:#fff;padding:7px 14px 7px 10px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;box-shadow:0 4px 14px rgba(0,0,0,0.35);align-items:center;gap:8px;">
+    <i class="fa-solid fa-wifi" style="opacity:0.6"></i>
+    &nbsp;Sem conexão — trabalhando offline. Dados serão sincronizados quando a internet voltar.
+  </div>
+  <style>@keyframes fadeInDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}</style>
+  <script>
+    function _atualizarStatusConexao(){
+      const el=document.getElementById('aviso-offline');
+      if(!el)return;
+      el.style.display=navigator.onLine?'none':'flex';
+    }
+    window.addEventListener('online',_atualizarStatusConexao);
+    window.addEventListener('offline',_atualizarStatusConexao);
+    document.addEventListener('DOMContentLoaded',_atualizarStatusConexao);
+  </script>
   <div class="sb">
     <div class="sb-logo"><div><div class="sb-brand">FINANCE</div><div class="sb-sub">Gestão Pro</div></div></div>
     <div class="sb-sec">Principal</div>
@@ -5276,7 +5293,25 @@ async function _initFirebase(){
   try {
     if(typeof firebase === 'undefined') throw new Error('Script do Firebase não carregou');
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    // ── PERSISTÊNCIA OFFLINE ──────────────────────────────────────────────────
+    // No Firebase 9 compat, a persistência é ativada via settings() ANTES de
+    // instanciar o firestore(). Com cacheSizeBytes ilimitado e experimentalForceLongPolling
+    // desativado, o SDK usa IndexedDB automaticamente para cache local.
+    // O cliente continua trabalhando offline e sincroniza quando a internet voltar.
     _db = firebase.firestore();
+    try {
+      await _db.enablePersistence({ synchronizeTabs: true });
+      console.log('[Firebase] Persistência offline ativada (IndexedDB).');
+    } catch(ep){
+      if(ep.code === 'failed-precondition'){
+        console.warn('[Firebase] Persistência offline: múltiplas abas. Operando sem cache local.');
+      } else if(ep.code === 'unimplemented'){
+        console.warn('[Firebase] Persistência offline não suportada neste navegador.');
+      } else {
+        console.warn('[Firebase] Persistência offline falhou:', ep.message);
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
     _fbReady = true;
   } catch(e){
     console.warn('Erro Firebase init:', e);
@@ -10049,6 +10084,9 @@ function dbRenderFCX(ymAtual){
       ];
       const maxVal = Math.max(...barras.map(b=>b.val), 1);
 
+      const cobCor = f.cobertura>=30?'var(--gr)':f.cobertura>=15?'var(--am)':'var(--rd)';
+      const cobTxt = f.cobertura<=0?'—':f.cobertura+' dias';
+
       liqEl.innerHTML =
         `<div style="margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -10074,11 +10112,7 @@ function dbRenderFCX(ymAtual){
           <div style="font-size:12px;color:var(--tx)">O caixa atual cobre <strong style="color:${cobCor}">${cobTxt}</strong> de operação</div>
         </div>`;
 
-      // variável cobCor e cobTxt já calculadas acima
-      const cobCor = f.cobertura>=30?'var(--gr)':f.cobertura>=15?'var(--am)':'var(--rd)';
-      const cobTxt = f.cobertura<=0?'—':f.cobertura+' dias';
-      liqEl.querySelector('[style*="COBERTURA"]').nextElementSibling.innerHTML =
-        `O caixa atual cobre <strong style="color:${cobCor}">${cobTxt}</strong> de operação`;
+      // cobCor e cobTxt já aplicados diretamente no innerHTML acima
     }
   }
 }
