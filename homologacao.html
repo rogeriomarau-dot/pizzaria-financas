@@ -810,6 +810,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
 <!-- DASHBOARD -->
 <div class="page act" id="page-dashboard">
+  <div class="print-header" style="display:none"></div>
 
   <!-- Barra de período — 4 modos -->
   <div class="cd" style="margin-bottom:12px;padding:12px 16px">
@@ -837,9 +838,13 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
           <button onclick="dbPeriodoAtual()" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:5px 12px;font-family:Outfit,sans-serif;font-size:11px;cursor:pointer">Atual</button>
         </div>
       </div>
-      <div id="db-periodo-label" style="font-size:12px;color:var(--tx2)"></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="db-periodo-label" style="font-size:12px;color:var(--tx2)"></div>
+        <button class="btn btn-sm" onclick="imprimirDashboard()"><i class="fa-solid fa-print"></i> Imprimir</button>
+      </div>
     </div>
   </div>
+
 
   <!-- Painel consolidado (trim/quadri/anual) — oculto por padrão -->
   <div id="db-consolidado-body" style="display:none">
@@ -887,6 +892,35 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       <div class="ct">Termômetro de Liquidez <span class="cs" id="fcx-liq-label"></span></div>
       <div id="fcx-liquidez"></div>
     </div>
+  </div>
+
+  <!-- ── BLOCO DESPESAS OPERACIONAIS ── -->
+  <div class="cd" style="margin-top:12px;padding:10px 16px 6px">
+    <div class="ct"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--rd);margin-right:8px"></i>Despesas Operacionais <span class="cs" id="despop-mes-label">Análise por conta</span></div>
+  </div>
+  <div class="g2" style="margin-top:12px">
+    <div class="cd">
+      <div class="ct">Curva ABC — Despesas Operacionais <span class="cs">Mês atual</span></div>
+      <div id="despop-abc-list" style="max-height:340px;overflow-y:auto"></div>
+    </div>
+    <div class="cd">
+      <div class="ct">Comparativo do Mês <span class="cs">Atual vs. Anterior</span></div>
+      <div class="cw" style="height:340px"><canvas id="c-despop-comp" role="img" aria-label="comparativo despesas operacionais"></canvas></div>
+    </div>
+  </div>
+  <div class="cd" style="margin-top:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="ct" style="margin:0"><i class="fa-solid fa-arrow-trend-up" style="color:var(--am);margin-right:6px"></i>Maiores Variações % vs. Mês Anterior <span class="cs" id="despop-var-cs">Top 5 contas</span></div>
+      <div class="no-print" style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:11px;color:var(--tx3)">Mostrar:</span>
+        <select id="despop-topn-sel" onchange="dbSetTopN(this.value)" style="background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;padding:5px 10px;color:var(--or);font-family:Outfit,sans-serif;font-size:11px;font-weight:500;outline:none;cursor:pointer">
+          <option value="3">Top 3</option>
+          <option value="5" selected>Top 5</option>
+          <option value="10">Top 10</option>
+        </select>
+      </div>
+    </div>
+    <div id="despop-variacao-list" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -2863,11 +2897,11 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
           <!-- Atalhos -->
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
-            <button onclick="rrAtalho('hoje')"    class="btn btn-sm" style="font-size:11px;padding:3px 8px">Hoje</button>
-            <button onclick="rrAtalho('semana')"  class="btn btn-sm" style="font-size:11px;padding:3px 8px">Esta semana</button>
-            <button onclick="rrAtalho('mes')"     class="btn btn-sm" style="font-size:11px;padding:3px 8px">Este mês</button>
-            <button onclick="rrAtalho('trimestre')" class="btn btn-sm" style="font-size:11px;padding:3px 8px">Trimestre</button>
-            <button onclick="rrAtalho('ano')"     class="btn btn-sm" style="font-size:11px;padding:3px 8px">Este ano</button>
+            <button onclick="rrAtalho('hoje')"      class="rc-atalho">Hoje</button>
+            <button onclick="rrAtalho('semana')"    class="rc-atalho">Esta semana</button>
+            <button onclick="rrAtalho('mes')"       class="rc-atalho">Este mês</button>
+            <button onclick="rrAtalho('trimestre')" class="rc-atalho">Trimestre</button>
+            <button onclick="rrAtalho('ano')"       class="rc-atalho">Este ano</button>
           </div>
         </div>
       </div>
@@ -3443,8 +3477,6 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
   padding:8px 32px 8px 12px;color:var(--tx2);font-family:'Outfit',sans-serif;font-size:12px;
   text-align:left;cursor:pointer;transition:border-color 0.2s;white-space:nowrap;display:block;}
 .mp-btn:focus,.mp-btn.open{border-color:var(--or);color:var(--tx);outline:none;}
-.mp-btn::after{content:'\f073';font-family:'Font Awesome 6 Free';font-weight:900;
-  position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--tx3);}
 .mp-drop{position:absolute;top:calc(100% + 4px);left:0;width:300px;
   background:var(--dk2);border:1px solid var(--bd2);border-radius:10px;
   box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:500;display:none;padding:14px;}
@@ -3480,32 +3512,110 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
       </div>
     </div>
 
-    <!-- Linha 1: Datas -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+    <!-- Linha 1: Período -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
 
-      <!-- Vencimento De/Até -->
+      <!-- Vencimento: picker premium (mês / período / ano) — igual ao CAP/CAR -->
       <div class="fg">
-        <label>Vencimento — De</label>
-        <input type="date" id="rp-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <div class="fg">
-        <label>Vencimento — Até</label>
-        <input type="date" id="rp-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <label>Vencimento</label>
+        <input type="hidden" id="rp-dt-ini">
+        <input type="hidden" id="rp-dt-fim">
+        <div style="position:relative">
+          <button type="button" id="rpp-periodo-btn" onclick="rppTogglePicker()"
+            style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);color:var(--tx);border-radius:6px;padding:8px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;width:100%">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="rpp-periodo-label">Todos os períodos</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+          </button>
+
+          <div id="rpp-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+            background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+            <!-- Tabs -->
+            <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+              <button type="button" id="rpp-tab-mes"     onclick="rppSetModo('mes')"     style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-ativo">Por mês</button>
+              <button type="button" id="rpp-tab-periodo" onclick="rppSetModo('periodo')" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-inativo">Por período</button>
+              <button type="button" id="rpp-tab-ano"     onclick="rppSetModo('ano')"     style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s" class="rc-tab-inativo">Por ano</button>
+            </div>
+
+            <!-- Modo: mês -->
+            <div id="rpp-modo-mes">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <button type="button" onclick="rppNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                <span id="rpp-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                <button type="button" onclick="rppNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+              </div>
+              <div id="rpp-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Modo: período (data início/fim) -->
+            <div id="rpp-modo-periodo" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data início</label>
+                  <input type="date" id="rpp-dt-ini"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data fim</label>
+                  <input type="date" id="rpp-dt-fim"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+              </div>
+              <button type="button" onclick="rppAplicarPeriodoData()"
+                style="width:100%;margin-top:10px;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+                <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+              </button>
+            </div>
+
+            <!-- Modo: ano -->
+            <div id="rpp-modo-ano" style="display:none">
+              <div id="rpp-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <!-- Rodapé: atalhos rápidos -->
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button type="button" onclick="rppAtalho('mes')"  class="rc-atalho">Este mês</button>
+              <button type="button" onclick="rppAtalho('ant')"  class="rc-atalho">Mês anterior</button>
+              <button type="button" onclick="rppAtalho('trim')" class="rc-atalho">Trimestre</button>
+              <button type="button" onclick="rppAtalho('ano')"  class="rc-atalho">Este ano</button>
+              <button type="button" onclick="rppLimpar()" class="rc-atalho" style="margin-left:auto;color:var(--tx3)">Limpar</button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Competência: seletor de Mês/Ano (múltiplos) -->
+      <!-- Competência: seletor de Mês/Ano (múltiplos) — visual no mesmo padrão do Vencimento.
+           Mantém a seleção de VÁRIOS meses ao mesmo tempo (diferente do Vencimento, que é um único período),
+           pois é útil para comparar meses não-contínuos de competência. -->
       <div class="fg">
-        <label>Mês de Competência</label>
+        <label>Mês de Competência <span style="color:var(--tx3);font-weight:400;font-size:10px">— aceita selecionar mais de um mês</span></label>
         <div class="mp-wrap" id="mp-comp-wrap">
-          <button type="button" class="mp-btn" id="mp-comp-btn" onclick="toggleMpDrop('comp')">Todos os meses</button>
-          <div class="mp-drop" id="mp-comp-drop">
+          <button type="button" class="mp-btn" id="mp-comp-btn" onclick="toggleMpDrop('comp')"
+            style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);color:var(--tx);border-radius:6px;padding:8px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;width:100%">
+            <span style="display:flex;align-items:center;gap:6px;overflow:hidden">
+              <i class="fa-regular fa-calendar" style="color:var(--or);flex-shrink:0"></i>
+              <span id="mp-comp-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Todos os meses</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3);flex-shrink:0"></i>
+          </button>
+          <div class="mp-drop" id="mp-comp-drop" style="padding:16px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.45)">
             <div class="mp-nav">
               <button type="button" class="mp-nav-btn" onclick="mpNavYear('comp',-1)">‹</button>
               <span class="mp-year" id="mp-comp-year">2026</span>
               <button type="button" class="mp-nav-btn" onclick="mpNavYear('comp',+1)">›</button>
             </div>
             <div class="mp-months" id="mp-comp-months"></div>
-            <button type="button" class="mp-clear" onclick="mpClear('comp')"><i class="fa-solid fa-xmark"></i> Limpar seleção</button>
+            <!-- Rodapé: atalhos rápidos — mesmo padrão do picker de Vencimento -->
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button type="button" onclick="mpAtalho('comp','mes')"  class="rc-atalho">Este mês</button>
+              <button type="button" onclick="mpAtalho('comp','ant')"  class="rc-atalho">Mês anterior</button>
+              <button type="button" onclick="mpAtalho('comp','ano')"  class="rc-atalho">Este ano</button>
+              <button type="button" class="mp-clear" onclick="mpClear('comp')" style="width:auto;margin:0 0 0 auto;padding:6px 10px"><i class="fa-solid fa-xmark"></i> Limpar</button>
+            </div>
           </div>
         </div>
       </div>
@@ -3532,7 +3642,7 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
       <!-- Categoria multiselect -->
       <div class="fg">
-        <label>Categoria</label>
+        <label>Categoria <span style="color:var(--tx3);font-weight:400;font-size:10px">— produtos/insumos. Para Despesas Operacionais e Impostos use "Grupo" abaixo</span></label>
         <div class="ms-wrap" id="ms-cat-wrap">
           <button type="button" class="ms-btn" id="ms-cat-btn" onclick="toggleMs('cat')">Todas as categorias</button>
           <div class="ms-drop" id="ms-cat-drop">
@@ -3571,6 +3681,39 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
             <div class="ms-footer">
               <span class="ms-all" onclick="event.stopPropagation();msSelectAll('forma')">✓ Todos</span>
               <span class="ms-all" onclick="event.stopPropagation();msDeselectAll('forma')">✗ Nenhum</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Grupo + Conta do Plano de Contas — filtro pela estrutura contábil real -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg">
+        <label>Grupo (Plano de Contas) <span style="color:var(--tx3);font-weight:400;font-size:10px">— ex.: Despesas Operacionais, Impostos e Taxas</span></label>
+        <div class="ms-wrap" id="ms-grupo-wrap">
+          <button type="button" class="ms-btn" id="ms-grupo-btn" onclick="toggleMs('grupo')">Todos os grupos</button>
+          <div class="ms-drop" id="ms-grupo-drop">
+            <div class="ms-search"><input type="text" placeholder="Buscar grupo..." oninput="msSearch('grupo',this.value)" id="ms-grupo-search"></div>
+            <div id="ms-grupo-list"></div>
+            <div class="ms-footer">
+              <span class="ms-all" onclick="event.stopPropagation();msSelectAll('grupo')">✓ Todos</span>
+              <span class="ms-all" onclick="event.stopPropagation();msDeselectAll('grupo')">✗ Nenhum</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Conta Específica <span style="color:var(--tx3);font-weight:400;font-size:10px">— pesquisa direto por uma conta (ex.: só Salários, só Aluguel), independente do Grupo</span></label>
+        <div class="ms-wrap" id="ms-conta-wrap">
+          <button type="button" class="ms-btn" id="ms-conta-btn" onclick="toggleMs('conta')">Todas as contas</button>
+          <div class="ms-drop" id="ms-conta-drop">
+            <div class="ms-search"><input type="text" placeholder="Buscar conta..." oninput="msSearch('conta',this.value)" id="ms-conta-search"></div>
+            <div id="ms-conta-list"></div>
+            <div class="ms-footer">
+              <span class="ms-all" onclick="event.stopPropagation();msSelectAll('conta')">✓ Todos</span>
+              <span class="ms-all" onclick="event.stopPropagation();msDeselectAll('conta')">✗ Nenhum</span>
             </div>
           </div>
         </div>
@@ -3639,13 +3782,73 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
         <button class="btn btn-sm" onclick="imprimirRelCompras()"><i class="fa-solid fa-print"></i> Imprimir</button>
       </div>
     </div>
-    <!-- Linha 1: Datas + Ordenar -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
-      <div class="fg"><label>Data Compra — De</label>
-        <input type="date" id="rcc-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <div class="fg"><label>Data Compra — Até</label>
-        <input type="date" id="rcc-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+    <!-- Linha 1: Período + Ordenar -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="fg">
+        <label>Data da Compra</label>
+        <input type="hidden" id="rcc-dt-ini">
+        <input type="hidden" id="rcc-dt-fim">
+        <div style="position:relative">
+          <button type="button" id="rcp-periodo-btn" onclick="rcpTogglePicker()"
+            style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);color:var(--tx);border-radius:6px;padding:8px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;width:100%">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="rcp-periodo-label">Todos os períodos</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+          </button>
+
+          <div id="rcp-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+            background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+            <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+              <button type="button" id="rcp-tab-mes"     onclick="rcpSetModo('mes')"     class="rc-tab-ativo"   style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por mês</button>
+              <button type="button" id="rcp-tab-periodo" onclick="rcpSetModo('periodo')" class="rc-tab-inativo" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por período</button>
+              <button type="button" id="rcp-tab-ano"     onclick="rcpSetModo('ano')"     class="rc-tab-inativo" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por ano</button>
+            </div>
+
+            <div id="rcp-modo-mes">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <button type="button" onclick="rcpNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                <span id="rcp-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                <button type="button" onclick="rcpNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+              </div>
+              <div id="rcp-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <div id="rcp-modo-periodo" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data início</label>
+                  <input type="date" id="rcp-dt-ini"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data fim</label>
+                  <input type="date" id="rcp-dt-fim"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+              </div>
+              <button type="button" onclick="rcpAplicarPeriodoData()"
+                style="width:100%;margin-top:10px;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+                <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+              </button>
+            </div>
+
+            <div id="rcp-modo-ano" style="display:none">
+              <div id="rcp-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button type="button" onclick="rcpAtalho('mes')"  class="rc-atalho">Este mês</button>
+              <button type="button" onclick="rcpAtalho('ant')"  class="rc-atalho">Mês anterior</button>
+              <button type="button" onclick="rcpAtalho('trim')" class="rc-atalho">Trimestre</button>
+              <button type="button" onclick="rcpAtalho('ano')"  class="rc-atalho">Este ano</button>
+              <button type="button" onclick="rcpLimpar()" class="rc-atalho" style="margin-left:auto;color:var(--tx3)">Limpar</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="fg"><label>Unidade de Medida</label>
         <select id="rc-un" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
@@ -3815,14 +4018,72 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
     </div>
     <!-- Filtros por período (caixa) -->
     <div id="rv-filtros-periodo">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <div class="fg">
-        <label>Período — De</label>
-        <input type="date" id="rv-dt-ini" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-      </div>
-      <div class="fg">
-        <label>Período — Até</label>
-        <input type="date" id="rv-dt-fim" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <label>Período</label>
+        <input type="hidden" id="rv-dt-ini">
+        <input type="hidden" id="rv-dt-fim">
+        <div style="position:relative">
+          <button type="button" id="rvc-periodo-btn" onclick="rvcTogglePicker()"
+            style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);color:var(--tx);border-radius:6px;padding:8px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;width:100%">
+            <span style="display:flex;align-items:center;gap:6px">
+              <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+              <span id="rvc-periodo-label">Todos os períodos</span>
+            </span>
+            <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+          </button>
+
+          <div id="rvc-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+            background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:340px">
+
+            <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+              <button type="button" id="rvc-tab-mes"     onclick="rvcSetModo('mes')"     class="rc-tab-ativo"   style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por mês</button>
+              <button type="button" id="rvc-tab-periodo" onclick="rvcSetModo('periodo')" class="rc-tab-inativo" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por período</button>
+              <button type="button" id="rvc-tab-ano"     onclick="rvcSetModo('ano')"     class="rc-tab-inativo" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por ano</button>
+            </div>
+
+            <div id="rvc-modo-mes">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <button type="button" onclick="rvcNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                <span id="rvc-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                <button type="button" onclick="rvcNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+              </div>
+              <div id="rvc-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <div id="rvc-modo-periodo" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data início</label>
+                  <input type="date" id="rvc-dt-ini"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--tx3);display:block;margin-bottom:4px">Data fim</label>
+                  <input type="date" id="rvc-dt-fim"
+                    style="width:100%;background:var(--dk3);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:6px 8px;font-family:Outfit,sans-serif;font-size:12px;outline:none">
+                </div>
+              </div>
+              <button type="button" onclick="rvcAplicarPeriodoData()"
+                style="width:100%;margin-top:10px;padding:7px;background:var(--or);border:none;border-radius:6px;color:#fff;font-family:Outfit,sans-serif;font-size:13px;font-weight:500;cursor:pointer">
+                <i class="fa-solid fa-filter" style="margin-right:6px"></i>Aplicar filtro
+              </button>
+            </div>
+
+            <div id="rvc-modo-ano" style="display:none">
+              <div id="rvc-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+            </div>
+
+            <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button type="button" onclick="rvcAtalho('mes')"  class="rc-atalho">Este mês</button>
+              <button type="button" onclick="rvcAtalho('ant')"  class="rc-atalho">Mês anterior</button>
+              <button type="button" onclick="rvcAtalho('trim')" class="rc-atalho">Trimestre</button>
+              <button type="button" onclick="rvcAtalho('ano')"  class="rc-atalho">Este ano</button>
+              <button type="button" onclick="rvcLimpar()" class="rc-atalho" style="margin-left:auto;color:var(--tx3)">Limpar</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="fg">
         <label>Categoria</label>
@@ -3850,20 +4111,50 @@ tr:hover .ac-btns,.pc-conta:hover .ac-btns{opacity:1;}
 
     <!-- Filtros por competência -->
     <div id="rv-filtros-comp" style="display:none">
-      <div style="display:grid;grid-template-columns:180px 180px 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="fg">
-          <label>Mês/Ano competência</label>
-          <input type="month" id="rv-comp-mes" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%" onfocus="this.style.borderColor='var(--or)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-        </div>
-        <div class="fg">
-          <label>Ano (todos os meses)</label>
-          <select id="rv-comp-ano" style="background:var(--dk3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 12px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:12px;outline:none;width:100%">
-            <option value="">— Selecione o ano —</option>
-            <option value="2024">2024</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
-          </select>
+          <label>Competência</label>
+          <input type="hidden" id="rv-comp-mes">
+          <input type="hidden" id="rv-comp-ano">
+          <div style="position:relative">
+            <button type="button" id="rvp-periodo-btn" onclick="rvpTogglePicker()"
+              style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--dk3);border:1px solid rgba(255,255,255,0.1);color:var(--tx);border-radius:6px;padding:8px 12px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;width:100%">
+              <span style="display:flex;align-items:center;gap:6px">
+                <i class="fa-regular fa-calendar" style="color:var(--or)"></i>
+                <span id="rvp-periodo-label">Selecione</span>
+              </span>
+              <i class="fa-solid fa-chevron-down" style="font-size:9px;color:var(--tx3)"></i>
+            </button>
+
+            <div id="rvp-picker" style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:1500;
+              background:var(--dk2);border:1px solid var(--bd);border-radius:10px;
+              box-shadow:0 8px 32px rgba(0,0,0,0.45);padding:16px;width:300px">
+
+              <div style="display:flex;gap:0;margin-bottom:14px;background:var(--dk3);border-radius:6px;padding:3px">
+                <button type="button" id="rvp-tab-mes" onclick="rvpSetModo('mes')" class="rc-tab-ativo"   style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por mês</button>
+                <button type="button" id="rvp-tab-ano" onclick="rvpSetModo('ano')" class="rc-tab-inativo" style="flex:1;padding:5px;border:none;border-radius:4px;font-family:Outfit,sans-serif;font-size:12px;cursor:pointer">Por ano (todos os meses)</button>
+              </div>
+
+              <div id="rvp-modo-mes">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <button type="button" onclick="rvpNavAno(-1)" style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">‹</button>
+                  <span id="rvp-nav-ano" style="font-size:13px;font-weight:500;color:var(--tx)">2026</span>
+                  <button type="button" onclick="rvpNavAno(1)"  style="background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:2px 8px">›</button>
+                </div>
+                <div id="rvp-grid-meses" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+              </div>
+
+              <div id="rvp-modo-ano" style="display:none">
+                <div id="rvp-grid-anos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+              </div>
+
+              <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <button type="button" onclick="rvpAtalho('mes')" class="rc-atalho">Este mês</button>
+                <button type="button" onclick="rvpAtalho('ant')" class="rc-atalho">Mês anterior</button>
+                <button type="button" onclick="rvpLimpar()" class="rc-atalho" style="margin-left:auto;color:var(--tx3)">Limpar</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="fg">
           <label>Categoria</label>
@@ -8455,7 +8746,7 @@ function gerarParcelasManual(){
     const venc1=document.getElementById('mpp-venc-1');
     if(venc1&&!venc1.value) venc1.value=hoje;
   }
-  const totalNF=mppItens.reduce((a,b)=>a+b.total,0);
+  const totalNF=Math.round(mppItens.reduce((a,b)=>a+b.total,0)*100)/100;
   if(totalNF>0) distribuirTotalParcelas(totalNF);
   else calcTotalParcelas();
 }
@@ -8629,7 +8920,7 @@ function saveParcelado(){
     const idx = arr.findIndex(x=>x.id===_mppEditId);
     if(idx===-1){ alert('Lançamento não encontrado.'); return; }
 
-    const totalNF = mppItens.reduce((a,b)=>a+b.total,0);
+    const totalNF = Math.round(mppItens.reduce((a,b)=>a+b.total,0)*100)/100;
     let contaAuto = document.getElementById('mpp-conta')?.value||'';
     if(mppItens.length){
       const cv={};
@@ -8644,7 +8935,7 @@ function saveParcelado(){
     }
 
     const venc1  = document.getElementById('mpp-venc-1')?.value||arr[idx].venc||'';
-    const val1   = parseFloat(document.getElementById('mpp-val-1')?.value)||arr[idx].val||0;
+    const val1   = Math.round((parseFloat(document.getElementById('mpp-val-1')?.value)||arr[idx].val||0)*100)/100;
     const forma1 = document.getElementById('mpp-forma-1')?.value||arr[idx].forma||'';
     const st1    = document.getElementById('mpp-st-1')?.value||arr[idx].status||'Pendente';
     const dtpag1 = document.getElementById('mpp-dtpag-1')?.value||'';
@@ -8694,7 +8985,7 @@ function saveParcelado(){
     }
   }
   // ── BLOQUEIO: total das parcelas deve fechar com o total da NF ──
-  const totalNF=mppItens.reduce((a,b)=>a+b.total,0);
+  const totalNF=Math.round(mppItens.reduce((a,b)=>a+b.total,0)*100)/100;
   if(totalNF > 0){
     let totalParc = 0;
     for(let i=1;i<=linhasQtd;i++){
@@ -8731,7 +9022,7 @@ function saveParcelado(){
   let novasLinhas = 0;
   for(let i=1;i<=linhasQtd;i++){
     const venc =document.getElementById('mpp-venc-'+i)?.value||'';
-    const val  =parseFloat(document.getElementById('mpp-val-'+i)?.value)||0;
+    const val  =Math.round((parseFloat(document.getElementById('mpp-val-'+i)?.value)||0)*100)/100;
     const forma=document.getElementById('mpp-forma-'+i)?.value||'';
     const st   =document.getElementById('mpp-st-'+i)?.value||'Pendente';
     if(!val&&!venc)continue;
@@ -10616,6 +10907,9 @@ function renderDashboard(){
 
   // ── Análise Fluxo de Caixa ──
   dbRenderFCX(ymAtual);
+
+  // ── Análise de Despesas Operacionais (Curva ABC + Comparativo + Variação %) ──
+  dbRenderDespOp(ymAtual);
 }
 
 // ══════════════════════════════════════
@@ -10799,6 +11093,182 @@ function dbRenderFCX(ymAtual){
       // cobCor e cobTxt já aplicados diretamente no innerHTML acima
     }
   }
+}
+
+
+// ══════════════════════════════════════
+// DASHBOARD — DESPESAS OPERACIONAIS (ABC + Comparativo + Variação %)
+// ══════════════════════════════════════
+
+// Reaproveita a mesma lógica de acumulação por conta usada em dbCalcMes,
+// mas retornando o detalhamento por conta de um grupo específico do Plano de Contas
+let _despopTopN = 5;
+
+function dbSetTopN(n){
+  _despopTopN = parseInt(n,10) || 5;
+  dbRenderDespOp(_dbMes);
+}
+
+function dbCalcContasGrupo(ym, grupo){
+  const pagar = S.g('pagar') || [];
+  const pc    = getPC ? getPC() : [];
+  const pag   = pagar.filter(x=>(x.comp||x.venc||'').slice(0,7)===ym);
+
+  const totC = {};
+  pag.forEach(l=>{
+    const val = l.val||0; if(!val) return;
+    const cod = l.conta||'';
+    if(cod){ totC[cod]=(totC[cod]||0)+val; return; }
+    if(l.itens&&l.itens.length){
+      const tot=l.itens.reduce((s,i)=>s+(i.total||0),0);
+      if(tot>0){ l.itens.forEach(it=>{ if(it.conta) totC[it.conta]=(totC[it.conta]||0)+val*(it.total||0)/tot; }); }
+    }
+  });
+
+  return pc.filter(x=>x.tipo==='conta' && x.grupo===grupo)
+           .map(c=>({ cod:c.cod, nome:c.nome, val: totC[c.cod]||0 }));
+}
+
+function dbMesAnt(ym){
+  const [y,m] = ym.split('-').map(Number);
+  return new Date(y, m-2, 1).toISOString().slice(0,7);
+}
+
+function dbRenderDespOp(ymAtual){
+  const ymAnt = dbMesAnt(ymAtual);
+  const contasAtual    = dbCalcContasGrupo(ymAtual, '5').filter(c=>c.val>0);
+  const contasAntTodas = dbCalcContasGrupo(ymAnt, '5');
+  const antMap = {}; contasAntTodas.forEach(c=>{ antMap[c.cod]=c.val; });
+
+  const [y,m] = ymAtual.split('-').map(Number);
+  const mesLabel = new Date(y,m-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+  const lblEl = document.getElementById('despop-mes-label');
+  if(lblEl) lblEl.textContent = mesLabel;
+
+  // ── 1) Curva ABC — Despesas Operacionais ──
+  const abcEl = document.getElementById('despop-abc-list');
+  if(abcEl){
+    if(!contasAtual.length){
+      abcEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--tx3);font-size:12px">Nenhuma despesa operacional lançada neste mês.</div>`;
+    } else {
+      const sorted = [...contasAtual].sort((a,b)=>b.val-a.val);
+      const total  = sorted.reduce((s,c)=>s+c.val,0);
+      let acum = 0;
+      const itens = sorted.map(c=>{
+        const pct     = total>0 ? c.val/total*100 : 0;
+        const classe  = acum/total*100<80 ? 'A' : acum/total*100<95 ? 'B' : 'C';
+        acum += c.val;
+        const pctAcum = total>0 ? acum/total*100 : 0;
+        const cor = classe==='A'?'var(--rd)':classe==='B'?'var(--am)':'var(--gr)';
+        const bg  = classe==='A'?'rgba(229,57,53,0.2)':classe==='B'?'rgba(255,143,0,0.2)':'rgba(76,175,80,0.2)';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd)">
+          <span style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${cor};flex-shrink:0">${classe}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</div>
+            <div style="height:3px;background:var(--dk4);border-radius:99px;margin-top:3px"><div style="width:${pct.toFixed(1)}%;height:100%;background:${cor};border-radius:99px"></div></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:12px;font-weight:600;color:var(--tx)">${R(c.val)}</div>
+            <div style="font-size:10px;color:var(--tx3)">${pct.toFixed(1)}% · Acum: ${pctAcum.toFixed(0)}%</div>
+          </div>
+        </div>`;
+      });
+      const linhaTotal = `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;margin-top:2px;border-top:1px solid rgba(255,255,255,0.15)">
+        <span style="font-size:12px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:0.5px">Total — ${sorted.length} conta(s)</span>
+        <span style="font-size:13px;font-weight:700;color:var(--rd)">${R(total)}</span>
+      </div>`;
+      abcEl.innerHTML = itens.join('') + linhaTotal;
+    }
+  }
+
+  // ── 2) Comparativo do Mês (gráfico de barras horizontal) ──
+  dc('despopComp');
+  const compEl = document.getElementById('c-despop-comp');
+  if(compEl){
+    const top = [...contasAtual].sort((a,b)=>b.val-a.val).slice(0,10);
+    if(top.length){
+      const labels   = top.map(c=>c.nome.length>18?c.nome.slice(0,17)+'…':c.nome);
+      const valAtual = top.map(c=>c.val);
+      const valAnt   = top.map(c=>antMap[c.cod]||0);
+      CH.despopComp = new Chart(compEl,{type:'bar',data:{
+        labels,
+        datasets:[
+          {label:'Mês Anterior', data:valAnt,   backgroundColor:'rgba(255,255,255,0.12)', borderRadius:4},
+          {label:'Mês Atual',    data:valAtual, backgroundColor:'rgba(229,57,53,0.7)',    borderRadius:4}
+        ]},
+        options:{
+          indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{display:true,position:'bottom',labels:{color:'#888',font:{size:10},boxWidth:10,padding:10}},
+                   tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${R(ctx.raw)}`}}},
+          scales:{x:{ticks:{color:'#666',font:{size:10},callback:v=>'R$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}},
+                   y:{ticks:{color:'#aaa',font:{size:10}}}}
+        }});
+    } else {
+      const ctx2 = compEl.getContext('2d');
+      ctx2.clearRect(0,0,compEl.width,compEl.height);
+    }
+  }
+
+  // ── 3) Top 5 Maiores Variações % vs. Mês Anterior ──
+  const varEl = document.getElementById('despop-variacao-list');
+  if(varEl){
+    const cods = new Set([...contasAtual.map(c=>c.cod), ...contasAntTodas.map(c=>c.cod)]);
+    const nomeMap  = {}; contasAtual.concat(contasAntTodas).forEach(c=>{ nomeMap[c.cod]=c.nome; });
+    const atualMap = {}; contasAtual.forEach(c=>{ atualMap[c.cod]=c.val; });
+
+    const linhas = [...cods].map(cod=>{
+      const v1 = atualMap[cod]||0, v0 = antMap[cod]||0;
+      let pct=null, nova=false;
+      if(v0>0) pct=(v1-v0)/v0*100;
+      else if(v1>0) nova=true;
+      return { cod, nome:nomeMap[cod], v1, v0, pct, nova };
+    }).filter(l=>l.v1>0||l.v0>0);
+
+    linhas.sort((a,b)=>{
+      const pa = a.nova ? Infinity : Math.abs(a.pct||0);
+      const pb = b.nova ? Infinity : Math.abs(b.pct||0);
+      return pb-pa;
+    });
+    const topN = linhas.slice(0, _despopTopN);
+
+    const csEl = document.getElementById('despop-var-cs');
+    if(csEl) csEl.textContent = `Top ${_despopTopN} conta(s)`;
+    const selEl = document.getElementById('despop-topn-sel');
+    if(selEl && selEl.value !== String(_despopTopN)) selEl.value = String(_despopTopN);
+
+    if(!topN.length){
+      varEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--tx3);font-size:12px">Sem dados suficientes para comparação com o mês anterior.</div>`;
+    } else {
+      varEl.innerHTML = topN.map(l=>{
+        const subiu  = l.nova || (l.pct!==null && l.pct>0);
+        const cor    = subiu ? 'var(--rd)' : 'var(--gr)';
+        const icon   = subiu ? 'fa-arrow-up' : 'fa-arrow-down';
+        const pctTxt = l.nova ? 'Nova despesa' : `${l.pct>0?'+':''}${l.pct.toFixed(1)}%`;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
+          <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
+            <span style="width:24px;height:24px;border-radius:50%;background:${cor}22;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="fa-solid ${icon}" style="color:${cor};font-size:10px"></i>
+            </span>
+            <span style="font-size:12px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</span>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:10px">
+            <div style="font-size:12px;font-weight:700;color:${cor}">${pctTxt}</div>
+            <div style="font-size:10px;color:var(--tx3)">${R(l.v0)} → ${R(l.v1)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+function imprimirDashboard(){
+  const periodoEl = document.getElementById('db-periodo-label');
+  const periodo = periodoEl ? periodoEl.textContent.replace(/\s*Mês atual\s*/,'').trim() : '';
+  buildPrintHeader('page-dashboard', 'Dashboard Financeiro', periodo);
+  const el = document.getElementById('page-dashboard');
+  el.classList.add('print-target');
+  window.print();
+  el.classList.remove('print-target');
 }
 
 
@@ -17817,18 +18287,43 @@ function editPagar(id){
   if(bancoEl) bancoEl.value = lanc.banco||lanc.contaCorrente||'';
 
   // ── Itens: carrega mppItens e renderiza ──
-  mppItens = lanc.itens ? lanc.itens.map(it=>({
-    nome:  it.nome||'',
-    qtd:   it.qtd||1,
-    un:    it.un||'un',
-    preco: it.preco||it.custo||0,
-    total: it.total||0,
-    conta: it.conta||lanc.conta||'',
-    tipo:  it.tipo||'',
-    cat:   it.cat||'',
-  })) : [];
+  // Antes de carregar, busca o cadastro atual (produtos/insumos/serviços) para
+  // re-sincronizar a conta de cada item — caso o cadastro tenha sido corrigido
+  // depois que este lançamento foi criado (ex.: produto recadastrado para a conta
+  // certa). Isso só atualiza o que está em tela, ainda não salvo — o usuário revisa
+  // e confirma ao clicar em "Salvar Alterações".
+  const _catalogoEdicao = getCatalogItens();
+  let _algumaContaResincronizada = false;
+  mppItens = lanc.itens ? lanc.itens.map(it=>{
+    const contaSalva = it.conta||lanc.conta||'';
+    const match = _catalogoEdicao.find(ci => ci.nome === (it.nome||''));
+    const contaAtual = (match && match.conta) ? match.conta : contaSalva;
+    if(contaAtual !== contaSalva) _algumaContaResincronizada = true;
+    return {
+      nome:  it.nome||'',
+      qtd:   it.qtd||1,
+      un:    it.un||'un',
+      preco: it.preco||it.custo||0,
+      total: it.total||0,
+      conta: contaAtual,
+      tipo:  it.tipo||'',
+      cat:   it.cat||'',
+    };
+  }) : [];
   renderItensNFP();
   if(mppItens.length) syncContaManualNFP();
+  if(_algumaContaResincronizada){
+    setTimeout(()=>{
+      const wrap = document.getElementById('mpp-conta-manual-wrap');
+      if(wrap && !document.getElementById('mpp-conta-resync-aviso')){
+        const aviso = document.createElement('div');
+        aviso.id = 'mpp-conta-resync-aviso';
+        aviso.style.cssText = 'margin-top:6px;font-size:11px;color:#81C784;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:6px;padding:6px 10px';
+        aviso.innerHTML = '<i class="fa-solid fa-rotate" style="margin-right:5px"></i>A conta de um ou mais itens foi atualizada com base no cadastro atual. Revise e clique em Salvar para confirmar.';
+        wrap.appendChild(aviso);
+      }
+    }, 60);
+  }
 
   // ── Itens de consulta (parcelas 2+ de uma nota parcelada — somente leitura) ──
   const consultaWrap = document.getElementById('mpp-itens-consulta');
@@ -17874,7 +18369,7 @@ function editPagar(id){
     const stEl    = document.getElementById('mpp-st-1');
     const dtpagEl = document.getElementById('mpp-dtpag-1');
     if(vencEl)  vencEl.value  = lanc.venc||'';
-    if(valEl)   valEl.value   = lanc.val||'';
+    if(valEl)   valEl.value   = lanc.val ? (Math.round(lanc.val*100)/100).toFixed(2) : '';
     if(formaEl) formaEl.value = lanc.forma||'';
     if(stEl)    stEl.value    = lanc.status||'Pendente';
     if(dtpagEl) dtpagEl.value = lanc.dtpag||'';
@@ -18433,13 +18928,17 @@ function fillSelectContasPlano(selId){
   });
 
   // Monta estrutura: grupo > [subgrupos > contas] ou [contas diretas]
+  // OBS: este select alimenta exclusivamente cadastros de Produtos/Insumos/Serviços
+  // (lado das COMPRAS) — contas de Receita não fazem sentido aqui e são excluídas
+  // para evitar erros de classificação (ex.: produto vinculado a "Venda de Alimentação").
+  const ehReceita = c => c.natureza==='receita' || c.natureza==='reducao';
   const grupos = sorted.filter(x=>x.tipo==='grupo');
   grupos.forEach(g=>{
     const ogGrupo = document.createElement('optgroup');
     ogGrupo.label = g.cod+' ── '+g.nome;
 
     // Contas diretas do grupo (sem subgrupo)
-    const contasDiretas = sorted.filter(x=>x.tipo==='conta' && x.grupo===g.cod && !x.subgrupo);
+    const contasDiretas = sorted.filter(x=>x.tipo==='conta' && x.grupo===g.cod && !x.subgrupo && !ehReceita(x));
     contasDiretas.forEach(c=>{
       const o=document.createElement('option');
       o.value=c.cod;
@@ -18450,6 +18949,9 @@ function fillSelectContasPlano(selId){
     // Subgrupos do grupo
     const subs = sorted.filter(x=>x.tipo==='subgrupo' && x.grupo===g.cod);
     subs.forEach(sg=>{
+      // Contas do subgrupo (calculadas antes do separador para não criar cabeçalho vazio)
+      const contas = sorted.filter(x=>x.tipo==='conta' && x.subgrupo===sg.cod && !ehReceita(x));
+      if(!contas.length) return;
       // Separador visual do subgrupo como option disabled
       const sep=document.createElement('option');
       sep.disabled=true;
@@ -18458,8 +18960,6 @@ function fillSelectContasPlano(selId){
       sep.style.fontWeight='600';
       ogGrupo.appendChild(sep);
 
-      // Contas do subgrupo
-      const contas = sorted.filter(x=>x.tipo==='conta' && x.subgrupo===sg.cod);
       contas.forEach(c=>{
         const o=document.createElement('option');
         o.value=c.cod;
@@ -18626,6 +19126,8 @@ function updateMsBtn(key){
     forma:  ['Todas as formas',       'forma',      'formas'],
     cat:    ['Todas as categorias',   'categoria',  'categorias'],
     eqcat:  ['Todas as categorias',   'categoria',  'categorias'],
+    grupo:  ['Todos os grupos',       'grupo',      'grupos'],
+    conta:  ['Todas as contas',       'conta',      'contas'],
   };
   const lbl = labels[key] || ['Todos','item','itens'];
   if(n===0) btn.textContent = lbl[0];
@@ -18709,16 +19211,44 @@ function mpClear(key){
 
 function updateMpBtn(key){
   const st = mpState[key]; if(!st) return;
-  const btn = document.getElementById('mp-'+key+'-btn'); if(!btn) return;
+  const lbl = document.getElementById('mp-'+key+'-label');
+  const btnFallback = document.getElementById('mp-'+key+'-btn');
+  const setTxt = txt => { if(lbl) lbl.textContent = txt; else if(btnFallback) btnFallback.textContent = txt; };
   const n = st.sel.size;
-  if(n===0){ btn.textContent='Todos os meses'; return; }
+  if(n===0){ setTxt('Todos os meses'); return; }
   const sorted = [...st.sel].sort();
   if(n===1){
     const [y,m] = sorted[0].split('-');
-    btn.textContent = MESES_FULL[parseInt(m)-1]+' '+y;
+    setTxt(MESES_FULL[parseInt(m)-1]+' '+y);
   } else {
-    btn.textContent = n + ' meses selecionados';
+    setTxt(n + ' meses selecionados');
   }
+}
+
+function mpAtalho(key, tipo){
+  const st = mpState[key]; if(!st) return;
+  const hoje = new Date();
+  const fmtM = (y,m) => `${y}-${String(m).padStart(2,'0')}`;
+  if(tipo==='mes'){
+    st.sel.clear();
+    st.sel.add(fmtM(hoje.getFullYear(), hoje.getMonth()+1));
+    st.year = hoje.getFullYear();
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    st.sel.clear();
+    st.sel.add(fmtM(ant.getFullYear(), ant.getMonth()+1));
+    st.year = ant.getFullYear();
+  } else if(tipo==='ano'){
+    st.sel.clear();
+    for(let m=1;m<=12;m++) st.sel.add(fmtM(hoje.getFullYear(), m));
+    st.year = hoje.getFullYear();
+  }
+  const yEl = document.getElementById('mp-'+key+'-year');
+  if(yEl) yEl.textContent = st.year;
+  renderMpMonths(key);
+  updateMpBtn(key);
+  toggleMpDrop(key);
+  if(key==='comp') gerarRelPagar();
 }
 
 // ══════════════════════════════════════
@@ -18729,9 +19259,171 @@ let rpDados = [];
 let rpSortCol = 'venc';
 let rpSortDir = 'asc';
 
+// ── Picker premium de período (Vencimento) — igual ao usado em CAP/CAR/DRE ──
+let _rppFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+let _rppAnoNav = new Date().getFullYear();
+
+function rppTogglePicker(){
+  const p = document.getElementById('rpp-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){ rppRenderGridMeses(); rppRenderGridAnos(); }
+}
+
+function rppFecharPicker(){
+  const p = document.getElementById('rpp-picker');
+  if(p) p.style.display = 'none';
+}
+
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('rpp-picker');
+  const btn    = document.getElementById('rpp-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    rppFecharPicker();
+  }
+});
+
+function rppSetModo(modo){
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('rpp-tab-'+m);
+    const div = document.getElementById('rpp-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes') rppRenderGridMeses();
+  if(modo==='ano') rppRenderGridAnos();
+}
+
+function rppNavAno(delta){
+  _rppAnoNav += delta;
+  const el = document.getElementById('rpp-nav-ano');
+  if(el) el.textContent = _rppAnoNav;
+  rppRenderGridMeses();
+}
+
+function rppRenderGridMeses(){
+  const grid = document.getElementById('rpp-grid-meses');
+  if(!grid) return;
+  const ano = _rppAnoNav;
+  const sel = _rppFiltro.tipo==='mes' ? _rppFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button type="button" onclick="rppSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+    >${m}</button>`;
+  }).join('');
+}
+
+function rppRenderGridAnos(){
+  const grid = document.getElementById('rpp-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _rppFiltro.tipo==='ano' ? _rppFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button type="button" onclick="rppSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function rppAplicarHidden(ini, fim){
+  const elIni = document.getElementById('rp-dt-ini');
+  const elFim = document.getElementById('rp-dt-fim');
+  if(elIni) elIni.value = ini || '';
+  if(elFim) elFim.value = fim || '';
+}
+
+function rppSelecionarMes(val){
+  const [y,m] = val.split('-').map(Number);
+  const ini = `${y}-${String(m).padStart(2,'0')}-01`;
+  const fim = new Date(y, m, 0).toISOString().slice(0,10);
+  _rppFiltro = { tipo:'mes', mes:val, ini, fim, ano:null };
+  rppAplicarHidden(ini, fim);
+  const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  rppAtualizarLabel(`${MESES_FULL[m-1]} de ${y}`);
+  rppFecharPicker();
+  gerarRelPagar();
+}
+
+function rppSelecionarAno(ano){
+  const ini = `${ano}-01-01`;
+  const fim = `${ano}-12-31`;
+  _rppFiltro = { tipo:'ano', mes:null, ini, fim, ano };
+  rppAplicarHidden(ini, fim);
+  rppAtualizarLabel(`Ano de ${ano}`);
+  rppFecharPicker();
+  gerarRelPagar();
+}
+
+function rppAplicarPeriodoData(){
+  const ini = document.getElementById('rpp-dt-ini')?.value;
+  const fim = document.getElementById('rpp-dt-fim')?.value;
+  if(!ini || !fim){ alert('Informe as duas datas.'); return; }
+  if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
+  _rppFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  rppAplicarHidden(ini, fim);
+  const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+  rppAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+  rppFecharPicker();
+  gerarRelPagar();
+}
+
+function rppAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if(tipo==='mes'){
+    const val = `${hoje.getFullYear()}-${pad(hoje.getMonth()+1)}`;
+    rppSelecionarMes(val);
+    return;
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    const val = `${ant.getFullYear()}-${pad(ant.getMonth()+1)}`;
+    rppSelecionarMes(val);
+    return;
+  } else if(tipo==='trim'){
+    const q   = Math.floor(hoje.getMonth()/3);
+    const ini = fmt(new Date(hoje.getFullYear(), q*3, 1));
+    const fim = fmt(new Date(hoje.getFullYear(), q*3+3, 0));
+    _rppFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+    rppAplicarHidden(ini, fim);
+    rppAtualizarLabel(`${q+1}º Trimestre ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    rppSelecionarAno(hoje.getFullYear());
+    return;
+  }
+  rppFecharPicker();
+  gerarRelPagar();
+}
+
+function rppLimpar(semRender){
+  _rppFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+  rppAplicarHidden('', '');
+  rppAtualizarLabel('Todos os períodos');
+  rppFecharPicker();
+  if(!semRender) gerarRelPagar();
+}
+
+function rppAtualizarLabel(txt){
+  const el = document.getElementById('rpp-periodo-label');
+  if(el) el.textContent = txt;
+}
+
 function initRelPagar(){
   // Fornecedor: value = f.n (nome) pois é isso que fica salvo em x.forn nos lançamentos
-  const forns = (S.g('fornecedores')||[]).map(f=>({v:f.n, l:f.n}));
+  const forns = (S.g('fornecedores')||[]).map(f=>({v:f.n, l:f.n})).sort((a,b)=>(a.l||'').localeCompare(b.l||'','pt-BR'));
   msInit('forn', forns);
 
   msInit('status',[
@@ -18748,8 +19440,25 @@ function initRelPagar(){
   msInit('forma', todasFormas);
 
   // Categorias: fonte única = cadastro de categorias de produtos (ativas, ordem alfabética)
-  const catsProd = getCatProds().filter(c=>c.st==='Ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({v:c.nome, l:c.nome}));
+  // Obs.: "Impostos" isolado é removido da lista — o sistema nunca distingue Impostos de
+  // Serviços nessa classificação macro (ambos caem no mesmo bucket "Serviços/Impostos"),
+  // então ter os dois como opções separadas só confundia. Para separar Impostos (Grupo 2)
+  // de Despesas Operacionais (Grupo 5) de verdade, use o filtro "Grupo (Plano de Contas)".
+  const normCat = v => v.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const catsProd = getCatProds().filter(c=>c.st==='Ativo')
+    .filter(c=>!['imposto','impostos','servico','servicos'].includes(normCat(c.nome)))
+    .sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({v:c.nome, l:c.nome}));
   msInit('cat', catsProd);
+
+  // Grupo do Plano de Contas: fonte única = plano de contas real (grupos de nível 1)
+  const pcGrupos = (getPC ? getPC() : []).filter(g=>g.tipo==='grupo').map(g=>({v:g.cod, l:g.nome}));
+  msInit('grupo', pcGrupos);
+
+  // Conta específica: fonte única = plano de contas real (contas analíticas)
+  const pcContas = (getPC ? getPC() : []).filter(c=>c.tipo==='conta')
+    .sort((a,b)=>a.cod.localeCompare(b.cod,'pt-BR',{numeric:true}))
+    .map(c=>({v:c.cod, l:`${c.cod} — ${c.nome}`}));
+  msInit('conta', pcContas);
 
   // Inicializa month picker — só reinicia se não houver seleção ativa
   if(!mpState['comp'] || mpState['comp'].sel.size === 0){
@@ -18760,13 +19469,15 @@ function initRelPagar(){
     updateMpBtn('comp');
   }
 
+  rppRenderGridAnos();
   gerarRelPagar();
 }
 
 function limparFiltrosPagar(){
   const dtIni = document.getElementById('rp-dt-ini'); if(dtIni) dtIni.value='';
   const dtFim = document.getElementById('rp-dt-fim'); if(dtFim) dtFim.value='';
-  ['forn','status','forma','cat'].forEach(k=>{ if(msState[k]) msState[k].sel.clear(); updateMsBtn(k); renderMsItems(k,''); });
+  rppLimpar(true);
+  ['forn','status','forma','cat','grupo','conta'].forEach(k=>{ if(msState[k]) msState[k].sel.clear(); updateMsBtn(k); renderMsItems(k,''); });
   if(mpState['comp']){ mpState['comp'].sel.clear(); renderMpMonths('comp'); updateMpBtn('comp'); }
   gerarRelPagar();
 }
@@ -18778,6 +19489,8 @@ function gerarRelPagar(){
   const selStatus = msState['status']?.sel || new Set();
   const selForma  = msState['forma']?.sel || new Set();
   const selCat    = msState['cat']?.sel || new Set();
+  const selGrupo  = msState['grupo']?.sel || new Set();
+  const selConta  = msState['conta']?.sel || new Set();
   const selComp   = mpState['comp']?.sel || new Set();
 
   // ── VALIDAÇÃO: não permitir filtrar pelos dois ao mesmo tempo ──
@@ -18800,7 +19513,7 @@ function gerarRelPagar(){
             — não os dois ao mesmo tempo.
           </div>
           <div style="display:flex;gap:10px;justify-content:center">
-            <button onclick="document.getElementById('rp-dt-ini').value='';document.getElementById('rp-dt-fim').value='';document.getElementById('mod-aviso-filtro').remove();gerarRelPagar();"
+            <button onclick="rppLimpar(true);document.getElementById('mod-aviso-filtro').remove();gerarRelPagar();"
               style="background:var(--dk3);border:1px solid var(--bd);color:var(--tx2);padding:9px 18px;border-radius:6px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;">
               Usar só Competência
             </button>
@@ -18836,6 +19549,33 @@ function gerarRelPagar(){
   if(selStatus.size > 0 && selStatus.size < totalStatus) arr = arr.filter(x => selStatus.has(x.status));
   if(selForma.size > 0)  arr = arr.filter(x => selForma.has(x.forma));
 
+  // ── Filtro por Grupo do Plano de Contas (estrutura contábil real, ex.: "5" = Despesas Operacionais) ──
+  if(selGrupo.size > 0){
+    arr = arr.filter(x => {
+      // Prioriza a conta principal do lançamento — é exatamente o que aparece na
+      // coluna "Conta Débito" da tabela, então o filtro fica consistente com o que se vê.
+      // Só cai para os itens da nota quando a conta principal está vazia.
+      const cod = (x.conta||'').trim();
+      if(cod) return selGrupo.has(cod.split('.')[0]);
+      if(x.itens && x.itens.length){
+        return x.itens.some(it => it.conta && selGrupo.has((it.conta||'').split('.')[0]));
+      }
+      return false;
+    });
+  }
+
+  // ── Filtro por Conta específica (ex.: só "5.1.01 — Salários") ──
+  if(selConta.size > 0){
+    arr = arr.filter(x => {
+      const cod = (x.conta||'').trim();
+      if(cod) return selConta.has(cod);
+      if(x.itens && x.itens.length){
+        return x.itens.some(it => it.conta && selConta.has(it.conta));
+      }
+      return false;
+    });
+  }
+
   // ── Filtro por categoria ──
   if(selCat.size > 0){
     // Normaliza: minúsculas + remove acentos
@@ -18846,9 +19586,7 @@ function gerarRelPagar(){
       '4.1':'insumos','4.2':'bebidas','4.3':'insumos',
       '5.3.07':'material de limpeza','5.3.08':'material descartavel',
       '5.3.09':'material de expediente','5.3.10':'utensilios',
-      '5.4.01':'imobilizado','5.4.02':'imobilizado','5.4.03':'imobilizado','5.4.04':'imobilizado',
-      '5.5.01':'imobilizado','5.5.02':'imobilizado','5.5.03':'imobilizado',
-      '5.5.04':'imobilizado','5.5.05':'imobilizado','5.5.06':'imobilizado',
+      '5.8.01':'imobilizado',
     };
     // Grupo 5 cobre todos os serviços/despesas operacionais
     // Normalização para categorias de serviços: cobre "serviços/impostos", "serviços e impostos"
@@ -18871,17 +19609,14 @@ function gerarRelPagar(){
             const contaCat = {'4.1':'insumos','4.2':'bebidas','4.3':'insumos',
               '5.3.07':'material de limpeza','5.3.08':'material descartavel',
               '5.3.09':'material de expediente','5.3.10':'utensilios',
-              '5.4.01':'imobilizado','5.4.02':'imobilizado','5.4.03':'imobilizado','5.4.04':'imobilizado',
-              '5.5.01':'imobilizado','5.5.02':'imobilizado','5.5.03':'imobilizado',
-              '5.5.04':'imobilizado','5.5.05':'imobilizado','5.5.06':'imobilizado',
+              '5.8.01':'imobilizado',
             };
-            if(contaCat[it.conta] && selCatNorm.has(contaCat[it.conta])) return true;
-            // Fallback por grupo da conta
+            // Se a conta já tem categoria específica mapeada, usa ela e PARA aqui —
+            // não deixa cair no fallback genérico do grupo (senão Imobilizado, Material
+            // de Limpeza etc. seriam incorretamente tratados como "Serviços/Impostos")
+            if(contaCat[it.conta]) return selCatNorm.has(contaCat[it.conta]);
+            // Fallback por grupo da conta — só chega aqui se a conta NÃO tem categoria específica
             const grp = (it.conta||'').split('.')[0];
-            // Grupo 4 pode ser insumos ou bebidas — usa o cod completo
-            if(it.conta === '4.2') return selCatNorm.has('bebidas');
-            if(it.conta === '4.3') return selCatNorm.has('insumos');
-            if(it.conta === '4.1') return selCatNorm.has('insumos');
             if(grp === '4') return selCatNorm.has('insumos');
             if(grp === '5') return selCatNorm.has('servicos/impostos');
             if(grp === '3') return selCatNorm.has('servicos/impostos');
@@ -18958,9 +19693,7 @@ function resolverCatLancamento(lanc){
       const contaCatMap = {'4.1':'Insumos','4.2':'Bebidas','4.3':'Insumos',
         '5.3.07':'Material de Limpeza','5.3.08':'Material Descartável',
         '5.3.09':'Material de Expediente','5.3.10':'Utensílios',
-        '5.4.01':'Imobilizado','5.4.02':'Imobilizado','5.4.03':'Imobilizado','5.4.04':'Imobilizado',
-        '5.5.01':'Imobilizado','5.5.02':'Imobilizado','5.5.03':'Imobilizado',
-        '5.5.04':'Imobilizado','5.5.05':'Imobilizado','5.5.06':'Imobilizado',
+        '5.8.01':'Imobilizado',
       };
       if(contaCatMap[contaItem]) return contaCatMap[contaItem];
       const grp = contaItem.split('.')[0];
@@ -19006,10 +19739,7 @@ function resolverCatLancamento(lanc){
       '5.3.08': 'Material Descartável',
       '5.3.09': 'Material de Expediente',
       '5.3.10': 'Utensílios',
-      '5.5.01': 'Imobilizado', '5.5.02': 'Imobilizado', '5.5.03': 'Imobilizado',
-      '5.5.04': 'Imobilizado', '5.5.05': 'Imobilizado', '5.5.06': 'Imobilizado',
-      '5.4.01': 'Imobilizado', '5.4.02': 'Imobilizado',
-      '5.4.03': 'Imobilizado', '5.4.04': 'Imobilizado',
+      '5.8.01': 'Imobilizado',
     };
     if(mapaCodigoCat[cod]) return mapaCodigoCat[cod];
 
@@ -19027,7 +19757,7 @@ function resolverCatLancamento(lanc){
         ['Material de Limpeza',    ['limpeza','higiene','detergente','desinfet','sabao','vassoura']],
         ['Utensílios',             ['utensilio','cozinha','panela','utensilios','utensil']],
         ['Material de Expediente', ['expediente','papelaria','escritorio','papel','caneta','cartuch']],
-        ['Imobilizado',            ['imobilizado','ativo fixo','equipamento','maquina','mobiliario','reforma','obra','refriger']],
+        ['Imobilizado',            ['imobilizado','ativo fixo','mobiliario']],
         ['Serviços/Impostos',      ['servico','imposto','taxa','contab','aluguel','energia','gas','folha','pro-labore','marketing','frete','seguro','telefone','internet','inss','fgts','salario','rescisao','honorario','consultoria','psicologia','advocacia']],
       ];
       for(const [nome, palavras] of mapa){
@@ -19342,9 +20072,9 @@ function rrRenderGridMeses(){
     const ativo = mesSel === ym;
     return `<button onclick="rrSelecionarMes('${ym}')"
       style="padding:7px 4px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
-      border-radius:6px;background:${ativo?'rgba(242,100,25,0.15)':'transparent'};
-      color:${ativo?'var(--or)':'var(--tx2)'};font-family:Outfit,sans-serif;
-      font-size:12px;cursor:pointer;font-weight:${ativo?'600':'400'}">${m}</button>`;
+      border-radius:6px;background:${ativo?'var(--or)':'var(--dk3)'};
+      color:${ativo?'#fff':'var(--tx2)'};font-family:Outfit,sans-serif;
+      font-size:12px;cursor:pointer;font-weight:${ativo?'600':'400'};transition:.15s">${m}</button>`;
   }).join('');
 }
 
@@ -19359,9 +20089,9 @@ function rrRenderGridAnos(){
     const ativo = anoSel===a;
     return `<button onclick="rrSelecionarAno(${a})"
       style="padding:8px 4px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
-      border-radius:6px;background:${ativo?'rgba(242,100,25,0.15)':'transparent'};
-      color:${ativo?'var(--or)':'var(--tx2)'};font-family:Outfit,sans-serif;
-      font-size:13px;cursor:pointer;font-weight:${ativo?'600':'400'}">${a}</button>`;
+      border-radius:6px;background:${ativo?'var(--or)':'var(--dk3)'};
+      color:${ativo?'#fff':'var(--tx2)'};font-family:Outfit,sans-serif;
+      font-size:13px;cursor:pointer;font-weight:${ativo?'600':'400'};transition:.15s">${a}</button>`;
   }).join('');
 }
 
@@ -19700,16 +20430,178 @@ function initRelCompras(){
   rcMsBuildProd();
   rcMsBuildLanc();
   rcMsBuildConta();
+  rcpRenderGridAnos();
   gerarRelCompras();
 }
 
 function limparFiltrosCompras(){
-  ['rcc-dt-ini','rcc-dt-fim'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  rcpLimpar(true);
   const rcUn=document.getElementById('rc-un'); if(rcUn) rcUn.selectedIndex=0;
   rcMsClearAll('cat'); rcMsClearAll('forn'); rcMsClearAll('prod');
   rcMsClearAll('lanc'); rcMsClearAll('conta');
   document.getElementById('rc-order').value='data-desc';
   gerarRelCompras();
+}
+
+// ── Picker premium de período (Data da Compra) — mesmo padrão do Relatório de Contas a Pagar ──
+let _rcpFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+let _rcpAnoNav = new Date().getFullYear();
+
+function rcpTogglePicker(){
+  const p = document.getElementById('rcp-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){ rcpRenderGridMeses(); rcpRenderGridAnos(); }
+}
+
+function rcpFecharPicker(){
+  const p = document.getElementById('rcp-picker');
+  if(p) p.style.display = 'none';
+}
+
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('rcp-picker');
+  const btn    = document.getElementById('rcp-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    rcpFecharPicker();
+  }
+});
+
+function rcpSetModo(modo){
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('rcp-tab-'+m);
+    const div = document.getElementById('rcp-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes') rcpRenderGridMeses();
+  if(modo==='ano') rcpRenderGridAnos();
+}
+
+function rcpNavAno(delta){
+  _rcpAnoNav += delta;
+  const el = document.getElementById('rcp-nav-ano');
+  if(el) el.textContent = _rcpAnoNav;
+  rcpRenderGridMeses();
+}
+
+function rcpRenderGridMeses(){
+  const grid = document.getElementById('rcp-grid-meses');
+  if(!grid) return;
+  const ano = _rcpAnoNav;
+  const sel = _rcpFiltro.tipo==='mes' ? _rcpFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button type="button" onclick="rcpSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+    >${m}</button>`;
+  }).join('');
+}
+
+function rcpRenderGridAnos(){
+  const grid = document.getElementById('rcp-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _rcpFiltro.tipo==='ano' ? _rcpFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button type="button" onclick="rcpSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function rcpAplicarHidden(ini, fim){
+  const elIni = document.getElementById('rcc-dt-ini');
+  const elFim = document.getElementById('rcc-dt-fim');
+  if(elIni) elIni.value = ini || '';
+  if(elFim) elFim.value = fim || '';
+}
+
+function rcpSelecionarMes(val){
+  const [y,m] = val.split('-').map(Number);
+  const ini = `${y}-${String(m).padStart(2,'0')}-01`;
+  const fim = new Date(y, m, 0).toISOString().slice(0,10);
+  _rcpFiltro = { tipo:'mes', mes:val, ini, fim, ano:null };
+  rcpAplicarHidden(ini, fim);
+  const MESES_FULL2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  rcpAtualizarLabel(`${MESES_FULL2[m-1]} de ${y}`);
+  rcpFecharPicker();
+  gerarRelCompras();
+}
+
+function rcpSelecionarAno(ano){
+  const ini = `${ano}-01-01`;
+  const fim = `${ano}-12-31`;
+  _rcpFiltro = { tipo:'ano', mes:null, ini, fim, ano };
+  rcpAplicarHidden(ini, fim);
+  rcpAtualizarLabel(`Ano de ${ano}`);
+  rcpFecharPicker();
+  gerarRelCompras();
+}
+
+function rcpAplicarPeriodoData(){
+  const ini = document.getElementById('rcp-dt-ini')?.value;
+  const fim = document.getElementById('rcp-dt-fim')?.value;
+  if(!ini || !fim){ alert('Informe as duas datas.'); return; }
+  if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
+  _rcpFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  rcpAplicarHidden(ini, fim);
+  const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+  rcpAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+  rcpFecharPicker();
+  gerarRelCompras();
+}
+
+function rcpAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if(tipo==='mes'){
+    const val = `${hoje.getFullYear()}-${pad(hoje.getMonth()+1)}`;
+    rcpSelecionarMes(val);
+    return;
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    const val = `${ant.getFullYear()}-${pad(ant.getMonth()+1)}`;
+    rcpSelecionarMes(val);
+    return;
+  } else if(tipo==='trim'){
+    const q   = Math.floor(hoje.getMonth()/3);
+    const ini = fmt(new Date(hoje.getFullYear(), q*3, 1));
+    const fim = fmt(new Date(hoje.getFullYear(), q*3+3, 0));
+    _rcpFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+    rcpAplicarHidden(ini, fim);
+    rcpAtualizarLabel(`${q+1}º Trimestre ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    rcpSelecionarAno(hoje.getFullYear());
+    return;
+  }
+  rcpFecharPicker();
+  gerarRelCompras();
+}
+
+function rcpLimpar(semRender){
+  _rcpFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+  rcpAplicarHidden('', '');
+  rcpAtualizarLabel('Todos os períodos');
+  rcpFecharPicker();
+  if(!semRender) gerarRelCompras();
+}
+
+function rcpAtualizarLabel(txt){
+  const el = document.getElementById('rcp-periodo-label');
+  if(el) el.textContent = txt;
 }
 
 function gerarRelCompras(){
@@ -19846,12 +20738,14 @@ function detectarCategoriaItem(it, contaNome){
   if(it.tipo === 'Serviço/Imposto') return null;
   // Exclui contas de serviço exatas
   if(CONTAS_SERVICO.includes(cod)) return null;
-  // Exclui subgrupos operacionais 5.1.xx, 5.2.xx, 5.6.xx, 5.7.xx
-  if(cod && (cod.startsWith('5.1.')||cod.startsWith('5.2.')||cod.startsWith('5.6.')||cod.startsWith('5.7.'))) return null;
+  // Exclui subgrupos operacionais 5.1.xx, 5.2.xx, 5.4.xx, 5.5.xx, 5.6.xx, 5.7.xx
+  // (5.4 = Manutenção Predial, 5.5 = Manutenção Máquinas/Equip/Veículos — são SERVIÇOS,
+  // não Imobilizado; só 5.8 é Imobilizado de verdade no Plano de Contas)
+  if(cod && (cod.startsWith('5.1.')||cod.startsWith('5.2.')||cod.startsWith('5.4.')||cod.startsWith('5.5.')||cod.startsWith('5.6.')||cod.startsWith('5.7.'))) return null;
   // Exclui pelo nome da conta
   const nomesServico = ['salario','folha','pro-labore','aluguel','energia','agua','gas','telefone',
     'internet','contabil','honorar','imposto','taxa','inss','fgts','marketing','publicidade',
-    'seguro','vigilancia','desentupidora','psicolog','advocac','consultoria'];
+    'seguro','vigilancia','desentupidora','psicolog','advocac','consultoria','manutenc'];
   if(nomesServico.some(p=>cn.includes(p))) return null;
 
   // Grupo 4 (CMV) — prioridade máxima
@@ -19868,8 +20762,8 @@ function detectarCategoriaItem(it, contaNome){
     if(cod==='5.3.09'||cod.startsWith('5.3.09')) return 'Material de Expediente';
     if(cod==='5.3.10'||cod.startsWith('5.3.10')) return 'Material Utensílios';
   }
-  // Grupos 5.4, 5.5, 5.8 (Imobilizado)
-  if(cod&&(cod.startsWith('5.4.')||cod.startsWith('5.5.')||cod.startsWith('5.8.'))) return 'Imobilizado';
+  // Grupo 5.8 (Imobilizado — o único subgrupo real de imobilizado)
+  if(cod&&cod.startsWith('5.8.')) return 'Imobilizado';
 
   // Mapeamento pelo nome da conta
   if(cn.includes('insumo')||cn.includes('ingrediente')||cn.includes('materia-prima')) return 'Insumos';
@@ -19878,7 +20772,7 @@ function detectarCategoriaItem(it, contaNome){
   if(cn.includes('limpeza')||cn.includes('higiene'))                                  return 'Material de Limpeza';
   if(cn.includes('utensilio')||cn.includes('cozinha'))                                return 'Material Utensílios';
   if(cn.includes('expediente')||cn.includes('papelaria')||cn.includes('escritorio'))  return 'Material de Expediente';
-  if(cn.includes('imobilizado')||cn.includes('equipamento')||cn.includes('maquina'))  return 'Imobilizado';
+  if(cn.includes('imobilizado'))                                                     return 'Imobilizado';
   if(cn.includes('compra')&&cn.includes('insumo'))  return 'Insumos';
   if(cn.includes('compra')&&cn.includes('bebida'))  return 'Bebidas';
   if(cn.includes('compra'))                         return 'Insumos';
@@ -19900,6 +20794,25 @@ function rcMsToggle(key){
   const allDrops = document.querySelectorAll('.rc-ms-drop');
   allDrops.forEach(d=>{ if(d!==drop) d.style.display='none'; });
   drop.style.display = drop.style.display==='none' ? 'block' : 'none';
+  // Foca a busca automaticamente ao abrir, se existir
+  if(drop.style.display==='block'){
+    setTimeout(()=>{ const s=document.getElementById('rc-'+key+'-search'); if(s) s.focus(); }, 30);
+  }
+}
+// Caixa de busca padrão usada no topo dos dropdowns multiselect do Relatório de Compras
+function rcMsBuscaHtml(key){
+  return `<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:var(--dk2)">
+    <input type="text" id="rc-${key}-search" placeholder="Buscar..." oninput="rcMsFilter('${key}',this.value)" onclick="event.stopPropagation()"
+      style="width:100%;background:var(--dk3);border:1px solid var(--bd);border-radius:5px;padding:6px 8px;color:var(--tx);font-family:Outfit,sans-serif;font-size:12px;outline:none">
+  </div>`;
+}
+// Filtra os itens da lista (já renderizada) pelo texto digitado — não precisa reconstruir o DOM
+function rcMsFilter(key, val){
+  const q = (val||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item[data-val]').forEach(el=>{
+    const txt = (el.textContent||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    el.style.display = txt.includes(q) ? '' : 'none';
+  });
 }
 function rcMsCbToggle(el, key){
   el.classList.toggle('sel');
@@ -19923,7 +20836,9 @@ function rcMsGetSel(key){
   return [...document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item.sel')].map(e=>e.dataset.val);
 }
 function rcMsClearAll(key){
-  document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item').forEach(e=>e.classList.remove('sel'));
+  document.querySelectorAll('#rc-'+key+'-drop .rc-ms-item').forEach(e=>{ e.classList.remove('sel'); e.style.display=''; });
+  const s = document.getElementById('rc-'+key+'-search');
+  if(s) s.value = '';
   rcMsUpdateLabel(key);
 }
 // Fecha ao clicar fora
@@ -19938,11 +20853,12 @@ function updateRcCatLabel(){ rcMsUpdateLabel('cat'); }
 function rcCatToggle(val){ const el=document.querySelector('#rc-cat-drop .rc-ms-item[data-val="'+val+'"]'); if(el){ el.classList.toggle('sel'); rcMsUpdateLabel('cat'); } }
 
 function rcMsBuildForn(){
-  const forns = S.g('fornecedores')||[];
+  const forns = [...(S.g('fornecedores')||[])].sort((a,b)=>(a.n||'').localeCompare(b.n||'','pt-BR'));
   const drop = document.getElementById('rc-forn-drop');
   if(!drop) return;
+  const busca = rcMsBuscaHtml('forn');
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('forn')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todos)</span></div>`;
-  drop.innerHTML = todos + (forns.length===0
+  drop.innerHTML = busca + todos + (forns.length===0
     ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhum fornecedor cadastrado</div>'
     : forns.map(f=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'forn')" data-val="${f.id}"><span class="rc-ms-chk"></span><span>${f.n}</span></div>`).join(''));
 }
@@ -19952,14 +20868,22 @@ function rcMsBuildLanc(){
   const lancSet = new Map();
   pagar.forEach(lanc=>{
     if(!lanc.itens || !lanc.itens.length) return;
+    // Só lista o lançamento se ele tiver pelo menos 1 item de categoria válida
+    // pra este relatório (senão o lançamento apareceria no filtro mas sempre daria 0 resultados)
+    const temItemValido = lanc.itens.some(it=>{
+      const contaNome = nomeContaByCod(it.conta)||'';
+      return CATS_COMPRAS.includes(detectarCategoriaItem(it, contaNome));
+    });
+    if(!temItemValido) return;
     const cod = lanc.cod||String(lanc.id);
     if(!lancSet.has(cod)) lancSet.set(cod, cod);
   });
   const drop = document.getElementById('rc-lanc-drop');
   if(!drop) return;
   const lista = [...lancSet.values()].sort();
+  const busca = rcMsBuscaHtml('lanc');
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('lanc')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todos)</span></div>`;
-  drop.innerHTML = todos + (lista.length===0
+  drop.innerHTML = busca + todos + (lista.length===0
     ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhum lançamento encontrado</div>'
     : lista.map(l=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'lanc')" data-val="${l}"><span class="rc-ms-chk"></span><span>${l}</span></div>`).join(''));
 }
@@ -19971,42 +20895,48 @@ function rcMsBuildConta(){
     if(!lanc.itens || !lanc.itens.length) return;
     lanc.itens.forEach(it=>{
       if(!it.conta) return;
-      const contaNome = nomeContaByCod(it.conta)||it.conta;
-      const label = `${it.conta} — ${contaNome}`;
+      // Só entra na lista se a conta pertencer a uma categoria válida deste relatório
+      // (Insumos/Bebidas/Materiais/Imobilizado) — contas de Serviço/Imposto/Manutenção
+      // não aparecem aqui, só no Contas a Pagar.
+      const contaNome = nomeContaByCod(it.conta)||'';
+      const catItem = detectarCategoriaItem(it, contaNome);
+      if(!CATS_COMPRAS.includes(catItem)) return;
+      // nomeContaByCod já retorna "cod — nome" formatado — não concatenar o código de novo
+      const label = contaNome || it.conta;
       if(!contaSet.has(it.conta)) contaSet.set(it.conta, label);
     });
   });
   const drop = document.getElementById('rc-conta-drop');
   if(!drop) return;
   const lista = [...contaSet.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const busca = rcMsBuscaHtml('conta');
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('conta')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todas)</span></div>`;
-  drop.innerHTML = todos + (lista.length===0
+  drop.innerHTML = busca + todos + (lista.length===0
     ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhuma conta encontrada</div>'
     : lista.map(([cod,lbl])=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'conta')" data-val="${cod}"><span class="rc-ms-chk"></span><span>${lbl}</span></div>`).join(''));
 }
 
 function rcMsBuildProd(){
-  // Categorias EXCLUÍDAS do relatório de Compras/Estoque
-  const CATS_EXCLUIR = ['serviço','servico','imposto','tributo','taxa','despesa financeira','despesas financeiras','financeiro'];
-
   const pagar = S.g('pagar')||[];
   const prods = new Map();
   pagar.forEach(lanc=>{
     if(!lanc.itens) return;
     lanc.itens.forEach(it=>{
       if(!it.nome) return;
-      const tipo = (it.tipo||'').toLowerCase();
-      const cat  = (it.cat||'').toLowerCase();
-      // Exclui apenas serviços e impostos
-      const excluir = CATS_EXCLUIR.some(c => tipo.includes(c) || cat.includes(c));
-      if(!excluir && !prods.has(it.nome)) prods.set(it.nome, it.nome);
+      // Mesma lógica de categoria usada no relatório e nos demais filtros —
+      // só entra se a conta do item pertencer a uma categoria válida deste relatório
+      const contaNome = nomeContaByCod(it.conta)||'';
+      const catItem = detectarCategoriaItem(it, contaNome);
+      if(!CATS_COMPRAS.includes(catItem)) return;
+      if(!prods.has(it.nome)) prods.set(it.nome, it.nome);
     });
   });
   const drop = document.getElementById('rc-prod-drop');
   if(!drop) return;
   const lista = [...prods.values()].sort();
+  const busca = rcMsBuscaHtml('prod');
   const todos = `<div class="rc-ms-item" onclick="rcMsClearAll('prod')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--or);border-bottom:1px solid rgba(242,100,25,0.2);font-weight:500;white-space:nowrap"><span style="width:14px;flex-shrink:0">✕</span><span>Limpar seleção (Todos)</span></div>`;
-  drop.innerHTML = todos + (lista.length===0
+  drop.innerHTML = busca + todos + (lista.length===0
     ? '<div style="padding:10px 14px;font-size:12px;color:var(--tx3)">Nenhum produto encontrado</div>'
     : lista.map(n=>`<div class="rc-ms-item" onclick="rcMsCbToggle(this,'prod')" data-val="${n.replace(/"/g,'&quot;')}"><span class="rc-ms-chk"></span><span>${n}</span></div>`).join(''));
 }
@@ -20733,6 +21663,340 @@ function rvSalvarFiltros(){
   localStorage.setItem('homolog_rv_filtros', JSON.stringify(f));
 }
 
+// ── Picker premium de Competência (Por mês / Por ano) — mesmo padrão dos demais relatórios ──
+let _rvpFiltro = { tipo:null, mes:null, ano:null };
+let _rvpAnoNav = new Date().getFullYear();
+
+function rvpTogglePicker(){
+  const p = document.getElementById('rvp-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){ rvpRenderGridMeses(); rvpRenderGridAnos(); }
+}
+
+function rvpFecharPicker(){
+  const p = document.getElementById('rvp-picker');
+  if(p) p.style.display = 'none';
+}
+
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('rvp-picker');
+  const btn    = document.getElementById('rvp-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    rvpFecharPicker();
+  }
+});
+
+function rvpSetModo(modo){
+  ['mes','ano'].forEach(m=>{
+    const tab = document.getElementById('rvp-tab-'+m);
+    const div = document.getElementById('rvp-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes') rvpRenderGridMeses();
+  if(modo==='ano') rvpRenderGridAnos();
+}
+
+function rvpNavAno(delta){
+  _rvpAnoNav += delta;
+  const el = document.getElementById('rvp-nav-ano');
+  if(el) el.textContent = _rvpAnoNav;
+  rvpRenderGridMeses();
+}
+
+function rvpRenderGridMeses(){
+  const grid = document.getElementById('rvp-grid-meses');
+  if(!grid) return;
+  const ano = _rvpAnoNav;
+  const sel = _rvpFiltro.tipo==='mes' ? _rvpFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button type="button" onclick="rvpSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+    >${m}</button>`;
+  }).join('');
+}
+
+function rvpRenderGridAnos(){
+  const grid = document.getElementById('rvp-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _rvpFiltro.tipo==='ano' ? _rvpFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = String(y)===String(sel);
+    return `<button type="button" onclick="rvpSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function rvpAplicarHidden(mes, ano){
+  const elMes = document.getElementById('rv-comp-mes');
+  const elAno = document.getElementById('rv-comp-ano');
+  if(elMes) elMes.value = mes || '';
+  if(elAno) elAno.value = ano || '';
+}
+
+const RVP_MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function rvpSelecionarMes(val){
+  const [y,m] = val.split('-').map(Number);
+  _rvpFiltro = { tipo:'mes', mes:val, ano:null };
+  rvpAplicarHidden(val, '');
+  rvpAtualizarLabel(`${RVP_MESES_FULL[m-1]} de ${y}`);
+  rvpFecharPicker();
+  gerarRelVendas();
+}
+
+function rvpSelecionarAno(ano){
+  _rvpFiltro = { tipo:'ano', mes:null, ano };
+  rvpAplicarHidden('', String(ano));
+  rvpAtualizarLabel(`Ano de ${ano} (todos os meses)`);
+  rvpFecharPicker();
+  gerarRelVendas();
+}
+
+function rvpAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  if(tipo==='mes'){
+    rvpSelecionarMes(`${hoje.getFullYear()}-${pad(hoje.getMonth()+1)}`);
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    rvpSelecionarMes(`${ant.getFullYear()}-${pad(ant.getMonth()+1)}`);
+  }
+}
+
+function rvpLimpar(semRender){
+  _rvpFiltro = { tipo:null, mes:null, ano:null };
+  rvpAplicarHidden('', '');
+  rvpAtualizarLabel('Selecione');
+  rvpFecharPicker();
+  if(!semRender) gerarRelVendas();
+}
+
+function rvpAtualizarLabel(txt){
+  const el = document.getElementById('rvp-periodo-label');
+  if(el) el.textContent = txt;
+}
+
+// Sincroniza o estado visual do picker a partir dos campos ocultos (usado na inicialização/restauração)
+function rvpSyncFromHidden(){
+  const mes = document.getElementById('rv-comp-mes')?.value||'';
+  const ano = document.getElementById('rv-comp-ano')?.value||'';
+  if(mes){
+    const [y,m] = mes.split('-').map(Number);
+    _rvpFiltro = { tipo:'mes', mes, ano:null };
+    _rvpAnoNav = y;
+    rvpAtualizarLabel(`${RVP_MESES_FULL[m-1]} de ${y}`);
+  } else if(ano){
+    _rvpFiltro = { tipo:'ano', mes:null, ano };
+    rvpAtualizarLabel(`Ano de ${ano} (todos os meses)`);
+  } else {
+    _rvpFiltro = { tipo:null, mes:null, ano:null };
+    rvpAtualizarLabel('Selecione');
+  }
+  const el = document.getElementById('rvp-nav-ano');
+  if(el) el.textContent = _rvpAnoNav;
+}
+
+// ── Picker premium de período (Por período — caixa) — mesmo padrão dos demais relatórios ──
+let _rvcFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+let _rvcAnoNav = new Date().getFullYear();
+
+function rvcTogglePicker(){
+  const p = document.getElementById('rvc-picker');
+  if(!p) return;
+  const aberto = p.style.display !== 'none';
+  p.style.display = aberto ? 'none' : 'block';
+  if(!aberto){ rvcRenderGridMeses(); rvcRenderGridAnos(); }
+}
+
+function rvcFecharPicker(){
+  const p = document.getElementById('rvc-picker');
+  if(p) p.style.display = 'none';
+}
+
+document.addEventListener('click', e=>{
+  const picker = document.getElementById('rvc-picker');
+  const btn    = document.getElementById('rvc-periodo-btn');
+  if(picker && btn && !picker.contains(e.target) && !btn.contains(e.target)){
+    rvcFecharPicker();
+  }
+});
+
+function rvcSetModo(modo){
+  ['mes','periodo','ano'].forEach(m=>{
+    const tab = document.getElementById('rvc-tab-'+m);
+    const div = document.getElementById('rvc-modo-'+m);
+    if(tab){ tab.className = m===modo ? 'rc-tab-ativo' : 'rc-tab-inativo'; }
+    if(div){ div.style.display = m===modo ? 'block' : 'none'; }
+  });
+  if(modo==='mes') rvcRenderGridMeses();
+  if(modo==='ano') rvcRenderGridAnos();
+}
+
+function rvcNavAno(delta){
+  _rvcAnoNav += delta;
+  const el = document.getElementById('rvc-nav-ano');
+  if(el) el.textContent = _rvcAnoNav;
+  rvcRenderGridMeses();
+}
+
+function rvcRenderGridMeses(){
+  const grid = document.getElementById('rvc-grid-meses');
+  if(!grid) return;
+  const ano = _rvcAnoNav;
+  const sel = _rvcFiltro.tipo==='mes' ? _rvcFiltro.mes : '';
+  grid.innerHTML = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((m,i)=>{
+    const val  = `${ano}-${String(i+1).padStart(2,'0')}`;
+    const ativo = val === sel;
+    return `<button type="button" onclick="rvcSelecionarMes('${val}')"
+      style="padding:7px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:12px;cursor:pointer;transition:.15s"
+    >${m}</button>`;
+  }).join('');
+}
+
+function rvcRenderGridAnos(){
+  const grid = document.getElementById('rvc-grid-anos');
+  if(!grid) return;
+  const anoAtual = new Date().getFullYear();
+  const anos = [];
+  for(let y=anoAtual-2; y<=anoAtual+1; y++) anos.push(y);
+  const sel = _rvcFiltro.tipo==='ano' ? _rvcFiltro.ano : null;
+  grid.innerHTML = anos.map(y=>{
+    const ativo = y===sel;
+    return `<button type="button" onclick="rvcSelecionarAno(${y})"
+      style="padding:10px 4px;border-radius:6px;border:1px solid ${ativo?'var(--or)':'var(--bd)'};
+             background:${ativo?'var(--or)':'var(--dk3)'};
+             color:${ativo?'#fff':'var(--tx2)'};
+             font-family:Outfit,sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:.15s"
+    >${y}</button>`;
+  }).join('');
+}
+
+function rvcAplicarHidden(ini, fim){
+  const elIni = document.getElementById('rv-dt-ini');
+  const elFim = document.getElementById('rv-dt-fim');
+  if(elIni) elIni.value = ini || '';
+  if(elFim) elFim.value = fim || '';
+}
+
+function rvcSelecionarMes(val){
+  const [y,m] = val.split('-').map(Number);
+  const ini = `${y}-${String(m).padStart(2,'0')}-01`;
+  const fim = new Date(y, m, 0).toISOString().slice(0,10);
+  _rvcFiltro = { tipo:'mes', mes:val, ini, fim, ano:null };
+  rvcAplicarHidden(ini, fim);
+  rvcAtualizarLabel(`${RVP_MESES_FULL[m-1]} de ${y}`);
+  rvcFecharPicker();
+  gerarRelVendas();
+}
+
+function rvcSelecionarAno(ano){
+  const ini = `${ano}-01-01`;
+  const fim = `${ano}-12-31`;
+  _rvcFiltro = { tipo:'ano', mes:null, ini, fim, ano };
+  rvcAplicarHidden(ini, fim);
+  rvcAtualizarLabel(`Ano de ${ano}`);
+  rvcFecharPicker();
+  gerarRelVendas();
+}
+
+function rvcAplicarPeriodoData(){
+  const ini = document.getElementById('rvc-dt-ini')?.value;
+  const fim = document.getElementById('rvc-dt-fim')?.value;
+  if(!ini || !fim){ alert('Informe as duas datas.'); return; }
+  if(ini > fim){ alert('A data de início deve ser anterior à data fim.'); return; }
+  _rvcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+  rvcAplicarHidden(ini, fim);
+  const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+  rvcAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+  rvcFecharPicker();
+  gerarRelVendas();
+}
+
+function rvcAtalho(tipo){
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if(tipo==='mes'){
+    rvcSelecionarMes(`${hoje.getFullYear()}-${pad(hoje.getMonth()+1)}`);
+    return;
+  } else if(tipo==='ant'){
+    const ant = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+    rvcSelecionarMes(`${ant.getFullYear()}-${pad(ant.getMonth()+1)}`);
+    return;
+  } else if(tipo==='trim'){
+    const q   = Math.floor(hoje.getMonth()/3);
+    const ini = fmt(new Date(hoje.getFullYear(), q*3, 1));
+    const fim = fmt(new Date(hoje.getFullYear(), q*3+3, 0));
+    _rvcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+    rvcAplicarHidden(ini, fim);
+    rvcAtualizarLabel(`${q+1}º Trimestre ${hoje.getFullYear()}`);
+  } else if(tipo==='ano'){
+    rvcSelecionarAno(hoje.getFullYear());
+    return;
+  }
+  rvcFecharPicker();
+  gerarRelVendas();
+}
+
+function rvcLimpar(semRender){
+  _rvcFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+  rvcAplicarHidden('', '');
+  rvcAtualizarLabel('Todos os períodos');
+  rvcFecharPicker();
+  if(!semRender) gerarRelVendas();
+}
+
+function rvcAtualizarLabel(txt){
+  const el = document.getElementById('rvc-periodo-label');
+  if(el) el.textContent = txt;
+}
+
+// Sincroniza o estado visual do picker a partir dos campos ocultos (usado na inicialização/restauração)
+function rvcSyncFromHidden(){
+  const ini = document.getElementById('rv-dt-ini')?.value||'';
+  const fim = document.getElementById('rv-dt-fim')?.value||'';
+  if(ini && fim){
+    // Detecta se é exatamente um mês cheio, um ano cheio, ou um período livre
+    const [y1,m1,d1] = ini.split('-').map(Number);
+    const ultimoDiaMes = new Date(y1, m1, 0).getDate();
+    if(d1===1 && fim === new Date(y1, m1, 0).toISOString().slice(0,10)){
+      _rvcFiltro = { tipo:'mes', mes:`${y1}-${String(m1).padStart(2,'0')}`, ini, fim, ano:null };
+      _rvcAnoNav = y1;
+      rvcAtualizarLabel(`${RVP_MESES_FULL[m1-1]} de ${y1}`);
+    } else if(ini===`${y1}-01-01` && fim===`${y1}-12-31`){
+      _rvcFiltro = { tipo:'ano', mes:null, ini, fim, ano:y1 };
+      rvcAtualizarLabel(`Ano de ${y1}`);
+    } else {
+      _rvcFiltro = { tipo:'periodo', mes:null, ini, fim, ano:null };
+      const fmtDate = d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; };
+      rvcAtualizarLabel(`${fmtDate(ini)} → ${fmtDate(fim)}`);
+    }
+  } else {
+    _rvcFiltro = { tipo:null, mes:null, ini:null, fim:null, ano:null };
+    rvcAtualizarLabel('Todos os períodos');
+  }
+  const el = document.getElementById('rvc-nav-ano');
+  if(el) el.textContent = _rvcAnoNav;
+}
+
 function initRelVendas(){
   // Inicializa multi-selects de categoria e produto
   rvPreencherCats('rv-cat-dd', 'rv-cat-label');
@@ -20772,6 +22036,8 @@ function initRelVendas(){
     if(elCompAno && !elCompAno.value) elCompAno.value = anoAtual;
   }
 
+  rvpSyncFromHidden();
+  rvcSyncFromHidden();
   gerarRelVendas();
 }
 
@@ -20843,6 +22109,9 @@ function rvToggleCat(val, ddId, labelId){
   // Atualiza lista de produtos disponíveis
   rvPreencherProds('rv-prod-dd','rv-prod-label');
   rvPreencherProds('rv-prod-comp-dd','rv-prod-comp-label');
+  // Aplica o filtro automaticamente — evita a confusão de marcar a categoria
+  // e esquecer de clicar em "Filtrar" de novo
+  gerarRelVendas();
 }
 
 function rvPreencherProds(ddId, labelId){
@@ -20900,6 +22169,8 @@ function rvToggleProd(val, ddId, labelId){
     if(_rvProdsSel.length === 0 && allCb) allCb.checked = true;
   }
   rvAtualizarLabelProd(labelId);
+  // Aplica o filtro automaticamente — mesma lógica do filtro de categoria
+  gerarRelVendas();
 }
 
 function rvAtualizarLabelProd(labelId){
@@ -20964,6 +22235,9 @@ function rvSetTipoFiltro(tipo){
     const elCompAno = document.getElementById('rv-comp-ano');
     if(elCompMes && !elCompMes.value) elCompMes.value = hoje.toISOString().slice(0,7);
     if(elCompAno && !elCompAno.value) elCompAno.value = String(hoje.getFullYear());
+    rvpSyncFromHidden();
+  } else {
+    rvcSyncFromHidden();
   }
   gerarRelVendas();
 }
@@ -20973,6 +22247,8 @@ function limparFiltrosVendas(){
   localStorage.removeItem('homolog_rv_filtros'); // limpa memória ao usar Limpar
   const compMes=document.getElementById('rv-comp-mes'); if(compMes)compMes.value='';
   const compAno=document.getElementById('rv-comp-ano'); if(compAno)compAno.value='';
+  rvpSyncFromHidden();
+  rvcSyncFromHidden();
   rvLimparFiltrosMs();
   rvPreencherCats('rv-cat-dd','rv-cat-label');
   rvPreencherCats('rv-cat-comp-dd','rv-cat-comp-label');
@@ -21052,6 +22328,11 @@ function gerarRelVendas(){
     const match = catVenda.find(c => c.toLowerCase().startsWith(cat.toLowerCase()) || cat.toLowerCase().startsWith(c.toLowerCase()));
     return match || cat;
   }
+  // Comparação de categoria sem distinguir acento/maiúscula/espaço extra —
+  // evita que "Drinks/coquetéis" no cadastro deixe de bater com o valor salvo no produto
+  // por causa de uma variação de escrita (isso já causava 0 resultados no filtro)
+  const normRv = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  const rvCatsSelNorm = _rvCatsSel.map(normRv);
 
   if(temItens){
     // ── Modo detalhado: processa apenas itens com prodId no cadastro ──
@@ -21066,8 +22347,8 @@ function gerarRelVendas(){
         // Categoria SEMPRE do cadastro de produto (fonte de verdade)
         const catOficial = prod.cat || it.cat || '';
         const prodFinal = {...prod, cat: catOficial};
-        // Aplica filtro multi-select categoria
-        if(_rvCatsSel.length > 0 && !_rvCatsSel.includes(catOficial)) return;
+        // Aplica filtro multi-select categoria (comparação normalizada)
+        if(_rvCatsSel.length > 0 && !rvCatsSelNorm.includes(normRv(catOficial))) return;
         // Aplica filtro multi-select produto
         if(_rvProdsSel.length > 0 && !_rvProdsSel.includes(String(prod.id))) return;
         addProd(prodFinal, it.qtd||1, it.preco||prod.preco||0, fator);
