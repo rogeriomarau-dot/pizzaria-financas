@@ -1,0 +1,2705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestão — Clínica Odontológica</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --bg: #F2F6F5;
+    --bg-alt: #E8EFEE;
+    --card: #FFFFFF;
+    --primary: #1F5B57;
+    --primary-dark: #143F3C;
+    --primary-light: #DCEAE8;
+    --accent: #C99A3D;
+    --accent-dark: #A97F2E;
+    --text: #1C2624;
+    --muted: #5B6B68;
+    --border: #DDE5E3;
+    --danger: #B3433B;
+    --danger-bg: #F7E7E5;
+    --success: #2E7D5B;
+    --success-bg: #E4F0EA;
+    --warn: #B3843B;
+    --warn-bg: #F5EBD9;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(20,40,38,0.08), 0 1px 2px rgba(20,40,38,0.06);
+    --shadow-md: 0 6px 20px rgba(20,40,38,0.10);
+    --font-display: Georgia, 'Palatino Linotype', 'Times New Roman', serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .app{display:flex; min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{
+    width: 220px;
+    background: var(--primary-dark);
+    color: #fff;
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+  }
+  .brand{
+    padding: 22px 18px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .brand-mark{
+    font-size: 26px;
+    line-height:1;
+    margin-bottom:6px;
+  }
+  .brand-name{
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  .brand-edit{
+    background:transparent;
+    border:none;
+    color: rgba(255,255,255,0.55);
+    font-size:11px;
+    cursor:pointer;
+    padding:2px 0;
+    text-decoration:underline;
+  }
+  .nav{
+    display:flex;
+    flex-direction:column;
+    padding: 10px 10px;
+    gap:2px;
+    flex:1;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.78);
+    cursor:pointer;
+    font-size:13.5px;
+    font-weight:500;
+    user-select:none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-item:hover{ background: rgba(255,255,255,0.08); color:#fff; }
+  .nav-item.active{ background: var(--accent); color: #241a05; font-weight:700; }
+  .nav-icon{ font-size:16px; width:20px; text-align:center;}
+  .sidebar-footer{
+    padding: 14px 18px 18px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+  .backup-btn{
+    width:100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .backup-btn:hover{ background: rgba(255,255,255,0.16); }
+
+  /* MAIN */
+  .main{ flex:1; padding: 26px 32px 60px; max-width: 1400px; }
+  .page-header{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px;}
+  .page-title{ font-family: var(--font-display); font-size: 26px; color: var(--primary-dark); margin:0;}
+  .page-sub{ color: var(--muted); font-size:13px; margin-top:4px;}
+
+  /* BUTTONS */
+  .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    font-size: 13.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition: all 0.12s;
+  }
+  .btn:hover{ border-color: var(--primary); color: var(--primary-dark); }
+  .btn-primary{ background: var(--primary); border-color: var(--primary); color:#fff; }
+  .btn-primary:hover{ background: var(--primary-dark); border-color: var(--primary-dark); color:#fff; }
+  .btn-accent{ background: var(--accent); border-color: var(--accent); color:#241a05; }
+  .btn-accent:hover{ background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn-danger{ background: var(--danger-bg); border-color: var(--danger-bg); color: var(--danger); }
+  .btn-danger:hover{ background: var(--danger); color:#fff; }
+  .btn-ghost{ background: transparent; border-color: transparent; }
+  .btn-sm{ padding: 5px 10px; font-size:12px; }
+
+  /* CARDS */
+  .card{ background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border);}
+  .kpi-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:22px; }
+  .kpi{ background:#fff; border:1px solid var(--border); border-radius: var(--radius); padding:16px 18px; box-shadow: var(--shadow);}
+  .kpi-label{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; font-weight:600;}
+  .kpi-value{ font-family:var(--font-display); font-size:24px; color:var(--primary-dark); margin-top:6px;}
+  .kpi-value.accent{ color: var(--accent-dark); }
+  .kpi-value.danger{ color: var(--danger); }
+
+  /* TABS/FILTERS */
+  .subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .subtab{ padding:7px 14px; border-radius:20px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--muted);}
+  .subtab.active{ background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark);}
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin-bottom:16px;}
+  .field{ display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.3px;}
+  input, select, textarea{
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background:#fff;
+    color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus{ outline: 2px solid var(--primary-light); border-color: var(--primary); }
+  textarea{ resize: vertical; min-height:60px; font-family: var(--font-body);}
+
+  /* TABLE */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{ text-align:left; padding: 9px 10px; color: var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:0.3px; border-bottom: 2px solid var(--border);}
+  thead th.sortable{ cursor:pointer; user-select:none; }
+  thead th.sortable:hover{ color: var(--primary-dark); }
+  .sort-arrow{ font-size:10px; color: var(--border); }
+  .sort-arrow.active{ color: var(--accent-dark); }
+  tbody td{ padding: 10px; border-bottom: 1px solid var(--border); vertical-align:middle;}
+  tbody tr:hover{ background: var(--bg-alt); }
+  .tbl-actions{ display:flex; gap:6px; }
+  .empty-state{ text-align:center; padding: 40px 20px; color: var(--muted); }
+  .empty-state-icon{ font-size:34px; margin-bottom:10px; }
+
+  .tag{ display:inline-block; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700;}
+  .tag-agendado{ background: var(--warn-bg); color: var(--warn); }
+  .tag-realizado{ background: var(--success-bg); color: var(--success); }
+  .tag-cancelado{ background: var(--danger-bg); color: var(--danger); }
+  .tag-pendente{ background: var(--warn-bg); color: var(--warn); }
+  .tag-pago{ background: var(--success-bg); color: var(--success); }
+  .tag-classe-a{ background: var(--success-bg); color: var(--success); }
+  .tag-classe-b{ background: var(--warn-bg); color: var(--warn); }
+  .tag-classe-c{ background: var(--bg-alt); color: var(--muted); }
+
+  /* AGENDA GRID */
+  .week-nav{ display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+  .week-label{ font-weight:700; color: var(--primary-dark); font-size:15px; min-width:220px; text-align:center;}
+  .agenda-scroll{ overflow-x:auto; border:1px solid var(--border); border-radius: var(--radius); background:#fff;}
+  .agenda-grid{
+    display:grid;
+    grid-template-columns: 74px repeat(7, minmax(160px, 1fr));
+    min-width: 1180px;
+  }
+  .ag-head{ position:sticky; top:0; background:#fff; z-index:3; padding:14px 6px; text-align:center; border-bottom:2px solid var(--border); border-left:1px solid var(--border);}
+  .ag-head.today{ background: var(--primary-light); }
+  .ag-head .dname{ font-size:12px; text-transform:uppercase; color:var(--muted); font-weight:700; letter-spacing:0.4px;}
+  .ag-head .ddate{ font-family:var(--font-display); font-size:19px; color:var(--primary-dark); margin-top:2px;}
+  .ag-corner{ position:sticky; top:0; left:0; background:#fff; z-index:4; border-bottom:2px solid var(--border);}
+  .ag-time{ padding: 5px 8px; font-size:12.5px; font-weight:600; color:var(--muted); text-align:right; border-top:1px solid var(--border); position:sticky; left:0; background:#fff; z-index:2;}
+  .ag-cell{ border-top:1px solid var(--border); border-left:1px solid var(--border); min-height:44px; cursor:pointer; position:relative;}
+  .ag-cell:hover{ background: var(--bg-alt); }
+  .ag-cell.hour-line{ border-top:1px solid #C9D6D3; }
+  .appt{
+    background: var(--primary);
+    color:#fff;
+    border-radius:7px;
+    font-size:11.5px;
+    padding: 3px 8px;
+    margin: 1px 3px;
+    cursor:pointer;
+    box-shadow: var(--shadow);
+    line-height:1.35;
+    height: calc(100% - 2px);
+    min-height: 17px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .appt:hover{ filter:brightness(1.08); }
+  .appt.st-realizado{ background: var(--success); }
+  .appt.st-cancelado{ background: #8a8a8a; text-decoration: line-through; opacity:0.75;}
+  .appt-line1{ display:block; font-weight:700; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .appt-line2{ display:block; font-size:11px; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .appt-legend{ display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
+  .legend-dot{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle;}
+
+  /* CALENDÁRIO MENSAL */
+  .month-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap:1px;
+    background: var(--border);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    overflow:hidden;
+  }
+  .month-headcell{ background:#fff; padding:10px 6px; text-align:center; font-size:11.5px; text-transform:uppercase; color:var(--muted); font-weight:700; letter-spacing:0.3px;}
+  .month-cell{ background:#fff; min-height:130px; padding:8px; display:flex; flex-direction:column; gap:4px;}
+  .month-cell.other-month{ background: var(--bg-alt); }
+  .month-cell.other-month .cell-date{ color:#B7C4C1; }
+  .cell-date-row{ display:flex; justify-content:space-between; align-items:center;}
+  .cell-date{ font-family:var(--font-display); font-size:15px; color:var(--primary-dark);}
+  .month-cell.today .cell-date{ color:#fff; background:var(--accent); width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:700;}
+  .month-add{ background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:16px; line-height:1; padding:2px 5px; border-radius:5px;}
+  .month-add:hover{ background:var(--bg-alt); color:var(--primary-dark);}
+  .month-appts{ display:flex; flex-direction:column; gap:3px; overflow:hidden;}
+  .month-appt{ font-size:11px; padding:3px 6px; border-radius:5px; background:var(--primary); color:#fff; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .month-appt.st-realizado{ background:var(--success); }
+  .month-appt.st-cancelado{ background:#8a8a8a; text-decoration:line-through; opacity:0.75;}
+  .month-more{ font-size:11px; color:var(--primary-dark); font-weight:600; cursor:pointer; padding:2px 6px;}
+  .month-more:hover{ text-decoration:underline; }
+
+  /* MODAL */
+  .modal-overlay{
+    position:fixed; inset:0; background: rgba(20,32,30,0.45);
+    display:flex; align-items:center; justify-content:center;
+    z-index: 100; padding: 20px;
+  }
+  .modal{
+    background:#fff; border-radius: 14px; padding: 26px 28px; width: 100%; max-width: 520px;
+    max-height: 88vh; overflow-y:auto; box-shadow: var(--shadow-md);
+  }
+  .modal h2{ font-family: var(--font-display); color: var(--primary-dark); margin: 0 0 18px; font-size:20px;}
+  .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:8px;}
+  .modal-grid .full{ grid-column: 1 / -1; }
+  .modal-actions{ display:flex; justify-content:space-between; margin-top:22px; gap:10px;}
+  .modal-actions-right{ display:flex; gap:10px; }
+
+  /* DRE */
+  .dre-table{ width:100%; border-collapse:collapse; }
+  .dre-table td{ padding:11px 8px; border-bottom:1px solid var(--border); font-size:14px;}
+  .dre-table tr.line-total td{ font-weight:700; border-top: 2px solid var(--primary-dark); border-bottom:none; padding-top:14px;}
+  .dre-table tr.line-sub td{ color: var(--muted); }
+  .dre-table tr.line-final td{ font-weight:800; color:var(--primary-dark); font-size:16px; background: var(--primary-light); }
+  .dre-table td.val{ text-align:right; font-variant-numeric: tabular-nums; }
+  .dre-table td.neg::before{ content:"(–) "; color: var(--danger); }
+  .dre-table td.pos::before{ content:"(+) "; color: var(--success); }
+  .dre-table tr.line-receita td{ color: var(--success); padding-left:22px; font-size:13px; }
+  .dre-table tr.line-receita td:first-child::before{ content:"↳ "; color: var(--muted); }
+  .dre-bar-wrap{ background: var(--bg-alt); border-radius:6px; height:8px; margin-top:4px; overflow:hidden;}
+  .dre-bar{ height:100%; background: var(--accent); }
+  .dre-av{ font-size:11px; color: var(--muted); }
+  .drilldown{ margin-top:6px; font-size:12px; color:var(--muted); padding-left:14px;}
+  .drilldown div{ padding:2px 0; }
+
+  /* PERFIL / GRÁFICO DE PIZZA */
+  .evolucao-row{ display:flex; gap:26px; flex-wrap:wrap; align-items:center; }
+  .evolucao-col-bars{ flex:1 1 260px; min-width:220px; }
+  .evolucao-col-pie{ flex:0 0 auto; }
+  .pie-wrap{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .pie{ width:150px; height:150px; border-radius:50%; flex-shrink:0; box-shadow: var(--shadow); background:#eee; }
+  .pie-svg{ width:170px; height:170px; flex-shrink:0; filter: drop-shadow(0 2px 6px rgba(20,40,38,0.15)); }
+  .pie-slice-label{ fill:#fff; font-size:15px; font-weight:800; font-family:var(--font-body); paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:3px; }
+  .pie-slice-pct{ fill:#fff; font-size:10.5px; font-weight:700; font-family:var(--font-body); paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:3px; opacity:0.95; }
+  .pie-legend{ display:flex; flex-direction:column; gap:7px; font-size:12px; }
+
+  /* LOGIN */
+  .login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(160deg, var(--primary-dark), var(--primary));
+    padding:20px;
+  }
+  .login-card{
+    background:#fff; border-radius:16px; padding:38px 36px; width:100%; max-width:380px;
+    box-shadow: var(--shadow-md); text-align:center;
+  }
+  .login-mark{ font-size:38px; margin-bottom:6px; }
+  .login-title{ font-family:var(--font-display); font-size:20px; color:var(--primary-dark); margin:0 0 4px;}
+  .login-sub{ color:var(--muted); font-size:12.5px; margin-bottom:22px;}
+  .login-field{ text-align:left; margin-bottom:14px; }
+  .login-field label{ font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; display:block; margin-bottom:4px;}
+  .login-field input{ width:100%; padding:10px 12px; }
+  .login-error{ background:var(--danger-bg); color:var(--danger); font-size:12.5px; padding:9px 12px; border-radius:7px; margin-bottom:14px; display:none; text-align:left; }
+  .login-btn{ width:100%; padding:11px; margin-top:4px; }
+  .login-loading{ font-size:12.5px; color:var(--muted); margin-top:14px; display:none; }
+  .logout-btn{
+    width:100%; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+    color:#fff; padding:9px 10px; border-radius:8px; font-size:12.5px; cursor:pointer; margin-top:8px;
+  }
+  .logout-btn:hover{ background: rgba(255,255,255,0.16); }
+  .user-badge{ font-size:11.5px; color:rgba(255,255,255,0.6); padding:0 18px 8px; word-break:break-all; }
+  .pie-legend-item{ display:flex; align-items:center; gap:7px; }
+  .pie-dot{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .pie-legend-label{ min-width:100px; }
+  .pie-legend-val{ color:var(--muted); font-weight:700; white-space:nowrap; }
+
+  .helper-note{ background: var(--primary-light); border-left:3px solid var(--primary); padding:12px 14px; border-radius:6px; font-size:12.5px; color: var(--primary-dark); margin-bottom:18px;}
+  .search-box{ flex:1; min-width:180px; }
+  .totals-strip{ display:flex; gap:18px; margin-top:14px; flex-wrap:wrap;}
+  .totals-strip .t{ font-size:13px; }
+  .totals-strip .t b{ display:block; font-family:var(--font-display); font-size:17px; color:var(--primary-dark);}
+
+  @media (max-width: 860px){
+    .sidebar{ width:70px; }
+    .brand-name, .nav-item span.label, .brand-edit{ display:none; }
+    .nav-item{ justify-content:center; }
+    .main{ padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-mark">🦷</div>
+    <h1 class="login-title">Sistema da Clínica</h1>
+    <div class="login-sub">Faça login para acessar a agenda</div>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" autocomplete="username" placeholder="secretaria@clinica.com">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="loginSenha" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter') fazerLogin();">
+    </div>
+    <button class="btn btn-primary login-btn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-loading" id="loginLoading">Entrando...</div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🦷</div>
+      <div class="brand-name" id="clinicNameLabel">Clínica Dra. Ana Paula Müller Araujo</div>
+      <button class="brand-edit" onclick="editClinicName()">editar nome</button>
+    </div>
+    <div class="nav" id="navMenu"></div>
+    <div class="sidebar-footer">
+      <button class="backup-btn" onclick="openBackupModal()">💾 Backup dos dados</button>
+      <div class="user-badge" id="userBadge"></div>
+      <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="main" id="mainContent"></div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+/* =========================================================
+   FIREBASE
+========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCKZY9rkLSt6kCoWTawA09D_GThERxu4dM",
+  authDomain: "clinica-dra-ana-paula.firebaseapp.com",
+  projectId: "clinica-dra-ana-paula",
+  storageBucket: "clinica-dra-ana-paula.firebasestorage.app",
+  messagingSenderId: "1005436531013",
+  appId: "1:1005436531013:web:a05db02918204255e1ce2c"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let unsubscribers = [];
+
+/* =========================================================
+   CONSTANTES
+========================================================= */
+// Serviços agora vêm de um cadastro editável (coleção 'servicos' no Firestore) — ver getServicosAtivos()
+const SERVICOS_PADRAO_SUGERIDOS = ['Limpeza','Clareamento','Tratamento de Canal','Extração de Dentes','Botox Labial','Botox Facial','Obturação'];
+// Formas de pagamento agora vêm de um cadastro editável (coleção 'formasPagamento' no Firestore) — ver getFormasPagamentoAtivas()
+const FORMAS_PAGAMENTO_PADRAO_SUGERIDAS = ['Dinheiro','Cartão de Crédito','Cartão de Débito','Convênio Sul América'];
+const CATEGORIAS_DRE = ['CMV','Taxas de Cartão','Comissões','Taxas de Convênio','Impostos','Despesas Operacionais'];
+const STATUS_AGENDA = ['Agendado','Realizado','Cancelado'];
+const STATUS_CONTA = ['Pendente','Pago'];
+const SEXO_OPCOES = ['Masculino','Feminino','Outro'];
+const ESTADO_CIVIL_OPCOES = ['Solteiro(a)','Casado(a)','Divorciado(a)','Viúvo(a)','União Estável','Outro'];
+
+/* =========================================================
+   ANAMNESE — modelo de perguntas (documento com valor jurídico)
+   Cada anamnese, uma vez salva com o aceite do paciente, fica
+   bloqueada para edição (só leitura), para preservar seu valor
+   como prova em caso de necessidade.
+========================================================= */
+const CLINICA_WHATSAPP_NUMERO = '51991109595'; // WhatsApp da Dra. Ana Paula Müller Araujo — recebe o aceite da anamnese
+const ANAMNESE_TEMPLATE = [
+  { secao: 'Histórico geral', perguntas: [
+    { id:'trat_medico', texto:'Está em tratamento médico atualmente? Qual?', tipo:'texto' },
+    { id:'cirurgia_previa', texto:'Já foi submetido a alguma cirurgia? Qual e quando?', tipo:'texto' },
+    { id:'hemorragia', texto:'Tem histórico de hemorragia ou dificuldade de cicatrização?', tipo:'simnao' },
+    { id:'alergia_anestesia', texto:'Já teve reação alérgica a anestesia odontológica?', tipo:'simnao' },
+  ]},
+  { secao: 'Alergias', perguntas: [
+    { id:'alergia_medicamento', texto:'É alérgico a algum medicamento? Qual?', tipo:'texto' },
+    { id:'alergia_outros', texto:'É alérgico a látex, iodo ou outras substâncias?', tipo:'texto' },
+  ]},
+  { secao: 'Condições de saúde', perguntas: [
+    { id:'cardiaco', texto:'Problemas cardíacos', tipo:'simnao' },
+    { id:'hipertensao', texto:'Hipertensão (pressão alta)', tipo:'simnao' },
+    { id:'diabetes', texto:'Diabetes', tipo:'simnao' },
+    { id:'renal', texto:'Problemas renais', tipo:'simnao' },
+    { id:'hepatico', texto:'Problemas hepáticos', tipo:'simnao' },
+    { id:'respiratorio', texto:'Doenças respiratórias (asma, bronquite)', tipo:'simnao' },
+    { id:'epilepsia', texto:'Epilepsia ou convulsões', tipo:'simnao' },
+    { id:'coagulacao', texto:'Distúrbios de coagulação sanguínea', tipo:'simnao' },
+    { id:'hiv_hepatite', texto:'HIV/Hepatite', tipo:'simnao' },
+    { id:'osteoporose', texto:'Osteoporose (uso de bisfosfonatos)', tipo:'simnao' },
+  ]},
+  { secao: 'Medicação e hábitos', perguntas: [
+    { id:'medicacao_continua', texto:'Uso contínuo de medicamentos (quais)', tipo:'texto' },
+    { id:'anticoagulante', texto:'Uso de anticoagulante (ex: AAS, Marevan, Xarelto)', tipo:'simnao' },
+    { id:'fumante', texto:'Fumante? Quantidade/frequência', tipo:'texto' },
+    { id:'alcool', texto:'Consome bebida alcoólica?', tipo:'texto' },
+  ]},
+  { secao: 'Mulheres', perguntas: [
+    { id:'gravidez', texto:'Está grávida ou suspeita de gravidez?', tipo:'simnao' },
+    { id:'amamentando', texto:'Está amamentando?', tipo:'simnao' },
+  ]},
+  { secao: 'Observações', perguntas: [
+    { id:'observacoes', texto:'Observações adicionais relevantes', tipo:'texto_longo' },
+  ]},
+];
+const DIAS_SEMANA = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const HORA_INICIO = 7; // 07:00
+const HORA_FIM = 24;   // 00:00 (24:00 do mesmo dia)
+const SLOT_MIN = 15;  // slots de 15 minutos (permite horários como 09:10, 09:45 etc.)
+
+const NAV_ITEMS = [
+  {id:'inicio', label:'Início', icon:'🏠'},
+  {id:'agenda', label:'Agenda', icon:'📅'},
+  {id:'clientes', label:'Pacientes', icon:'👥'},
+  {id:'cadastros', label:'Cadastros', icon:'🗂️'},
+  {id:'contas', label:'Contas a Pagar', icon:'💳'},
+  {id:'relatorios', label:'Relatórios', icon:'📈'},
+  {id:'dre', label:'DRE', icon:'📊'},
+];
+
+/* =========================================================
+   ESTADO / PERSISTÊNCIA (Firestore em tempo real)
+   IMPORTANTE: o sistema NUNCA cria, edita ou apaga
+   automaticamente nenhum registro. Toda alteração nos dados
+   abaixo só ocorre por ação explícita do usuário (salvar/excluir
+   em um formulário). Não há dados de exemplo/seed.
+========================================================= */
+let state = {
+  clientes: [],
+  agenda: [],
+  contas: [],
+  servicos: [],
+  formasPagamento: [],
+  anamneses: [],
+  fichasConsulta: [],
+  fichaConsultaFiltro: { ano:'', mes:'' },
+  clinicName: 'Clínica Dra. Ana Paula Müller Araujo',
+  currentTab: 'inicio',
+  agendaSubview: 'semana', // 'semana' | 'mes' | 'lista'
+  weekStart: getMonday(new Date()),
+  calMonth: new Date().getMonth()+1,
+  calYear: new Date().getFullYear(),
+  dreMonth: (new Date()).getMonth()+1,
+  dreYear: (new Date()).getFullYear(),
+  clientesFilter: '',
+  clientesFiltroSemTelefone: false,
+  cadastrosSubview: 'servicos', // 'servicos' | 'pagamentos'
+  contasFilters: { status:'todos', categoria:'todas', mes:'', ano:'' },
+  agendaListaFiltro: { status:'todos', cliente:'' },
+  relSubview: 'historico', // 'historico' | 'abc'
+  relClienteKey: '',
+  relFilters: { dataInicio:'', dataFim:'', mes:'', ano:'', formaPagamento:'todas', valorMin:'', valorMax:'' },
+  abcSort: { field:'total', dir:'desc' }
+};
+
+function uid(){ return 'id_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function attachFirestoreListeners(){
+  const unsubClientes = db.collection('clientes').onSnapshot(snap=>{
+    state.clientes = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler clientes:', err));
+
+  const unsubAgenda = db.collection('agenda').onSnapshot(snap=>{
+    state.agenda = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler agenda:', err));
+
+  const unsubContas = db.collection('contas').onSnapshot(snap=>{
+    state.contas = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler contas:', err));
+
+  const unsubServicos = db.collection('servicos').onSnapshot(snap=>{
+    state.servicos = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler serviços:', err));
+
+  const unsubFormasPagamento = db.collection('formasPagamento').onSnapshot(snap=>{
+    state.formasPagamento = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler formas de pagamento:', err));
+
+  const unsubConfig = db.collection('config').doc('clinica').onSnapshot(doc=>{
+    if(doc.exists && doc.data().nome){
+      state.clinicName = doc.data().nome;
+      const label = document.getElementById('clinicNameLabel');
+      if(label) label.textContent = state.clinicName;
+    }
+  }, err=> console.error('Erro ao ler config:', err));
+
+  const unsubAnamneses = db.collection('anamneses').onSnapshot(snap=>{
+    state.anamneses = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler anamneses:', err));
+
+  const unsubFichasConsulta = db.collection('fichasConsulta').onSnapshot(snap=>{
+    state.fichasConsulta = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
+    renderMain();
+  }, err=> console.error('Erro ao ler fichas de consulta:', err));
+
+  unsubscribers = [unsubClientes, unsubAgenda, unsubContas, unsubServicos, unsubFormasPagamento, unsubConfig, unsubAnamneses, unsubFichasConsulta];
+}
+function detachFirestoreListeners(){
+  unsubscribers.forEach(fn=> fn());
+  unsubscribers = [];
+}
+
+/* =========================================================
+   HELPERS DE DATA
+========================================================= */
+function pad2(n){ return n.toString().padStart(2,'0'); }
+function toISODate(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function parseISODate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function getMonday(d){
+  const date = new Date(d);
+  const day = date.getDay(); // 0=domingo
+  const diff = (day === 0 ? -6 : 1) - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function formatDateBR(iso){ if(!iso) return ''; const d = parseISODate(iso); return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear(); }
+
+/* =========================================================
+   WHATSAPP — confirmação de agendamento (link de clique, wa.me)
+   Não envia nada sozinho: monta o link com o número e a mensagem
+   prontos, e quem manda "enviar" de fato é sempre a pessoa da
+   clínica, dentro do próprio WhatsApp.
+========================================================= */
+function telParaWhatsapp(tel){
+  if(!tel) return null;
+  let digitos = String(tel).replace(/\D/g,'');
+  if(!digitos) return null;
+  // Já tem código do país (Brasil = 55) e DDD? (ex: 55 11 91234-5678 = 13 dígitos)
+  if(digitos.length >= 12 && digitos.startsWith('55')) return digitos;
+  // Só DDD + número (10 ou 11 dígitos) — adiciona o 55 na frente
+  if(digitos.length === 10 || digitos.length === 11) return '55'+digitos;
+  return digitos; // formato incomum — deixa como está, melhor do que travar
+}
+function montarMensagemConfirmacao(nome, dataISO, hora){
+  const dataFmt = formatDateBR(dataISO);
+  return `Olá ${nome}! Sua consulta com a Dra. Ana Paula Müller Araujo está confirmada para o dia ${dataFmt} as ${hora}. Qualquer dúvida estamos à disposição!`;
+}
+function abrirWhatsappConfirmacao(){
+  const tel = document.getElementById('waTelefone').value;
+  const msg = document.getElementById('waMensagem').value;
+  const numero = telParaWhatsapp(tel);
+  if(!numero){ alert('Telefone inválido ou não informado.'); return; }
+  window.open('https://wa.me/'+numero+'?text='+encodeURIComponent(msg), '_blank');
+  closeModal();
+  renderMain();
+}
+function abrirModalConfirmacaoWhatsapp(clienteNome, telefone, dataISO, hora){
+  const mensagem = montarMensagemConfirmacao(clienteNome, dataISO, hora);
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this){ closeModal(); renderMain(); }">
+      <div class="modal">
+        <h2>📲 Enviar confirmação no WhatsApp?</h2>
+        <div class="modal-grid">
+          <div class="field full">
+            <label>Telefone do paciente</label>
+            <input type="text" id="waTelefone" value="${escapeHtml(telefone||'')}" placeholder="(00) 00000-0000">
+          </div>
+          <div class="field full">
+            <label>Mensagem</label>
+            <textarea id="waMensagem" rows="4">${escapeHtml(mensagem)}</textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal(); renderMain();">Agora não</button>
+            <button class="btn btn-primary" onclick="abrirWhatsappConfirmacao()">Abrir WhatsApp e enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function formatMoney(v){
+  const n = Number(v)||0;
+  return n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function slotIndexFromTime(hhmm){
+  const [h,m] = hhmm.split(':').map(Number);
+  return Math.round(((h - HORA_INICIO) * 60 + m) / SLOT_MIN);
+}
+function timeFromSlotIndex(idx){
+  const totalMin = HORA_INICIO*60 + idx*SLOT_MIN;
+  const h = Math.floor(totalMin/60);
+  const m = totalMin % 60;
+  return pad2(h===24?0:h) + ':' + pad2(m) + (h===24?'':'');
+}
+function addMinutesToTime(hhmm, minutes){
+  const [h,m] = hhmm.split(':').map(Number);
+  let total = (h*60+m) + Number(minutes||0);
+  total = ((total % 1440) + 1440) % 1440;
+  return pad2(Math.floor(total/60)) + ':' + pad2(total%60);
+}
+const TOTAL_SLOTS = Math.round(((HORA_FIM - HORA_INICIO) * 60) / SLOT_MIN); // ex: 34
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+function renderNav(){
+  const nav = document.getElementById('navMenu');
+  nav.innerHTML = NAV_ITEMS.map(it => `
+    <div class="nav-item ${state.currentTab===it.id?'active':''}" onclick="goTo('${it.id}')">
+      <span class="nav-icon">${it.icon}</span><span class="label">${it.label}</span>
+    </div>`).join('');
+}
+function goTo(tab){
+  state.currentTab = tab;
+  renderNav();
+  renderMain();
+}
+function editClinicName(){
+  const novo = prompt('Nome da clínica:', state.clinicName);
+  if(novo && novo.trim()){
+    db.collection('config').doc('clinica').set({ nome: novo.trim() }, { merge:true })
+      .catch(err=> alert('Erro ao salvar: ' + err.message));
+  }
+}
+
+/* =========================================================
+   RENDER PRINCIPAL
+========================================================= */
+function renderMain(){
+  const el = document.getElementById('mainContent');
+  if(state.currentTab === 'inicio') el.innerHTML = renderInicio();
+  else if(state.currentTab === 'agenda') el.innerHTML = renderAgenda();
+  else if(state.currentTab === 'clientes') el.innerHTML = renderClientes();
+  else if(state.currentTab === 'cadastros') el.innerHTML = renderCadastros();
+  else if(state.currentTab === 'contas') el.innerHTML = renderContas();
+  else if(state.currentTab === 'relatorios') el.innerHTML = renderRelatorios();
+  else if(state.currentTab === 'dre') el.innerHTML = renderDRE();
+
+  if(state.currentTab === 'agenda' && state.agendaSubview === 'semana'){
+    mountAgendaGrid();
+  }
+  if(state.currentTab === 'agenda' && state.agendaSubview === 'mes'){
+    mountAgendaMes();
+  }
+}
+
+/* =========================================================
+   TAB: INÍCIO
+========================================================= */
+function renderInicio(){
+  const todayISO = toISODate(new Date());
+  const hojeAgenda = state.agenda
+    .filter(a => a.data === todayISO && a.status !== 'Cancelado')
+    .sort((a,b) => a.horaInicio.localeCompare(b.horaInicio));
+
+  const [ano, mes] = [new Date().getFullYear(), new Date().getMonth()+1];
+  const faturamentoMes = state.agenda
+    .filter(a => a.status === 'Realizado' && sameMonth(a.data, mes, ano))
+    .reduce((s,a)=> s + Number(a.valor||0), 0);
+
+  const hoje = new Date();
+  const em7dias = addDays(hoje, 7);
+  const contasVencendo = state.contas.filter(c => {
+    if(c.status !== 'Pendente' || !c.dataVencimento) return false;
+    const dv = parseISODate(c.dataVencimento);
+    return dv >= new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()) && dv <= em7dias;
+  });
+  const totalVencendo = contasVencendo.reduce((s,c)=> s + Number(c.valor||0), 0);
+
+  const proximos = state.agenda
+    .filter(a => a.status === 'Agendado' && (a.data > todayISO || (a.data === todayISO)))
+    .sort((a,b)=> (a.data+a.horaInicio).localeCompare(b.data+b.horaInicio))
+    .slice(0,6);
+
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Bem-vindo(a)</h1>
+        <div class="page-sub">Resumo de hoje, ${formatDateBR(todayISO)}</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Agendamentos hoje</div>
+        <div class="kpi-value">${hojeAgenda.length}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Faturamento do mês (realizado)</div>
+        <div class="kpi-value accent">${formatMoney(faturamentoMes)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Contas vencendo em 7 dias</div>
+        <div class="kpi-value ${contasVencendo.length? 'danger':''}">${formatMoney(totalVencendo)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Agenda de hoje</h3>
+      ${hojeAgenda.length===0 ? `<div class="empty-state"><div class="empty-state-icon">🗓️</div>Nenhum agendamento para hoje.</div>` :
+      `<table><thead><tr><th>Hora</th><th>Paciente</th><th>Serviço</th><th>Status</th></tr></thead><tbody>
+        ${hojeAgenda.map(a=>`<tr><td>${a.horaInicio}</td><td>${escapeHtml(a.clienteNome)}</td><td>${escapeHtml(a.servico)}</td><td><span class="tag tag-${statusClass(a.status)}">${a.status}</span></td></tr>`).join('')}
+      </tbody></table>`}
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Próximos agendamentos</h3>
+      ${proximos.length===0 ? `<div class="empty-state"><div class="empty-state-icon">📭</div>Nenhum agendamento futuro cadastrado.</div>` :
+      `<table><thead><tr><th>Data</th><th>Hora</th><th>Paciente</th><th>Serviço</th></tr></thead><tbody>
+        ${proximos.map(a=>`<tr><td>${formatDateBR(a.data)}</td><td>${a.horaInicio}</td><td>${escapeHtml(a.clienteNome)}</td><td>${escapeHtml(a.servico)}</td></tr>`).join('')}
+      </tbody></table>`}
+    </div>
+  `;
+}
+function sameMonth(iso, mes, ano){
+  if(!iso) return false;
+  const d = parseISODate(iso);
+  return (d.getMonth()+1)===mes && d.getFullYear()===ano;
+}
+function statusClass(s){
+  return s === 'Realizado' ? 'realizado' : s === 'Cancelado' ? 'cancelado' : 'agendado';
+}
+function escapeHtml(str){
+  if(str===undefined || str===null) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* =========================================================
+   TAB: AGENDA
+========================================================= */
+function renderAgenda(){
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Agenda</h1>
+        <div class="page-sub">Segunda a domingo, 07:00 às 00:00</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAgendamentoModal()">+ Novo agendamento</button>
+    </div>
+
+    <div class="subtabs">
+      <div class="subtab ${state.agendaSubview==='semana'?'active':''}" onclick="setAgendaSubview('semana')">Semana (corrido)</div>
+      <div class="subtab ${state.agendaSubview==='mes'?'active':''}" onclick="setAgendaSubview('mes')">Calendário (mês)</div>
+      <div class="subtab ${state.agendaSubview==='lista'?'active':''}" onclick="setAgendaSubview('lista')">Lista de agendamentos</div>
+    </div>
+
+    ${state.agendaSubview === 'semana' ? renderAgendaSemanaShell() : state.agendaSubview === 'mes' ? renderAgendaMesShell() : renderAgendaLista()}
+  `;
+}
+function setAgendaSubview(v){ state.agendaSubview = v; renderMain(); }
+
+function renderAgendaSemanaShell(){
+  const start = state.weekStart;
+  const end = addDays(start, 6);
+  const label = `${pad2(start.getDate())}/${pad2(start.getMonth()+1)} — ${pad2(end.getDate())}/${pad2(end.getMonth()+1)}/${end.getFullYear()}`;
+  return `
+    <div class="week-nav">
+      <button class="btn btn-sm" onclick="weekNav(-1)">‹ Semana anterior</button>
+      <div class="week-label">${label}</div>
+      <button class="btn btn-sm" onclick="weekNav(1)">Próxima semana ›</button>
+      <button class="btn btn-sm btn-ghost" onclick="weekToday()">Hoje</button>
+    </div>
+    <div class="agenda-scroll">
+      <div class="agenda-grid" id="agendaGrid"></div>
+    </div>
+    <div class="appt-legend">
+      <span><span class="legend-dot" style="background:var(--primary)"></span>Agendado</span>
+      <span><span class="legend-dot" style="background:var(--success)"></span>Realizado</span>
+      <span><span class="legend-dot" style="background:#8a8a8a"></span>Cancelado</span>
+    </div>
+  `;
+}
+function weekNav(delta){ state.weekStart = addDays(state.weekStart, delta*7); renderMain(); }
+function weekToday(){ state.weekStart = getMonday(new Date()); renderMain(); }
+
+function mountAgendaGrid(){
+  const grid = document.getElementById('agendaGrid');
+  if(!grid) return;
+  const start = state.weekStart;
+  const todayISO = toISODate(new Date());
+  const dayDates = Array.from({length:7}, (_,i)=> addDays(start,i));
+
+  let html = `<div class="ag-corner"></div>`;
+  dayDates.forEach((d,i)=>{
+    const iso = toISODate(d);
+    html += `<div class="ag-head ${iso===todayISO?'today':''}">
+      <div class="dname">${DIAS_SEMANA[i]}</div>
+      <div class="ddate">${pad2(d.getDate())}/${pad2(d.getMonth()+1)}</div>
+    </div>`;
+  });
+
+  // map: occupied[dayIdx][slotIdx] = true if covered by an appointment
+  const occupied = Array.from({length:7}, ()=> new Array(TOTAL_SLOTS).fill(false));
+  const apptsByDay = Array.from({length:7}, ()=>[]);
+
+  dayDates.forEach((d, dayIdx)=>{
+    const iso = toISODate(d);
+    state.agenda.filter(a=>a.data===iso).forEach(a=>{
+      const startSlot = slotIndexFromTime(a.horaInicio);
+      const span = Math.max(1, Math.round((a.duracao||60)/SLOT_MIN));
+      for(let s=startSlot; s<Math.min(startSlot+span, TOTAL_SLOTS); s++){
+        if(s>=0) occupied[dayIdx][s] = true;
+      }
+      apptsByDay[dayIdx].push({...a, startSlot, span});
+    });
+  });
+
+  for(let slot=0; slot<TOTAL_SLOTS; slot++){
+    const isHour = ((slot*SLOT_MIN) % 60 === 0);
+    const timeLabel = isHour ? timeFromSlotIndex(slot) : '';
+    html += `<div class="ag-time" style="grid-row:${slot+2}; grid-column:1;">${timeLabel}</div>`;
+    for(let day=0; day<7; day++){
+      if(!occupied[day][slot]){
+        const iso = toISODate(dayDates[day]);
+        const hhmm = timeFromSlotIndex(slot);
+        html += `<div class="ag-cell ${isHour?'hour-line':''}" style="grid-row:${slot+2}; grid-column:${day+2};" onclick="openAgendamentoModal(null,'${iso}','${hhmm}')"></div>`;
+      }
+    }
+  }
+
+  apptsByDay.forEach((list, dayIdx)=>{
+    list.forEach(a=>{
+      const stClass = a.status==='Realizado'?'st-realizado':(a.status==='Cancelado'?'st-cancelado':'');
+      const fim = addMinutesToTime(a.horaInicio, a.duracao||60);
+      const tip = `${a.horaInicio}–${fim} · ${a.clienteNome} — ${a.servico}`;
+      html += `<div class="appt ${stClass}" style="grid-row:${a.startSlot+2} / span ${a.span}; grid-column:${dayIdx+2};" onclick="openAgendamentoModal('${a.id}')" title="${escapeHtml(tip)}">
+        <span class="appt-line1">${escapeHtml(a.horaInicio)} · ${escapeHtml(a.clienteNome)}</span><span class="appt-line2">${escapeHtml(a.servico)}</span>
+      </div>`;
+    });
+  });
+
+  grid.style.gridTemplateRows = `64px repeat(${TOTAL_SLOTS}, 24px)`;
+  grid.innerHTML = html;
+}
+
+/* --- Visão calendário mensal --- */
+function renderAgendaMesShell(){
+  const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return `
+    <div class="week-nav">
+      <button class="btn btn-sm" onclick="monthNav(-1)">‹ Mês anterior</button>
+      <div class="week-label">${nomes[state.calMonth-1]} de ${state.calYear}</div>
+      <button class="btn btn-sm" onclick="monthNav(1)">Próximo mês ›</button>
+      <button class="btn btn-sm btn-ghost" onclick="monthToday()">Hoje</button>
+    </div>
+    <div id="mesGrid"></div>
+    <div class="appt-legend">
+      <span><span class="legend-dot" style="background:var(--primary)"></span>Agendado</span>
+      <span><span class="legend-dot" style="background:var(--success)"></span>Realizado</span>
+      <span><span class="legend-dot" style="background:#8a8a8a"></span>Cancelado</span>
+    </div>
+  `;
+}
+function monthNav(delta){
+  let m = state.calMonth + delta;
+  let y = state.calYear;
+  if(m < 1){ m = 12; y -= 1; }
+  if(m > 12){ m = 1; y += 1; }
+  state.calMonth = m; state.calYear = y;
+  renderMain();
+}
+function monthToday(){
+  const d = new Date();
+  state.calMonth = d.getMonth()+1; state.calYear = d.getFullYear();
+  renderMain();
+}
+function mountAgendaMes(){
+  const grid = document.getElementById('mesGrid');
+  if(!grid) return;
+  const todayISO = toISODate(new Date());
+  const firstOfMonth = new Date(state.calYear, state.calMonth-1, 1);
+  const lastOfMonth = new Date(state.calYear, state.calMonth, 0);
+  const gridStart = getMonday(firstOfMonth);
+  const gridEnd = addDays(getMonday(lastOfMonth), 6);
+
+  let html = `<div class="month-grid">`;
+  DIAS_SEMANA.forEach(d => html += `<div class="month-headcell">${d}</div>`);
+
+  let cursor = new Date(gridStart);
+  while(cursor <= gridEnd){
+    const iso = toISODate(cursor);
+    const isOther = (cursor.getMonth()+1) !== state.calMonth;
+    const isToday = iso === todayISO;
+    const dayAppts = state.agenda.filter(a=>a.data===iso && a.status!=='Cancelado')
+      .concat(state.agenda.filter(a=>a.data===iso && a.status==='Cancelado'))
+      .sort((a,b)=> a.horaInicio.localeCompare(b.horaInicio));
+    const visiveis = dayAppts.slice(0,3);
+    const resto = dayAppts.length - visiveis.length;
+
+    html += `<div class="month-cell ${isOther?'other-month':''} ${isToday?'today':''}">
+      <div class="cell-date-row">
+        <span class="cell-date">${cursor.getDate()}</span>
+        <button class="month-add" title="Novo agendamento" onclick="openAgendamentoModal(null,'${iso}','08:00')">+</button>
+      </div>
+      <div class="month-appts">
+        ${visiveis.map(a=>{
+          const fim = addMinutesToTime(a.horaInicio, a.duracao||60);
+          const label = `${a.horaInicio}–${fim} ${a.clienteNome}`;
+          return `<div class="month-appt ${a.status==='Realizado'?'st-realizado':a.status==='Cancelado'?'st-cancelado':''}" onclick="openAgendamentoModal('${a.id}')" title="${escapeHtml(label)} — ${escapeHtml(a.servico)}">${escapeHtml(label)}</div>`;
+        }).join('')}
+        ${resto > 0 ? `<div class="month-more" onclick="openDiaModal('${iso}')">+${resto} mais</div>` : ''}
+      </div>
+    </div>`;
+    cursor = addDays(cursor, 1);
+  }
+  html += `</div>`;
+  grid.innerHTML = html;
+}
+function openDiaModal(iso){
+  const list = state.agenda.filter(a=>a.data===iso).sort((a,b)=>a.horaInicio.localeCompare(b.horaInicio));
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>Agendamentos — ${formatDateBR(iso)}</h2>
+        ${list.length===0 ? `<div class="empty-state"><div class="empty-state-icon">🗓️</div>Nenhum agendamento nesta data.</div>` :
+        `<table><thead><tr><th>Início</th><th>Término</th><th>Paciente</th><th>Serviço</th><th>Status</th><th></th></tr></thead><tbody>
+          ${list.map(a=>`<tr>
+            <td>${a.horaInicio}</td>
+            <td>${addMinutesToTime(a.horaInicio, a.duracao||60)}</td>
+            <td>${escapeHtml(a.clienteNome)}</td>
+            <td>${escapeHtml(a.servico)}</td>
+            <td><span class="tag tag-${statusClass(a.status)}">${a.status}</span></td>
+            <td><button class="btn btn-sm" onclick="openAgendamentoModal('${a.id}')">Editar</button></td>
+          </tr>`).join('')}
+        </tbody></table>`}
+        <div class="modal-actions">
+          <div><button class="btn btn-primary" onclick="openAgendamentoModal(null,'${iso}','08:00')">+ Novo neste dia</button></div>
+          <div class="modal-actions-right"><button class="btn" onclick="closeModal()">Fechar</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+
+function renderAgendaLista(){
+  const f = state.agendaListaFiltro;
+  let list = [...state.agenda].sort((a,b)=> (a.data+a.horaInicio).localeCompare(b.data+b.horaInicio));
+  if(f.status !== 'todos') list = list.filter(a=>a.status===f.status);
+  if(f.cliente.trim()) list = list.filter(a=> a.clienteNome.toLowerCase().includes(f.cliente.toLowerCase()));
+
+  return `
+    <div class="filters">
+      <div class="field search-box">
+        <label>Buscar paciente</label>
+        <input type="text" value="${escapeHtml(f.cliente)}" placeholder="Nome do paciente..." oninput="updateAgendaListaFiltro('cliente', this.value)">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select onchange="updateAgendaListaFiltro('status', this.value)">
+          <option value="todos" ${f.status==='todos'?'selected':''}>Todos</option>
+          ${STATUS_AGENDA.map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="card" style="padding:0;">
+      ${list.length===0 ? `<div class="empty-state"><div class="empty-state-icon">🗒️</div>Nenhum agendamento encontrado.</div>` :
+      `<table><thead><tr><th>Data</th><th>Hora</th><th>Paciente</th><th>Serviço</th><th>Valor</th><th>Pagamento</th><th>Status</th><th></th></tr></thead><tbody>
+        ${list.map(a=>`<tr>
+          <td>${formatDateBR(a.data)}</td>
+          <td>${a.horaInicio}</td>
+          <td>${escapeHtml(a.clienteNome)}</td>
+          <td>${escapeHtml(a.servico)}</td>
+          <td>${formatMoney(a.valor)}</td>
+          <td>${escapeHtml(a.formaPagamento)}</td>
+          <td><span class="tag tag-${statusClass(a.status)}">${a.status}</span></td>
+          <td><button class="btn btn-sm" onclick="openAgendamentoModal('${a.id}')">Editar</button></td>
+        </tr>`).join('')}
+      </tbody></table>`}
+    </div>
+  `;
+}
+function updateAgendaListaFiltro(key, val){ state.agendaListaFiltro[key]=val; renderMain(); }
+
+/* --- Modal Agendamento --- */
+function openAgendamentoModal(id, presetData, presetHora){
+  const existing = id ? state.agenda.find(a=>a.id===id) : null;
+  const clientesOptions = state.clientes.map(c=>`<option value="${c.id}" ${existing && existing.clienteId===c.id ? 'selected':''}>${escapeHtml(c.nome)}</option>`).join('');
+  const isAvulso = !existing || !existing.clienteId;
+  const servicosAtivos = getServicosAtivos();
+  const formasAtivas = getFormasPagamentoAtivas();
+  const avisoCadastro = (servicosAtivos.length===0 || formasAtivas.length===0)
+    ? `<div class="login-error" style="display:block;">Cadastre ao menos um ${servicosAtivos.length===0?'serviço':''}${servicosAtivos.length===0 && formasAtivas.length===0?' e uma ':''}${formasAtivas.length===0?'forma de pagamento':''} na aba "Cadastros" antes de lançar um agendamento.</div>`
+    : '';
+
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>${existing? 'Editar agendamento' : 'Novo agendamento'}</h2>
+        ${avisoCadastro}
+        <div class="modal-grid">
+          <div class="field full">
+            <label>Paciente cadastrado</label>
+            <select id="fClienteId" onchange="toggleClienteAvulso()">
+              <option value="">— Selecionar / Paciente avulso —</option>
+              ${clientesOptions}
+            </select>
+          </div>
+          <div class="field full" id="wrapClienteAvulso" style="${isAvulso? '' : 'display:none;'}">
+            <label>Nome do paciente (se não cadastrado)</label>
+            <input type="text" id="fClienteNome" value="${existing? escapeHtml(existing.clienteNome):''}" placeholder="Nome completo">
+          </div>
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="fData" value="${existing? existing.data : (presetData||toISODate(new Date()))}">
+          </div>
+          <div class="field">
+            <label>Hora início</label>
+            <input type="time" id="fHora" min="07:00" max="23:45" step="900" value="${existing? existing.horaInicio : (presetHora||'08:00')}">
+          </div>
+          <div class="field">
+            <label>Duração</label>
+            <select id="fDuracao">
+              ${[30,60,90,120].map(d=>`<option value="${d}" ${(existing? existing.duracao : 60)===d?'selected':''}>${d} min</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Serviço</label>
+            <select id="fServico">
+              ${getServicosAtivos().map(s=>`<option ${existing && existing.servico===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor (R$)</label>
+            <input type="number" id="fValor" step="0.01" min="0" value="${existing? existing.valor : ''}">
+          </div>
+          <div class="field">
+            <label>Forma de pagamento</label>
+            <select id="fFormaPagamento">
+              ${getFormasPagamentoAtivas().map(f=>`<option ${existing && existing.formaPagamento===f?'selected':''}>${f}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="fStatus">
+              ${STATUS_AGENDA.map(s=>`<option ${(existing? existing.status:'Agendado')===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field full">
+            <label>Observações</label>
+            <textarea id="fObs">${existing? escapeHtml(existing.observacoes||''):''}</textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn btn-danger" onclick="deleteAgendamento('${existing.id}')">Excluir</button>`:''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveAgendamento('${existing? existing.id:''}')">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function toggleClienteAvulso(){
+  const sel = document.getElementById('fClienteId').value;
+  document.getElementById('wrapClienteAvulso').style.display = sel ? 'none' : '';
+}
+function saveAgendamento(id){
+  const clienteId = document.getElementById('fClienteId').value || null;
+  let clienteNome = document.getElementById('fClienteNome').value.trim();
+  if(clienteId){
+    const c = state.clientes.find(c=>c.id===clienteId);
+    clienteNome = c ? c.nome : clienteNome;
+  }
+  const data = document.getElementById('fData').value;
+  const horaInicio = document.getElementById('fHora').value;
+  const valor = document.getElementById('fValor').value;
+
+  if(!clienteNome){ alert('Informe o paciente (selecione um cadastrado ou digite o nome).'); return; }
+  if(!data){ alert('Informe a data.'); return; }
+  if(!horaInicio){ alert('Informe o horário.'); return; }
+  if(valor === '' || Number(valor) < 0){ alert('Informe um valor válido.'); return; }
+
+  const registro = {
+    clienteId: clienteId,
+    clienteNome: clienteNome,
+    data: data,
+    horaInicio: horaInicio,
+    duracao: Number(document.getElementById('fDuracao').value),
+    servico: document.getElementById('fServico').value,
+    valor: Number(valor),
+    formaPagamento: document.getElementById('fFormaPagamento').value,
+    status: document.getElementById('fStatus').value,
+    observacoes: document.getElementById('fObs').value.trim()
+  };
+
+  const op = id ? db.collection('agenda').doc(id).set(registro) : db.collection('agenda').add(registro);
+  op.then(()=>{
+    // Se o paciente é cadastrado e tem telefone celular salvo, oferece enviar
+    // a confirmação por WhatsApp. Paciente avulso (sem cadastro) não tem
+    // telefone pra buscar — nesse caso não interrompe o fluxo normal.
+    const clienteCadastrado = clienteId ? state.clientes.find(c=>c.id===clienteId) : null;
+    const telefonePaciente = clienteCadastrado ? clienteCadastrado.telefone : '';
+    if(telefonePaciente){
+      abrirModalConfirmacaoWhatsapp(clienteNome, telefonePaciente, data, horaInicio);
+    } else {
+      closeModal(); renderMain();
+    }
+  })
+    .catch(err=> alert('Erro ao salvar agendamento: ' + err.message));
+}
+function deleteAgendamento(id){
+  if(!confirm('Excluir este agendamento? Esta ação não pode ser desfeita.')) return;
+  db.collection('agenda').doc(id).delete()
+    .then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao excluir: ' + err.message));
+}
+
+/* =========================================================
+   TAB: CLIENTES
+========================================================= */
+function renderClientes(){
+  const term = state.clientesFilter.toLowerCase();
+  const somenteSemTelefone = state.clientesFiltroSemTelefone;
+  const totalSemTelefone = state.clientes.filter(c=>!c.telefone).length;
+  let list = state.clientes.filter(c => !term || c.nome.toLowerCase().includes(term) || (c.telefone||'').includes(term) || (c.cpf||'').includes(term));
+  if(somenteSemTelefone) list = list.filter(c=>!c.telefone);
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Pacientes</h1>
+        <div class="page-sub">Cadastro de pacientes da clínica</div>
+      </div>
+      <button class="btn btn-primary" onclick="openClienteModal()">+ Novo paciente</button>
+    </div>
+    ${totalSemTelefone>0 ? `<div class="login-error" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span>⚠️ ${totalSemTelefone} paciente${totalSemTelefone>1?'s':''} sem telefone celular cadastrado — não é possível enviar confirmação por WhatsApp para ${totalSemTelefone>1?'eles':'ele'}.</span>
+        <button class="btn btn-sm" onclick="state.clientesFiltroSemTelefone=!state.clientesFiltroSemTelefone; renderMain();">${somenteSemTelefone? 'Mostrar todos':'Ver só quem está sem telefone'}</button>
+      </div>` : ''}
+    <div class="filters">
+      <div class="field search-box">
+        <label>Buscar</label>
+        <input type="text" value="${escapeHtml(state.clientesFilter)}" placeholder="Nome, telefone ou CPF..." oninput="state.clientesFilter=this.value; renderMain();">
+      </div>
+    </div>
+    <div class="card" style="padding:0;">
+      ${list.length===0 ? `<div class="empty-state"><div class="empty-state-icon">👤</div>Nenhum paciente cadastrado ainda.</div>` :
+      `<table><thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Email</th><th>Cidade/Bairro</th><th></th></tr></thead><tbody>
+        ${list.map(c=>`<tr>
+          <td>${escapeHtml(c.nome)}</td>
+          <td>${escapeHtml(c.cpf||'')}</td>
+          <td>${c.telefone ? escapeHtml(c.telefone) : '<span style="color:#c0392b;font-weight:600;">⚠️ sem telefone</span>'}</td>
+          <td>${escapeHtml(c.email)}</td>
+          <td>${escapeHtml(c.bairro)}${c.bairro&&c.cidade?', ':''}${escapeHtml(c.cidade)}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-sm" onclick="openClienteModal('${c.id}')">Editar</button>
+            <button class="btn btn-sm" onclick="abrirListaAnamneses('${c.id}')">📋 Anamnese</button>
+            <button class="btn btn-sm" onclick="abrirListaFichasConsulta('${c.id}')">🦷 Ficha de Consulta</button>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`}
+    </div>
+  `;
+}
+function openClienteModal(id){
+  const existing = id ? state.clientes.find(c=>c.id===id) : null;
+  const sexoAtual = existing ? (existing.sexo || '') : '';
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>${existing? 'Editar paciente':'Novo paciente'}</h2>
+        <div class="modal-grid">
+          <div class="field full"><label>Nome completo</label><input type="text" id="cNome" value="${existing?escapeHtml(existing.nome):''}"></div>
+
+          <div class="field"><label>CPF</label><input type="text" id="cCpf" value="${existing?escapeHtml(existing.cpf||''):''}" placeholder="000.000.000-00"></div>
+          <div class="field"><label>Data de nascimento</label><input type="date" id="cDataNascimento" value="${existing?escapeHtml(existing.dataNascimento||''):''}" onchange="calcularIdadeAutomatica()"></div>
+          <div class="field"><label>Telefone celular</label><input type="text" id="cTelefone" value="${existing?escapeHtml(existing.telefone):''}" placeholder="(00) 00000-0000"></div>
+          <div class="field"><label>Idade</label><input type="number" min="0" max="120" id="cIdade" value="${existing&&existing.idade?existing.idade:''}"></div>
+
+          <div class="field"><label>Telefone residencial</label><input type="text" id="cTelefoneResidencial" value="${existing?escapeHtml(existing.telefoneResidencial||''):''}" placeholder="(00) 0000-0000"></div>
+          <div class="field"><label>Telefone comercial</label><input type="text" id="cTelefoneComercial" value="${existing?escapeHtml(existing.telefoneComercial||''):''}" placeholder="(00) 0000-0000"></div>
+
+          <div class="field">
+            <label>Sexo</label>
+            <select id="cSexo" onchange="toggleSexoOutro()">
+              <option value="">— Selecionar —</option>
+              ${SEXO_OPCOES.map(s=>`<option ${sexoAtual===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Estado civil</label>
+            <select id="cEstadoCivil">
+              <option value="">— Selecionar —</option>
+              ${ESTADO_CIVIL_OPCOES.map(s=>`<option ${existing && existing.estadoCivil===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field full" id="wrapSexoOutro" style="${sexoAtual==='Outro' ? '' : 'display:none;'}">
+            <label>Sexo — especifique</label>
+            <input type="text" id="cSexoOutro" value="${existing?escapeHtml(existing.sexoOutro||''):''}">
+          </div>
+
+          <div class="field"><label>Email</label><input type="email" id="cEmail" value="${existing?escapeHtml(existing.email):''}"></div>
+          <div class="field"><label>Nº da carteira do convênio</label><input type="text" id="cCarteiraConvenio" value="${existing?escapeHtml(existing.carteiraConvenio||''):''}"></div>
+          <div class="field"><label>CEP</label><input type="text" id="cCep" value="${existing?escapeHtml(existing.cep):''}"></div>
+
+          <div class="field full"><label>Endereço</label><input type="text" id="cEndereco" value="${existing?escapeHtml(existing.endereco):''}"></div>
+          <div class="field"><label>Bairro</label><input type="text" id="cBairro" value="${existing?escapeHtml(existing.bairro):''}"></div>
+          <div class="field"><label>Cidade</label><input type="text" id="cCidade" value="${existing?escapeHtml(existing.cidade):''}"></div>
+        </div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn btn-danger" onclick="deleteCliente('${existing.id}')">Excluir</button>`:''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveCliente('${existing? existing.id:''}')">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function toggleSexoOutro(){
+  const sel = document.getElementById('cSexo').value;
+  document.getElementById('wrapSexoOutro').style.display = sel === 'Outro' ? '' : 'none';
+}
+function calcularIdadeAutomatica(){
+  const dataNasc = document.getElementById('cDataNascimento').value;
+  if(!dataNasc) return;
+  const nasc = parseISODate(dataNasc);
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const aindaNaoFezAniversario = (hoje.getMonth() < nasc.getMonth()) || (hoje.getMonth()===nasc.getMonth() && hoje.getDate() < nasc.getDate());
+  if(aindaNaoFezAniversario) idade--;
+  if(idade >= 0 && idade <= 120){
+    document.getElementById('cIdade').value = idade;
+  }
+}
+function saveCliente(id){
+  const nome = document.getElementById('cNome').value.trim();
+  if(!nome){ alert('Informe o nome do paciente.'); return; }
+  const duplicado = state.clientes.find(c => c.nome.trim().toLowerCase()===nome.toLowerCase() && c.id!==id);
+  if(duplicado && !confirm('Já existe um paciente com este nome. Deseja salvar mesmo assim?')) return;
+
+  const registro = {
+    nome,
+    telefone: document.getElementById('cTelefone').value.trim(),
+    cpf: document.getElementById('cCpf').value.trim(),
+    dataNascimento: document.getElementById('cDataNascimento').value || '',
+    telefoneResidencial: document.getElementById('cTelefoneResidencial').value.trim(),
+    telefoneComercial: document.getElementById('cTelefoneComercial').value.trim(),
+    idade: document.getElementById('cIdade').value ? Number(document.getElementById('cIdade').value) : null,
+    sexo: document.getElementById('cSexo').value,
+    sexoOutro: document.getElementById('cSexo').value === 'Outro' ? document.getElementById('cSexoOutro').value.trim() : '',
+    estadoCivil: document.getElementById('cEstadoCivil').value,
+    email: document.getElementById('cEmail').value.trim(),
+    carteiraConvenio: document.getElementById('cCarteiraConvenio').value.trim(),
+    endereco: document.getElementById('cEndereco').value.trim(),
+    bairro: document.getElementById('cBairro').value.trim(),
+    cep: document.getElementById('cCep').value.trim(),
+    cidade: document.getElementById('cCidade').value.trim(),
+  };
+  const op = id ? db.collection('clientes').doc(id).set(registro) : db.collection('clientes').add(registro);
+  op.then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao salvar paciente: ' + err.message));
+}
+function deleteCliente(id){
+  if(!confirm('Excluir este paciente? Agendamentos antigos vinculados manterão o nome, mas perderão o vínculo com o cadastro.')) return;
+  const vinculados = state.agenda.filter(a=>a.clienteId===id);
+  const batch = db.batch();
+  batch.delete(db.collection('clientes').doc(id));
+  vinculados.forEach(a=> batch.update(db.collection('agenda').doc(a.id), { clienteId: null }));
+  batch.commit()
+    .then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao excluir: ' + err.message));
+}
+
+/* =========================================================
+   ANAMNESE — listagem, preenchimento e aceite do paciente
+   Uma vez salva (com o aceite marcado), a anamnese fica travada
+   para edição — só leitura — para preservar seu valor como
+   documento/prova. Para corrigir algo, cria-se uma nova anamnese.
+========================================================= */
+function abrirListaAnamneses(clienteId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const lista = state.anamneses.filter(a=>a.clienteId===clienteId).sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>📋 Anamneses — ${escapeHtml(cliente.nome)}</h2>
+        <div class="modal-grid">
+          <div class="field full">
+            ${lista.length===0 ? `<div class="empty-state"><div class="empty-state-icon">📋</div>Nenhuma anamnese registrada para este paciente ainda.</div>` :
+            `<table><thead><tr><th>Data</th><th>Status</th><th></th></tr></thead><tbody>
+              ${lista.map(a=>`<tr>
+                <td>${formatDateBR(a.data)}</td>
+                <td>${a.ciente ? '✅ Aceito por '+escapeHtml(a.assinaturaNome||'') : '⏳ Aguardando aceite do paciente'}</td>
+                <td style="white-space:nowrap;">
+                  <button class="btn btn-sm" onclick="verAnamnese('${a.id}')">Ver</button>
+                  ${!a.ciente ? `<button class="btn btn-sm" onclick="abrirModalEnviarLinkAnamnese('${a.id}')">Enviar p/ aceite</button>` : ''}
+                </td>
+              </tr>`).join('')}
+            </tbody></table>`}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Fechar</button>
+            <button class="btn btn-primary" onclick="abrirNovaAnamnese('${clienteId}')">+ Nova anamnese</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function campoAnamneseHtml(p){
+  if(p.tipo === 'simnao'){
+    return `
+      <div class="field full">
+        <label>${escapeHtml(p.texto)}</label>
+        <select id="anam_${p.id}">
+          <option value="">— Selecionar —</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Observação (se houver)</label>
+        <input type="text" id="anam_${p.id}_obs">
+      </div>`;
+  }
+  if(p.tipo === 'texto_longo'){
+    return `<div class="field full"><label>${escapeHtml(p.texto)}</label><textarea id="anam_${p.id}" rows="3"></textarea></div>`;
+  }
+  return `<div class="field full"><label>${escapeHtml(p.texto)}</label><input type="text" id="anam_${p.id}"></div>`;
+}
+function abrirNovaAnamnese(clienteId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const perguntasHtml = ANAMNESE_TEMPLATE.map(sec => `
+    <div class="field full" style="margin-top:8px;"><b>${escapeHtml(sec.secao)}</b></div>
+    ${sec.perguntas.map(campoAnamneseHtml).join('')}
+  `).join('');
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>📋 Nova anamnese — ${escapeHtml(cliente.nome)}</h2>
+        <div class="helper-note">Preencha com o paciente presente. Depois de salvar, você vai poder enviar um link para o próprio paciente ler e dar o aceite pelo celular dele.</div>
+        <div class="modal-grid">
+          <div class="field"><label>Data</label><input type="date" id="anamData" value="${toISODate(new Date())}"></div>
+          ${perguntasHtml}
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="abrirListaAnamneses('${clienteId}')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarAnamnese('${clienteId}')">Salvar anamnese</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function salvarAnamnese(clienteId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const data = document.getElementById('anamData').value || toISODate(new Date());
+  const respostas = {};
+  ANAMNESE_TEMPLATE.forEach(sec=> sec.perguntas.forEach(p=>{
+    const campo = document.getElementById('anam_'+p.id);
+    const resposta = campo ? campo.value.trim() : '';
+    const obsCampo = document.getElementById('anam_'+p.id+'_obs');
+    const obs = obsCampo ? obsCampo.value.trim() : '';
+    respostas[p.id] = { resposta, obs };
+  }));
+  const registro = {
+    clienteId,
+    clienteNome: cliente.nome,
+    clienteTelefone: cliente.telefone || '',
+    data,
+    respostas,
+    ciente: false,
+    assinaturaNome: '',
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  db.collection('anamneses').add(registro)
+    .then((ref)=>{
+      closeModal();
+      renderMain();
+      abrirModalEnviarLinkAnamnese(ref.id);
+    })
+    .catch(err=> alert('Erro ao salvar anamnese: ' + err.message));
+}
+function urlAceiteAnamnese(anamneseId){
+  return 'https://rogeriomarau-dot.github.io/clinica-dra-ana-paula/aceite-anamnese.html?id=' + anamneseId;
+}
+function abrirModalEnviarLinkAnamnese(anamneseId){
+  const a = state.anamneses.find(x=>x.id===anamneseId);
+  const clienteTelefone = a ? a.clienteTelefone : '';
+  const clienteNome = a ? a.clienteNome : '';
+  const link = urlAceiteAnamnese(anamneseId);
+  const msg = `Olá, ${clienteNome}! Sua anamnese odontológica da Clínica Dra. Ana Paula Müller Araujo está pronta para leitura e aceite. Por favor, acesse o link abaixo, confira as informações e confirme o aceite: ${link}`;
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this){ closeModal(); renderMain(); }">
+      <div class="modal">
+        <h2>📲 Enviar anamnese para aceite do paciente</h2>
+        <div class="modal-grid">
+          <div class="field full">
+            <label>Telefone do paciente</label>
+            <input type="text" id="anamWaTelefone" value="${escapeHtml(clienteTelefone||'')}" placeholder="(00) 00000-0000">
+          </div>
+          <div class="field full">
+            <label>Mensagem</label>
+            <textarea id="anamWaMensagem" rows="5">${escapeHtml(msg)}</textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal(); renderMain();">Agora não</button>
+            <button class="btn btn-primary" onclick="enviarLinkAnamneseWhatsapp()">Abrir WhatsApp e enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function enviarLinkAnamneseWhatsapp(){
+  const tel = document.getElementById('anamWaTelefone').value;
+  const msg = document.getElementById('anamWaMensagem').value;
+  const numero = telParaWhatsapp(tel);
+  if(!numero){ alert('Telefone inválido ou não informado.'); return; }
+  window.open('https://wa.me/'+numero+'?text='+encodeURIComponent(msg), '_blank');
+  closeModal();
+  renderMain();
+}
+function verAnamnese(anamneseId){
+  const a = state.anamneses.find(x=>x.id===anamneseId);
+  if(!a) return;
+  const perguntasHtml = ANAMNESE_TEMPLATE.map(sec => `
+    <div class="field full" style="margin-top:8px;"><b>${escapeHtml(sec.secao)}</b></div>
+    ${sec.perguntas.map(p=>{
+      const r = (a.respostas && a.respostas[p.id]) || {resposta:'',obs:''};
+      return `<div class="field full">
+        <label>${escapeHtml(p.texto)}</label>
+        <div style="padding:8px 10px;background:#f7f7f7;border-radius:6px;">${escapeHtml(r.resposta)||'<span style="color:#999;">— não respondido —</span>'}${r.obs?' — '+escapeHtml(r.obs):''}</div>
+      </div>`;
+    }).join('')}
+  `).join('');
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>📋 Anamnese — ${escapeHtml(a.clienteNome)} — ${formatDateBR(a.data)}</h2>
+        <div class="modal-grid">
+          ${perguntasHtml}
+          <div class="field full" style="margin-top:12px;border-top:1px solid #ddd;padding-top:12px;">
+            ${a.ciente ? `✅ <b>${escapeHtml(a.assinaturaNome)}</b> declarou estar ciente desta anamnese em ${formatDateBR(a.data)}. Este documento está travado e não pode mais ser editado — nem pela equipe da clínica.` : '⏳ Esta anamnese ainda está aguardando o aceite do paciente. Enquanto não houver aceite, o conteúdo ainda pode ser corrigido criando uma nova anamnese.'}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div>${a.ciente ? `<button class="btn" onclick="imprimirAnamnese('${a.id}')">🖨️ Imprimir</button>` : ''}</div>
+          <div class="modal-actions-right">
+            ${!a.ciente ? `<button class="btn" onclick="abrirModalEnviarLinkAnamnese('${a.id}')">Enviar p/ aceite</button>` : ''}
+            <button class="btn btn-primary" onclick="abrirListaAnamneses('${a.clienteId}')">Voltar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function imprimirAnamnese(anamneseId){
+  const a = state.anamneses.find(x=>x.id===anamneseId);
+  if(!a) return;
+  const perguntasHtml = ANAMNESE_TEMPLATE.map(sec => `
+    <h3 style="margin:16px 0 6px;">${escapeHtml(sec.secao)}</h3>
+    ${sec.perguntas.map(p=>{
+      const r = (a.respostas && a.respostas[p.id]) || {resposta:'',obs:''};
+      return `<div style="margin-bottom:8px;"><b>${escapeHtml(p.texto)}</b><br>${escapeHtml(r.resposta)||'— não respondido —'}${r.obs?' — '+escapeHtml(r.obs):''}</div>`;
+    }).join('')}
+  `).join('');
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>Anamnese — ${escapeHtml(a.clienteNome)}</title>
+    <meta charset="UTF-8">
+    <style>
+      body{ font-family: Arial, sans-serif; padding:30px; color:#222; }
+      h1{ font-size:20px; margin-bottom:2px; }
+      h2{ font-size:14px; color:#555; font-weight:normal; margin-top:0; }
+      h3{ font-size:15px; border-bottom:1px solid #ccc; padding-bottom:3px; }
+      .aceite{ margin-top:24px; padding:14px; border:1px solid #999; border-radius:6px; }
+    </style>
+    </head><body>
+      <h1>Clínica Dra. Ana Paula Müller Araujo</h1>
+      <h2>Anamnese — ${escapeHtml(a.clienteNome)} — Data: ${formatDateBR(a.data)}</h2>
+      ${perguntasHtml}
+      <div class="aceite">
+        ${a.ciente
+          ? `<b>Aceite do paciente:</b><br>${escapeHtml(a.assinaturaNome)} declarou ter lido e estar ciente do conteúdo desta anamnese.`
+          : `<b>⚠️ Aceite pendente:</b> esta anamnese ainda não foi confirmada pelo paciente.`}
+      </div>
+    </body></html>
+  `);
+  win.document.close();
+  win.focus();
+  setTimeout(()=> win.print(), 300);
+}
+
+/* =========================================================
+   FICHA DE CONSULTA — registro interno de uso exclusivo da Dra.
+   Detalha o procedimento realizado em cada atendimento (dente,
+   procedimento, material/cor, observações). Diferente da anamnese,
+   não precisa de aceite do paciente e pode ser editada/excluída
+   livremente pela equipe da clínica, pois é apenas para controle
+   interno do histórico clínico.
+========================================================= */
+function abrirListaFichasConsulta(clienteId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const todasDoPaciente = state.fichasConsulta.filter(f=>f.clienteId===clienteId);
+  const anosDisponiveis = [...new Set(todasDoPaciente.map(f=> (f.data||'').slice(0,4)).filter(Boolean))].sort((a,b)=> b.localeCompare(a));
+  const filtro = state.fichaConsultaFiltro;
+  let lista = [...todasDoPaciente];
+  if(filtro.ano) lista = lista.filter(f=> (f.data||'').slice(0,4) === filtro.ano);
+  if(filtro.mes) lista = lista.filter(f=> (f.data||'').slice(5,7) === filtro.mes);
+  lista.sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>🦷 Fichas de Consulta — ${escapeHtml(cliente.nome)}</h2>
+        <div class="helper-note">📌 Uso interno da clínica — detalha o procedimento realizado em cada atendimento. O paciente não tem acesso a estas informações.</div>
+        <div class="modal-grid">
+          <div class="field">
+            <label>Filtrar por ano</label>
+            <select onchange="state.fichaConsultaFiltro.ano=this.value; abrirListaFichasConsulta('${clienteId}');">
+              <option value="">Todos os anos</option>
+              ${anosDisponiveis.map(a=> `<option value="${a}" ${filtro.ano===a?'selected':''}>${a}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Filtrar por mês</label>
+            <select onchange="state.fichaConsultaFiltro.mes=this.value; abrirListaFichasConsulta('${clienteId}');">
+              <option value="">Todos os meses</option>
+              ${nomesMeses.map((m,i)=> `<option value="${pad2(i+1)}" ${filtro.mes===pad2(i+1)?'selected':''}>${m}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field full">
+            ${lista.length===0 ? `<div class="empty-state"><div class="empty-state-icon">🦷</div>Nenhuma ficha de consulta registrada${filtro.ano||filtro.mes?' para este período':' para este paciente ainda'}.</div>` :
+            `<table><thead><tr><th>Data</th><th>Dente(s)</th><th>Procedimento</th><th></th></tr></thead><tbody>
+              ${lista.map(f=>`<tr>
+                <td style="white-space:nowrap;">${formatDateBR(f.data)}</td>
+                <td>${escapeHtml(f.dente||'—')}</td>
+                <td>${escapeHtml((f.procedimento||'').length>70 ? f.procedimento.slice(0,70)+'…' : (f.procedimento||''))}</td>
+                <td style="white-space:nowrap;">
+                  <button class="btn btn-sm" onclick="abrirNovaFichaConsulta('${clienteId}','${f.id}')">Ver/Editar</button>
+                  <button class="btn btn-sm" onclick="excluirFichaConsulta('${f.id}','${clienteId}')">Excluir</button>
+                </td>
+              </tr>`).join('')}
+            </tbody></table>`}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="state.fichaConsultaFiltro={ano:'',mes:''}; closeModal();">Fechar</button>
+            <button class="btn btn-primary" onclick="abrirNovaFichaConsulta('${clienteId}')">+ Nova ficha de consulta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function abrirNovaFichaConsulta(clienteId, fichaId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const existing = fichaId ? state.fichasConsulta.find(f=>f.id===fichaId) : null;
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>🦷 ${existing?'Editar':'Nova'} ficha de consulta — ${escapeHtml(cliente.nome)}</h2>
+        <div class="helper-note">📌 Registro interno do procedimento realizado no atendimento. Não é enviado nem exibido ao paciente.</div>
+        <div class="modal-grid">
+          <div class="field"><label>Data do procedimento</label><input type="date" id="fcData" value="${existing?escapeHtml(existing.data||''):toISODate(new Date())}"></div>
+          <div class="field"><label>Dente(s) tratado(s)</label><input type="text" id="fcDente" placeholder="Ex: 24" value="${existing?escapeHtml(existing.dente||''):''}"></div>
+          <div class="field full"><label>Procedimento realizado</label><textarea id="fcProcedimento" rows="3" placeholder="Ex: Restauração com resina composta">${existing?escapeHtml(existing.procedimento||''):''}</textarea></div>
+          <div class="field full"><label>Material / Cor utilizado</label><input type="text" id="fcMaterialCor" placeholder="Ex: Resina composta cor A2" value="${existing?escapeHtml(existing.materialCor||''):''}"></div>
+          <div class="field full"><label>Observações internas</label><textarea id="fcObservacoes" rows="3" placeholder="Anotações adicionais para a Dra.">${existing?escapeHtml(existing.observacoes||''):''}</textarea></div>
+        </div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn" onclick="excluirFichaConsulta('${existing.id}','${clienteId}')">🗑️ Excluir</button>` : ''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="abrirListaFichasConsulta('${clienteId}')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarFichaConsulta('${clienteId}'${existing?`,'${existing.id}'`:''})">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function salvarFichaConsulta(clienteId, fichaId){
+  const cliente = state.clientes.find(c=>c.id===clienteId);
+  if(!cliente) return;
+  const data = document.getElementById('fcData').value;
+  const procedimento = document.getElementById('fcProcedimento').value.trim();
+  if(!data){ alert('Informe a data do procedimento.'); return; }
+  if(!procedimento){ alert('Descreva o procedimento realizado.'); return; }
+  const registro = {
+    clienteId,
+    clienteNome: cliente.nome,
+    data,
+    dente: document.getElementById('fcDente').value.trim(),
+    procedimento,
+    materialCor: document.getElementById('fcMaterialCor').value.trim(),
+    observacoes: document.getElementById('fcObservacoes').value.trim(),
+  };
+  const salvar = fichaId
+    ? db.collection('fichasConsulta').doc(fichaId).set(registro, {merge:true})
+    : db.collection('fichasConsulta').add({ ...registro, criadoEm: firebase.firestore.FieldValue.serverTimestamp() });
+  salvar
+    .then(()=>{ abrirListaFichasConsulta(clienteId); })
+    .catch(err=> alert('Erro ao salvar ficha de consulta: ' + err.message));
+}
+function excluirFichaConsulta(fichaId, clienteId){
+  if(!confirm('Excluir esta ficha de consulta? Esta ação não pode ser desfeita.')) return;
+  db.collection('fichasConsulta').doc(fichaId).delete()
+    .then(()=> abrirListaFichasConsulta(clienteId))
+    .catch(err=> alert('Erro ao excluir ficha de consulta: ' + err.message));
+}
+
+/* =========================================================
+   TAB: CONTAS A PAGAR
+========================================================= */
+function renderContas(){
+  const f = state.contasFilters;
+  let list = [...state.contas].sort((a,b)=> (a.dataVencimento||'').localeCompare(b.dataVencimento||''));
+  if(f.status!=='todos') list = list.filter(c=>c.status===f.status);
+  if(f.categoria!=='todas') list = list.filter(c=>c.categoria===f.categoria);
+  if(f.mes && f.ano) list = list.filter(c=> sameMonth(c.dataVencimento, Number(f.mes), Number(f.ano)));
+
+  const totalPendente = list.filter(c=>c.status==='Pendente').reduce((s,c)=>s+Number(c.valor||0),0);
+  const totalPago = list.filter(c=>c.status==='Pago').reduce((s,c)=>s+Number(c.valor||0),0);
+
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Contas a Pagar</h1>
+        <div class="page-sub">Lançamentos de despesas — alimentam automaticamente o DRE por categoria</div>
+      </div>
+      <button class="btn btn-primary" onclick="openContaModal()">+ Nova conta</button>
+    </div>
+
+    <div class="helper-note">💡 Ao lançar uma despesa, escolha a <b>categoria</b> correspondente (Aluguel/Contador/Combustível = "Despesas Operacionais"; taxas cobradas por operadora de cartão = "Taxas de Cartão"; etc). Isso define automaticamente onde ela aparece no DRE — nenhum valor é criado sozinho pelo sistema.</div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Status</label>
+        <select onchange="updateContasFiltro('status', this.value)">
+          <option value="todos" ${f.status==='todos'?'selected':''}>Todos</option>
+          ${STATUS_CONTA.map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <select onchange="updateContasFiltro('categoria', this.value)">
+          <option value="todas" ${f.categoria==='todas'?'selected':''}>Todas</option>
+          ${CATEGORIAS_DRE.map(c=>`<option value="${c}" ${f.categoria===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Mês</label>
+        <select onchange="updateContasFiltro('mes', this.value)">
+          <option value="">Todos</option>
+          ${monthOptions(f.mes)}
+        </select>
+      </div>
+      <div class="field">
+        <label>Ano</label>
+        <input type="number" style="width:90px" value="${f.ano}" placeholder="Ano" oninput="updateContasFiltro('ano', this.value)">
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;">
+      ${list.length===0 ? `<div class="empty-state"><div class="empty-state-icon">🧾</div>Nenhuma conta lançada ainda.</div>` :
+      `<table><thead><tr><th>Descrição</th><th>Fornecedor</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead><tbody>
+        ${list.map(c=>`<tr>
+          <td>${escapeHtml(c.descricao)}</td>
+          <td>${escapeHtml(c.fornecedor)}</td>
+          <td>${escapeHtml(c.categoria)}</td>
+          <td>${formatDateBR(c.dataVencimento)}</td>
+          <td>${formatMoney(c.valor)}</td>
+          <td><span class="tag tag-${c.status==='Pago'?'pago':'pendente'}">${c.status}</span></td>
+          <td><button class="btn btn-sm" onclick="openContaModal('${c.id}')">Editar</button></td>
+        </tr>`).join('')}
+      </tbody></table>`}
+    </div>
+    <div class="totals-strip">
+      <div class="t">Total pendente<b>${formatMoney(totalPendente)}</b></div>
+      <div class="t">Total pago<b>${formatMoney(totalPago)}</b></div>
+    </div>
+  `;
+}
+function monthOptions(selected){
+  const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return nomes.map((n,i)=>`<option value="${i+1}" ${String(selected)===String(i+1)?'selected':''}>${n}</option>`).join('');
+}
+function updateContasFiltro(key, val){ state.contasFilters[key]=val; renderMain(); }
+
+function openContaModal(id){
+  const existing = id ? state.contas.find(c=>c.id===id) : null;
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>${existing? 'Editar conta a pagar':'Nova conta a pagar'}</h2>
+        <div class="modal-grid">
+          <div class="field full"><label>Descrição</label><input type="text" id="ctDescricao" value="${existing?escapeHtml(existing.descricao):''}" placeholder="Ex: Aluguel sala, Combustível, Honorários contábeis..."></div>
+          <div class="field full"><label>Fornecedor</label><input type="text" id="ctFornecedor" value="${existing?escapeHtml(existing.fornecedor):''}"></div>
+          <div class="field full">
+            <label>Categoria (linha do DRE)</label>
+            <select id="ctCategoria">
+              ${CATEGORIAS_DRE.map(c=>`<option ${existing && existing.categoria===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" min="0" id="ctValor" value="${existing?existing.valor:''}"></div>
+          <div class="field"><label>Data de vencimento</label><input type="date" id="ctVencimento" value="${existing?existing.dataVencimento:''}"></div>
+          <div class="field"><label>Data de pagamento (opcional)</label><input type="date" id="ctPagamento" value="${existing?(existing.dataPagamento||''):''}"></div>
+          <div class="field">
+            <label>Status</label>
+            <select id="ctStatus">
+              ${STATUS_CONTA.map(s=>`<option ${(existing?existing.status:'Pendente')===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn btn-danger" onclick="deleteConta('${existing.id}')">Excluir</button>`:''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveConta('${existing? existing.id:''}')">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function saveConta(id){
+  const descricao = document.getElementById('ctDescricao').value.trim();
+  const valor = document.getElementById('ctValor').value;
+  const vencimento = document.getElementById('ctVencimento').value;
+  if(!descricao){ alert('Informe a descrição da despesa.'); return; }
+  if(valor==='' || Number(valor)<0){ alert('Informe um valor válido.'); return; }
+  if(!vencimento){ alert('Informe a data de vencimento.'); return; }
+
+  const registro = {
+    descricao,
+    fornecedor: document.getElementById('ctFornecedor').value.trim(),
+    categoria: document.getElementById('ctCategoria').value,
+    valor: Number(valor),
+    dataVencimento: vencimento,
+    dataPagamento: document.getElementById('ctPagamento').value || null,
+    status: document.getElementById('ctStatus').value
+  };
+  const op = id ? db.collection('contas').doc(id).set(registro) : db.collection('contas').add(registro);
+  op.then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao salvar conta: ' + err.message));
+}
+function deleteConta(id){
+  if(!confirm('Excluir esta conta a pagar?')) return;
+  db.collection('contas').doc(id).delete()
+    .then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao excluir: ' + err.message));
+}
+
+/* =========================================================
+   TAB: CADASTROS (Serviços + Formas de Pagamento)
+========================================================= */
+function getServicosAtivos(){
+  return state.servicos.filter(s=> s.ativo !== false).map(s=> s.nome).sort((a,b)=> a.localeCompare(b,'pt-BR'));
+}
+function getFormasPagamentoAtivas(){
+  return state.formasPagamento.filter(f=> f.ativo !== false).map(f=> f.nome).sort((a,b)=> a.localeCompare(b,'pt-BR'));
+}
+
+function renderCadastros(){
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Cadastros</h1>
+        <div class="page-sub">Serviços oferecidos e formas de pagamento aceitas</div>
+      </div>
+    </div>
+    <div class="subtabs">
+      <div class="subtab ${state.cadastrosSubview==='servicos'?'active':''}" onclick="setCadastrosSubview('servicos')">Serviços</div>
+      <div class="subtab ${state.cadastrosSubview==='pagamentos'?'active':''}" onclick="setCadastrosSubview('pagamentos')">Formas de Pagamento</div>
+    </div>
+    ${state.cadastrosSubview==='servicos' ? renderCadastroServicos() : renderCadastroFormasPagamento()}
+  `;
+}
+function setCadastrosSubview(v){ state.cadastrosSubview = v; renderMain(); }
+
+/* --- Serviços --- */
+function renderCadastroServicos(){
+  const lista = [...state.servicos].sort((a,b)=> a.nome.localeCompare(b.nome,'pt-BR'));
+  return `
+    <div class="page-header" style="margin-bottom:14px;">
+      <div></div>
+      <button class="btn btn-primary" onclick="openServicoModal()">+ Novo serviço</button>
+    </div>
+    ${lista.length===0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">🦷</div>
+          Nenhum serviço cadastrado ainda.
+        </div>
+        <div style="text-align:center;">
+          <button class="btn btn-accent" onclick="importarServicosPadrao()">Importar lista atual (Limpeza, Clareamento, Tratamento de Canal, Extração de Dentes, Botox Labial, Botox Facial, Obturação)</button>
+        </div>
+      </div>` :
+      `<div class="card" style="padding:0;">
+        <table><thead><tr><th>Serviço</th><th>Status</th><th></th></tr></thead><tbody>
+          ${lista.map(s=>`<tr>
+            <td>${escapeHtml(s.nome)}</td>
+            <td><span class="tag tag-${s.ativo!==false?'realizado':'cancelado'}">${s.ativo!==false?'Ativo':'Inativo'}</span></td>
+            <td class="tbl-actions">
+              <button class="btn btn-sm" onclick="openServicoModal('${s.id}')">Editar</button>
+              <button class="btn btn-sm" onclick="toggleServicoAtivo('${s.id}', ${s.ativo===false})">${s.ativo!==false?'Inativar':'Ativar'}</button>
+            </td>
+          </tr>`).join('')}
+        </tbody></table>
+      </div>`}
+    <div class="helper-note">📌 Serviços inativos deixam de aparecer para novos agendamentos, mas continuam preservados no histórico de atendimentos já lançados.</div>
+  `;
+}
+function importarServicosPadrao(){
+  if(!confirm('Importar a lista atual de serviços para o cadastro editável?')) return;
+  const batch = db.batch();
+  SERVICOS_PADRAO_SUGERIDOS.forEach(nome=> batch.set(db.collection('servicos').doc(), { nome, ativo:true }));
+  batch.commit().catch(err=> alert('Erro ao importar: ' + err.message));
+}
+function openServicoModal(id){
+  const existing = id ? state.servicos.find(s=>s.id===id) : null;
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>${existing? 'Editar serviço':'Novo serviço'}</h2>
+        <div class="field full"><label>Nome do serviço</label><input type="text" id="svNome" value="${existing?escapeHtml(existing.nome):''}"></div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn btn-danger" onclick="deleteServico('${existing.id}')">Excluir</button>`:''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveServico('${existing? existing.id:''}')">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function saveServico(id){
+  const nome = document.getElementById('svNome').value.trim();
+  if(!nome){ alert('Informe o nome do serviço.'); return; }
+  const duplicado = state.servicos.find(s=> s.nome.trim().toLowerCase()===nome.toLowerCase() && s.id!==id);
+  if(duplicado && !confirm('Já existe um serviço com este nome. Deseja salvar mesmo assim?')) return;
+
+  const registro = { nome, ativo: id ? (state.servicos.find(s=>s.id===id).ativo !== false) : true };
+  const op = id ? db.collection('servicos').doc(id).set(registro) : db.collection('servicos').add(registro);
+  op.then(()=>{ closeModal(); renderMain(); }).catch(err=> alert('Erro ao salvar: ' + err.message));
+}
+function toggleServicoAtivo(id, novoAtivo){
+  db.collection('servicos').doc(id).update({ ativo: novoAtivo })
+    .catch(err=> alert('Erro ao atualizar: ' + err.message));
+}
+function deleteServico(id){
+  if(!confirm('Excluir este serviço do cadastro? Agendamentos já lançados com ele mantêm o nome salvo.')) return;
+  db.collection('servicos').doc(id).delete()
+    .then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao excluir: ' + err.message));
+}
+
+/* --- Formas de Pagamento --- */
+function renderCadastroFormasPagamento(){
+  const lista = [...state.formasPagamento].sort((a,b)=> a.nome.localeCompare(b.nome,'pt-BR'));
+  return `
+    <div class="page-header" style="margin-bottom:14px;">
+      <div></div>
+      <button class="btn btn-primary" onclick="openFormaPagamentoModal()">+ Nova forma de pagamento</button>
+    </div>
+    ${lista.length===0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-state-icon">💳</div>
+          Nenhuma forma de pagamento cadastrada ainda.
+        </div>
+        <div style="text-align:center;">
+          <button class="btn btn-accent" onclick="importarFormasPagamentoPadrao()">Importar lista atual (Dinheiro, Cartão de Crédito, Cartão de Débito, Convênio Sul América)</button>
+        </div>
+      </div>` :
+      `<div class="card" style="padding:0;">
+        <table><thead><tr><th>Forma de pagamento</th><th>Status</th><th></th></tr></thead><tbody>
+          ${lista.map(f=>`<tr>
+            <td>${escapeHtml(f.nome)}</td>
+            <td><span class="tag tag-${f.ativo!==false?'realizado':'cancelado'}">${f.ativo!==false?'Ativa':'Inativa'}</span></td>
+            <td class="tbl-actions">
+              <button class="btn btn-sm" onclick="openFormaPagamentoModal('${f.id}')">Editar</button>
+              <button class="btn btn-sm" onclick="toggleFormaPagamentoAtiva('${f.id}', ${f.ativo===false})">${f.ativo!==false?'Inativar':'Ativar'}</button>
+            </td>
+          </tr>`).join('')}
+        </tbody></table>
+      </div>`}
+    <div class="helper-note">📌 Formas de pagamento inativas deixam de aparecer para novos agendamentos e contas a pagar, mas continuam preservadas no histórico já lançado.</div>
+  `;
+}
+function importarFormasPagamentoPadrao(){
+  if(!confirm('Importar a lista atual de formas de pagamento para o cadastro editável?')) return;
+  const batch = db.batch();
+  FORMAS_PAGAMENTO_PADRAO_SUGERIDAS.forEach(nome=> batch.set(db.collection('formasPagamento').doc(), { nome, ativo:true }));
+  batch.commit().catch(err=> alert('Erro ao importar: ' + err.message));
+}
+function openFormaPagamentoModal(id){
+  const existing = id ? state.formasPagamento.find(f=>f.id===id) : null;
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>${existing? 'Editar forma de pagamento':'Nova forma de pagamento'}</h2>
+        <div class="field full"><label>Nome</label><input type="text" id="fpNome" value="${existing?escapeHtml(existing.nome):''}" placeholder="Ex: Pix, Convênio Amil..."></div>
+        <div class="modal-actions">
+          <div>${existing? `<button class="btn btn-danger" onclick="deleteFormaPagamento('${existing.id}')">Excluir</button>`:''}</div>
+          <div class="modal-actions-right">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveFormaPagamento('${existing? existing.id:''}')">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function saveFormaPagamento(id){
+  const nome = document.getElementById('fpNome').value.trim();
+  if(!nome){ alert('Informe o nome da forma de pagamento.'); return; }
+  const duplicado = state.formasPagamento.find(f=> f.nome.trim().toLowerCase()===nome.toLowerCase() && f.id!==id);
+  if(duplicado && !confirm('Já existe uma forma de pagamento com este nome. Deseja salvar mesmo assim?')) return;
+
+  const registro = { nome, ativo: id ? (state.formasPagamento.find(f=>f.id===id).ativo !== false) : true };
+  const op = id ? db.collection('formasPagamento').doc(id).set(registro) : db.collection('formasPagamento').add(registro);
+  op.then(()=>{ closeModal(); renderMain(); }).catch(err=> alert('Erro ao salvar: ' + err.message));
+}
+function toggleFormaPagamentoAtiva(id, novoAtivo){
+  db.collection('formasPagamento').doc(id).update({ ativo: novoAtivo })
+    .catch(err=> alert('Erro ao atualizar: ' + err.message));
+}
+function deleteFormaPagamento(id){
+  if(!confirm('Excluir esta forma de pagamento do cadastro? Registros já lançados com ela mantêm o nome salvo.')) return;
+  db.collection('formasPagamento').doc(id).delete()
+    .then(()=>{ closeModal(); renderMain(); })
+    .catch(err=> alert('Erro ao excluir: ' + err.message));
+}
+
+/* =========================================================
+   TAB: RELATÓRIOS (Histórico por Cliente + Curva ABC)
+========================================================= */
+function renderRelatorios(){
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Relatórios</h1>
+        <div class="page-sub">Histórico de atendimentos e curva ABC de clientes</div>
+      </div>
+    </div>
+    <div class="subtabs">
+      <div class="subtab ${state.relSubview==='historico'?'active':''}" onclick="setRelSubview('historico')">Histórico por Cliente</div>
+      <div class="subtab ${state.relSubview==='abc'?'active':''}" onclick="setRelSubview('abc')">Curva ABC de Pacientes</div>
+      <div class="subtab ${state.relSubview==='perfil'?'active':''}" onclick="setRelSubview('perfil')">Perfil dos Pacientes</div>
+    </div>
+    ${state.relSubview==='historico' ? renderHistoricoCliente() : state.relSubview==='abc' ? renderCurvaABC() : renderPerfilPacientes()}
+  `;
+}
+function setRelSubview(v){ state.relSubview = v; renderMain(); }
+
+function renderRelFiltersPanel(){
+  const f = state.relFilters;
+  return `
+    <div class="filters">
+      <div class="field"><label>Data início</label><input type="date" value="${f.dataInicio}" onchange="updateRelFiltro('dataInicio', this.value)"></div>
+      <div class="field"><label>Data fim</label><input type="date" value="${f.dataFim}" onchange="updateRelFiltro('dataFim', this.value)"></div>
+      <div class="field"><label>Mês</label>
+        <select onchange="updateRelFiltro('mes', this.value)">
+          <option value="">Todos</option>
+          ${monthOptions(f.mes)}
+        </select>
+      </div>
+      <div class="field"><label>Ano</label><input type="number" style="width:90px" value="${f.ano}" placeholder="Ano" oninput="updateRelFiltro('ano', this.value)"></div>
+      <div class="field"><label>Forma de pagamento</label>
+        <select onchange="updateRelFiltro('formaPagamento', this.value)">
+          <option value="todas" ${f.formaPagamento==='todas'?'selected':''}>Todas</option>
+          ${getFormasPagamentoAtivas().map(fp=>`<option ${f.formaPagamento===fp?'selected':''}>${fp}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Valor mínimo</label><input type="number" step="0.01" style="width:110px" value="${f.valorMin}" oninput="updateRelFiltro('valorMin', this.value)"></div>
+      <div class="field"><label>Valor máximo</label><input type="number" step="0.01" style="width:110px" value="${f.valorMax}" oninput="updateRelFiltro('valorMax', this.value)"></div>
+      <div class="field"><label>&nbsp;</label><button class="btn btn-sm btn-ghost" onclick="resetRelFiltros()">Limpar filtros</button></div>
+    </div>
+  `;
+}
+function updateRelFiltro(key, val){ state.relFilters[key] = val; renderMain(); }
+function resetRelFiltros(){
+  state.relFilters = { dataInicio:'', dataFim:'', mes:'', ano:'', formaPagamento:'todas', valorMin:'', valorMax:'' };
+  renderMain();
+}
+function applyRelFilters(list){
+  const f = state.relFilters;
+  let out = list;
+  if(f.dataInicio) out = out.filter(a=> a.data >= f.dataInicio);
+  if(f.dataFim) out = out.filter(a=> a.data <= f.dataFim);
+  if(f.ano) out = out.filter(a=> parseISODate(a.data).getFullYear() === Number(f.ano));
+  if(f.mes) out = out.filter(a=> (parseISODate(a.data).getMonth()+1) === Number(f.mes));
+  if(f.formaPagamento && f.formaPagamento!=='todas') out = out.filter(a=> a.formaPagamento === f.formaPagamento);
+  if(f.valorMin !== '') out = out.filter(a=> Number(a.valor) >= Number(f.valorMin));
+  if(f.valorMax !== '') out = out.filter(a=> Number(a.valor) <= Number(f.valorMax));
+  return out;
+}
+function clientKeyOf(a){ return a.clienteId ? ('c:'+a.clienteId) : ('n:'+a.clienteNome); }
+function matchesClientKey(a, key){
+  if(key.startsWith('c:')) return a.clienteId === key.slice(2);
+  if(key.startsWith('n:')) return !a.clienteId && a.clienteNome === key.slice(2);
+  return false;
+}
+function getClientOptionsList(){
+  const opts = state.clientes.map(c=> ({ key:'c:'+c.id, label:c.nome }) );
+  const avulsoNames = Array.from(new Set(state.agenda.filter(a=>!a.clienteId).map(a=>a.clienteNome))).filter(Boolean);
+  avulsoNames.forEach(n => opts.push({ key:'n:'+n, label: n+' (avulso)' }));
+  opts.sort((a,b)=> a.label.localeCompare(b.label,'pt-BR'));
+  return opts;
+}
+
+function renderHistoricoCliente(){
+  const options = getClientOptionsList();
+  const selKey = state.relClienteKey;
+
+  let body;
+  if(!selKey){
+    body = `<div class="empty-state"><div class="empty-state-icon">🧑‍⚕️</div>Selecione um paciente acima para ver o histórico completo de atendimentos.</div>`;
+  } else {
+    let list = state.agenda.filter(a=> matchesClientKey(a, selKey));
+    list = applyRelFilters(list);
+    list.sort((a,b)=> (a.data+a.horaInicio).localeCompare(b.data+b.horaInicio));
+    const realizados = list.filter(a=> a.status==='Realizado');
+    const totalGasto = realizados.reduce((s,a)=> s+Number(a.valor||0), 0);
+    const qtd = realizados.length;
+    const ticketMedio = qtd>0 ? totalGasto/qtd : 0;
+    const primeira = realizados.length ? realizados[0].data : null;
+    const ultima = realizados.length ? realizados[realizados.length-1].data : null;
+
+    const porServico = {};
+    realizados.forEach(a=>{
+      porServico[a.servico] = porServico[a.servico] || {qtd:0, total:0};
+      porServico[a.servico].qtd++;
+      porServico[a.servico].total += Number(a.valor||0);
+    });
+    const servicosArr = Object.entries(porServico).sort((a,b)=> b[1].total - a[1].total);
+
+    body = `
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Atendimentos realizados</div><div class="kpi-value">${qtd}</div></div>
+        <div class="kpi"><div class="kpi-label">Valor total gasto</div><div class="kpi-value accent">${formatMoney(totalGasto)}</div></div>
+        <div class="kpi"><div class="kpi-label">Ticket médio</div><div class="kpi-value">${formatMoney(ticketMedio)}</div></div>
+        <div class="kpi"><div class="kpi-label">Primeira → última visita</div><div class="kpi-value" style="font-size:15px;">${primeira?formatDateBR(primeira):'—'} → ${ultima?formatDateBR(ultima):'—'}</div></div>
+      </div>
+
+      ${servicosArr.length>0 ? `
+      <div class="card">
+        <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">O que este paciente já fez</h3>
+        <table><thead><tr><th>Procedimento</th><th>Qtd.</th><th>Total gasto</th></tr></thead><tbody>
+          ${servicosArr.map(([s,d])=>`<tr><td>${escapeHtml(s)}</td><td>${d.qtd}</td><td>${formatMoney(d.total)}</td></tr>`).join('')}
+        </tbody></table>
+      </div>` : ''}
+
+      <div class="card" style="padding:0;">
+        ${list.length===0 ? `<div class="empty-state"><div class="empty-state-icon">📭</div>Nenhum atendimento encontrado com os filtros aplicados.</div>` :
+        `<table><thead><tr><th>Data</th><th>Hora</th><th>Serviço</th><th>Valor</th><th>Pagamento</th><th>Status</th></tr></thead><tbody>
+          ${list.map(a=>`<tr>
+            <td>${formatDateBR(a.data)}</td>
+            <td>${a.horaInicio}</td>
+            <td>${escapeHtml(a.servico)}</td>
+            <td>${formatMoney(a.valor)}</td>
+            <td>${escapeHtml(a.formaPagamento)}</td>
+            <td><span class="tag tag-${statusClass(a.status)}">${a.status}</span></td>
+          </tr>`).join('')}
+        </tbody></table>`}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="filters">
+      <div class="field search-box" style="min-width:280px;">
+        <label>Paciente</label>
+        <select onchange="state.relClienteKey=this.value; renderMain();">
+          <option value="">— Selecione um paciente —</option>
+          ${options.map(o=>`<option value="${escapeHtml(o.key)}" ${selKey===o.key?'selected':''}>${escapeHtml(o.label)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    ${renderRelFiltersPanel()}
+    ${body}
+  `;
+}
+
+function renderCurvaABC(){
+  let list = state.agenda.filter(a=> a.status==='Realizado');
+  list = applyRelFilters(list);
+
+  const map = {};
+  list.forEach(a=>{
+    const key = clientKeyOf(a);
+    if(!map[key]) map[key] = { key, nome:a.clienteNome, qtd:0, total:0 };
+    map[key].qtd++;
+    map[key].total += Number(a.valor||0);
+  });
+  let arr = Object.values(map).sort((a,b)=> b.total - a.total);
+  const totalGeral = arr.reduce((s,c)=> s+c.total, 0);
+  let acumulado = 0;
+  arr = arr.map(c=>{
+    const pct = totalGeral>0 ? (c.total/totalGeral*100) : 0;
+    acumulado += pct;
+    const classe = acumulado <= 80.001 ? 'A' : acumulado <= 95.001 ? 'B' : 'C';
+    return {...c, pct, acumulado, classe};
+  });
+  const qtdA = arr.filter(c=>c.classe==='A').length;
+  const qtdB = arr.filter(c=>c.classe==='B').length;
+  const qtdC = arr.filter(c=>c.classe==='C').length;
+
+  const displayArr = sortAbcArr(arr, state.abcSort.field, state.abcSort.dir);
+
+  return `
+    ${renderRelFiltersPanel()}
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Pacientes no período</div><div class="kpi-value">${arr.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Faturamento total</div><div class="kpi-value accent">${formatMoney(totalGeral)}</div></div>
+      <div class="kpi"><div class="kpi-label">Ticket médio geral</div><div class="kpi-value">${formatMoney(list.length? totalGeral/list.length : 0)}</div></div>
+      <div class="kpi"><div class="kpi-label">Classe A / B / C</div><div class="kpi-value" style="font-size:17px;">${qtdA} / ${qtdB} / ${qtdC}</div></div>
+    </div>
+    <div class="helper-note">📌 Curva ABC: <b>Classe A</b> = clientes que, somados (por valor, do maior para o menor), respondem por até 80% do faturamento. <b>Classe B</b> = até 95% acumulado. <b>Classe C</b> = os demais. A classificação segue sempre o ranking por valor — clique nos cabeçalhos abaixo só para reordenar a visualização da tabela.</div>
+    <div class="card" style="padding:0;">
+      ${displayArr.length===0 ? `<div class="empty-state"><div class="empty-state-icon">📊</div>Nenhum atendimento realizado encontrado com os filtros aplicados.</div>` :
+      `<table><thead><tr>
+        <th class="sortable" onclick="toggleAbcSort('nome')">Paciente${sortIndicator('nome')}</th>
+        <th class="sortable" onclick="toggleAbcSort('qtd')">Atendimentos${sortIndicator('qtd')}</th>
+        <th class="sortable" onclick="toggleAbcSort('total')">Valor total${sortIndicator('total')}</th>
+        <th class="sortable" onclick="toggleAbcSort('pct')">% do total${sortIndicator('pct')}</th>
+        <th class="sortable" onclick="toggleAbcSort('acumulado')">% acumulado${sortIndicator('acumulado')}</th>
+        <th class="sortable" onclick="toggleAbcSort('classe')">Classe${sortIndicator('classe')}</th>
+        <th></th>
+      </tr></thead><tbody>
+        ${displayArr.map(c=>`<tr>
+          <td>${escapeHtml(c.nome)}</td>
+          <td>${c.qtd}</td>
+          <td>${formatMoney(c.total)}</td>
+          <td>${c.pct.toFixed(1)}%</td>
+          <td>${c.acumulado.toFixed(1)}%</td>
+          <td><span class="tag tag-classe-${c.classe.toLowerCase()}">${c.classe}</span></td>
+          <td><button class="btn btn-sm" onclick="verHistoricoDoCliente('${encodeURIComponent(c.key)}')">Ver histórico</button></td>
+        </tr>`).join('')}
+      </tbody></table>`}
+    </div>
+  `;
+}
+function sortAbcArr(arr, field, dir){
+  const mult = dir === 'asc' ? 1 : -1;
+  return [...arr].sort((a,b)=>{
+    let va = a[field], vb = b[field];
+    if(typeof va === 'string') return va.localeCompare(vb, 'pt-BR') * mult;
+    return (va - vb) * mult;
+  });
+}
+function toggleAbcSort(field){
+  if(state.abcSort.field === field){
+    state.abcSort.dir = state.abcSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.abcSort.field = field;
+    state.abcSort.dir = (field === 'nome' || field === 'classe') ? 'asc' : 'desc';
+  }
+  renderMain();
+}
+function sortIndicator(field){
+  if(state.abcSort.field !== field) return ' <span class="sort-arrow">↕</span>';
+  return state.abcSort.dir === 'asc' ? ' <span class="sort-arrow active">▲</span>' : ' <span class="sort-arrow active">▼</span>';
+}
+function verHistoricoDoCliente(encodedKey){
+  state.relClienteKey = decodeURIComponent(encodedKey);
+  state.relSubview = 'historico';
+  goTo('relatorios');
+}
+
+const PIE_COLORS = ['#1F5B57','#C99A3D','#B3433B','#3B6E8F','#8C5E3C','#6B4C7A','#D98A3D','#4A4A4A','#7A8C3B','#A64B7C'];
+function preparePieData(entries, maxSlices=7){
+  const sorted = [...entries].sort((a,b)=> b[1]-a[1]);
+  if(sorted.length <= maxSlices) return sorted;
+  const top = sorted.slice(0, maxSlices-1);
+  const restoSoma = sorted.slice(maxSlices-1).reduce((s,[,v])=> s+v, 0);
+  top.push(['Outros', restoSoma]);
+  return top;
+}
+function polarToCartesian(cx, cy, r, angleDeg){
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+}
+function arcPath(cx, cy, r, startAngle, endAngle){
+  const startPt = polarToCartesian(cx, cy, r, startAngle);
+  const endPt = polarToCartesian(cx, cy, r, endAngle);
+  const largeArcFlag = (endAngle - startAngle) > 180 ? 1 : 0;
+  return `M ${cx},${cy} L ${startPt.x.toFixed(2)},${startPt.y.toFixed(2)} A ${r},${r} 0 ${largeArcFlag} 1 ${endPt.x.toFixed(2)},${endPt.y.toFixed(2)} Z`;
+}
+function renderPieChart(entries, total){
+  if(total<=0 || entries.length===0){
+    return `<div class="pie-wrap"><div class="pie"></div><div class="pie-legend"><div class="pie-legend-item">Sem dados</div></div></div>`;
+  }
+  const cx=100, cy=100, r=92;
+  let cumAngle = 0;
+  let paths = '';
+  let labels = '';
+  entries.forEach(([label,val], i)=>{
+    const pct = (val/total*100);
+    const angle = (pct/100)*360;
+    const startAngle = cumAngle;
+    const endAngle = cumAngle + angle;
+    const color = PIE_COLORS[i % PIE_COLORS.length];
+    paths += `<path d="${arcPath(cx,cy,r,startAngle,endAngle)}" fill="${color}"><title>${escapeHtml(label)}: ${val} (${pct.toFixed(1)}%)</title></path>`;
+    if(pct >= 6){
+      const mid = startAngle + angle/2;
+      const pt = polarToCartesian(cx, cy, r*0.62, mid);
+      labels += `<text x="${pt.x.toFixed(1)}" y="${(pt.y-4).toFixed(1)}" text-anchor="middle" class="pie-slice-label">${val}</text>`;
+      labels += `<text x="${pt.x.toFixed(1)}" y="${(pt.y+11).toFixed(1)}" text-anchor="middle" class="pie-slice-pct">${pct.toFixed(1)}%</text>`;
+    }
+    cumAngle = endAngle;
+  });
+  const legend = entries.map(([label,val], i)=>{
+    const pct = (val/total*100);
+    return `<div class="pie-legend-item">
+      <span class="pie-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>
+      <span class="pie-legend-label">${escapeHtml(label)}</span>
+      <span class="pie-legend-val">${val} · ${pct.toFixed(1)}%</span>
+    </div>`;
+  }).join('');
+  return `<div class="pie-wrap">
+    <svg viewBox="0 0 200 200" class="pie-svg">${paths}${labels}</svg>
+    <div class="pie-legend">${legend}</div>
+  </div>`;
+}
+function renderRankBar(label, value, total){
+  const pct = total>0 ? (value/total*100) : 0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex; justify-content:space-between; font-size:12.5px;"><span>${escapeHtml(label)}</span><span>${value} (${pct.toFixed(1)}%)</span></div>
+    <div class="dre-bar-wrap"><div class="dre-bar" style="width:${pct}%;"></div></div>
+  </div>`;
+}
+function renderRankTable(titulo, colLabel, arr, total){
+  if(arr.length===0) return '';
+  return `<div class="card">
+    <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">${titulo}</h3>
+    <table><thead><tr><th>${colLabel}</th><th>Pacientes</th><th>%</th></tr></thead><tbody>
+      ${arr.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+function renderPerfilPacientes(){
+  const clientes = state.clientes;
+  const total = clientes.length;
+  if(total===0){
+    return `<div class="empty-state"><div class="empty-state-icon">👥</div>Nenhum paciente cadastrado ainda. Cadastre pacientes na aba "Pacientes" para ver o perfil aqui.</div>`;
+  }
+
+  const porSexo = {};
+  clientes.forEach(c=>{
+    const key = c.sexo === 'Outro' && c.sexoOutro ? `Outro (${c.sexoOutro})` : (c.sexo || 'Não informado');
+    porSexo[key] = (porSexo[key]||0) + 1;
+  });
+
+  const faixas = ['0–12','13–17','18–25','26–35','36–45','46–60','61+','Não informado'];
+  const porFaixa = {}; faixas.forEach(f=> porFaixa[f]=0);
+  clientes.forEach(c=>{
+    const idade = Number(c.idade);
+    if(!c.idade || isNaN(idade)) porFaixa['Não informado']++;
+    else if(idade<=12) porFaixa['0–12']++;
+    else if(idade<=17) porFaixa['13–17']++;
+    else if(idade<=25) porFaixa['18–25']++;
+    else if(idade<=35) porFaixa['26–35']++;
+    else if(idade<=45) porFaixa['36–45']++;
+    else if(idade<=60) porFaixa['46–60']++;
+    else porFaixa['61+']++;
+  });
+
+  const porCidade = {};
+  clientes.forEach(c=>{ const k = c.cidade && c.cidade.trim() ? c.cidade.trim() : 'Não informado'; porCidade[k]=(porCidade[k]||0)+1; });
+  const cidadeArr = Object.entries(porCidade).sort((a,b)=>b[1]-a[1]);
+
+  const porBairro = {};
+  clientes.forEach(c=>{ const k = c.bairro && c.bairro.trim() ? c.bairro.trim() : 'Não informado'; porBairro[k]=(porBairro[k]||0)+1; });
+  const bairroArr = Object.entries(porBairro).sort((a,b)=>b[1]-a[1]);
+
+  const porEstadoCivil = {};
+  clientes.forEach(c=>{ const k = c.estadoCivil || 'Não informado'; porEstadoCivil[k]=(porEstadoCivil[k]||0)+1; });
+
+  const cidadeTop = cidadeArr.length ? cidadeArr[0][0] : '—';
+  const bairroTop = bairroArr.length ? bairroArr[0][0] : '—';
+  const faixaTop = Object.entries(porFaixa).sort((a,b)=>b[1]-a[1])[0][0];
+
+  return `
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Total de pacientes cadastrados</div><div class="kpi-value">${total}</div></div>
+      <div class="kpi"><div class="kpi-label">Cidade mais frequente</div><div class="kpi-value" style="font-size:17px;">${escapeHtml(cidadeTop)}</div></div>
+      <div class="kpi"><div class="kpi-label">Bairro mais frequente</div><div class="kpi-value" style="font-size:17px;">${escapeHtml(bairroTop)}</div></div>
+      <div class="kpi"><div class="kpi-label">Faixa etária predominante</div><div class="kpi-value" style="font-size:17px;">${faixaTop}</div></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Sexo</h3>
+      <div class="evolucao-row">
+        <div class="evolucao-col-bars">${Object.entries(porSexo).sort((a,b)=>b[1]-a[1]).map(([k,v])=>renderRankBar(k,v,total)).join('')}</div>
+        <div class="evolucao-col-pie">${renderPieChart(Object.entries(porSexo).sort((a,b)=>b[1]-a[1]), total)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Faixa etária</h3>
+      <div class="evolucao-row">
+        <div class="evolucao-col-bars">${faixas.map(f=>renderRankBar(f, porFaixa[f], total)).join('')}</div>
+        <div class="evolucao-col-pie">${renderPieChart(faixas.map(f=>[f, porFaixa[f]]).filter(([,v])=>v>0), total)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Ranking por cidade</h3>
+      <div class="evolucao-row">
+        <div class="evolucao-col-bars">
+          <table><thead><tr><th>Cidade</th><th>Pacientes</th><th>%</th></tr></thead><tbody>
+            ${cidadeArr.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div class="evolucao-col-pie">${renderPieChart(preparePieData(cidadeArr), total)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Ranking por bairro</h3>
+      <div class="evolucao-row">
+        <div class="evolucao-col-bars">
+          <table><thead><tr><th>Bairro</th><th>Pacientes</th><th>%</th></tr></thead><tbody>
+            ${bairroArr.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div class="evolucao-col-pie">${renderPieChart(preparePieData(bairroArr), total)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Estado civil</h3>
+      <div class="evolucao-row">
+        <div class="evolucao-col-bars">${Object.entries(porEstadoCivil).sort((a,b)=>b[1]-a[1]).map(([k,v])=>renderRankBar(k,v,total)).join('')}</div>
+        <div class="evolucao-col-pie">${renderPieChart(Object.entries(porEstadoCivil).sort((a,b)=>b[1]-a[1]), total)}</div>
+      </div>
+    </div>
+
+    <div class="helper-note">📌 Este perfil considera todos os pacientes cadastrados na aba "Clientes", com base nos campos de idade, sexo, cidade, bairro e estado civil preenchidos em cada cadastro. Nos rankings de cidade e bairro, quando há muitas categorias, o gráfico de pizza agrupa as menores em "Outros" para ficar mais legível — a tabela ao lado sempre mostra todos os valores individualmente.</div>
+  `;
+}
+
+/* =========================================================
+   TAB: DRE
+========================================================= */
+function renderDRE(){
+  const mes = state.dreMonth, ano = state.dreYear;
+
+  const realizados = state.agenda
+    .filter(a=> a.status==='Realizado' && sameMonth(a.data, mes, ano));
+  const faturamentoBruto = realizados.reduce((s,a)=> s + Number(a.valor||0), 0);
+
+  // Faturamento agrupado por Forma de Pagamento — usa o mesmo campo já
+  // preenchido no agendamento (formaPagamento). Só aparecem as formas que
+  // realmente têm algum valor lançado no mês, nunca uma lista fixa/estimada.
+  const porFormaPagamento = {};
+  realizados.forEach(a=>{
+    const forma = a.formaPagamento || 'Não informada';
+    if(!porFormaPagamento[forma]) porFormaPagamento[forma] = { total:0, itens:[] };
+    porFormaPagamento[forma].total += Number(a.valor||0);
+    porFormaPagamento[forma].itens.push(a);
+  });
+  const formasOrdenadas = Object.keys(porFormaPagamento).sort((a,b)=> porFormaPagamento[b].total - porFormaPagamento[a].total);
+
+  const porCategoria = {};
+  CATEGORIAS_DRE.forEach(c=> porCategoria[c] = { total:0, itens:[] });
+  state.contas
+    .filter(c=> sameMonth(c.dataVencimento, mes, ano))
+    .forEach(c=>{
+      porCategoria[c.categoria].total += Number(c.valor||0);
+      porCategoria[c.categoria].itens.push(c);
+    });
+
+  const cmv = porCategoria['CMV'].total;
+  const taxasCartao = porCategoria['Taxas de Cartão'].total;
+  const comissoes = porCategoria['Comissões'].total;
+  const taxasConvenio = porCategoria['Taxas de Convênio'].total;
+  const impostos = porCategoria['Impostos'].total;
+  const despesasOperacionais = porCategoria['Despesas Operacionais'].total;
+
+  const margemBruta = faturamentoBruto - cmv - taxasCartao - comissoes - taxasConvenio - impostos;
+  const resultadoOperacional = margemBruta - despesasOperacionais;
+
+  const av = (v) => faturamentoBruto>0 ? (v/faturamentoBruto*100).toFixed(1)+'%' : '—';
+
+  function linha(label, valor, opts={}){
+    const cls = opts.cls || 'line-sub';
+    const sign = opts.sign || '';
+    return `<tr class="${cls}">
+      <td>${label}${opts.drill? renderDrill(opts.drill):''}</td>
+      <td class="val ${sign}">${formatMoney(valor)}<div class="dre-av">${av(valor)} da receita</div></td>
+    </tr>`;
+  }
+  function renderDrill(categoria){
+    const itens = porCategoria[categoria].itens;
+    if(itens.length===0) return '';
+    return `<div class="drilldown">${itens.map(i=>`<div>• ${escapeHtml(i.descricao)} (${escapeHtml(i.fornecedor||'—')}) — ${formatMoney(i.valor)}</div>`).join('')}</div>`;
+  }
+  function linhaReceita(forma){
+    const dados = porFormaPagamento[forma];
+    return `<tr class="line-receita">
+      <td>${escapeHtml(forma)}</td>
+      <td class="val">${formatMoney(dados.total)}<div class="dre-av">${av(dados.total)} da receita</div></td>
+    </tr>`;
+  }
+
+  return `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">DRE Gerencial</h1>
+        <div class="page-sub">Demonstrativo de Resultado — regime de competência (por vencimento)</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Mês</label>
+        <select onchange="state.dreMonth=Number(this.value); renderMain();">${monthOptions(mes)}</select>
+      </div>
+      <div class="field">
+        <label>Ano</label>
+        <input type="number" style="width:100px" value="${ano}" oninput="state.dreYear=Number(this.value)||${ano}; renderMain();">
+      </div>
+    </div>
+
+    <div class="card">
+      <table class="dre-table">
+        <tr class="line-total"><td>Faturamento Bruto</td><td class="val">${formatMoney(faturamentoBruto)}</td></tr>
+        ${formasOrdenadas.map(f=> linhaReceita(f)).join('')}
+        ${linha('CMV', cmv, {sign:'neg', drill:'CMV'})}
+        ${linha('Taxas de Cartão', taxasCartao, {sign:'neg', drill:'Taxas de Cartão'})}
+        ${linha('Comissões', comissoes, {sign:'neg', drill:'Comissões'})}
+        ${linha('Taxas de Convênio', taxasConvenio, {sign:'neg', drill:'Taxas de Convênio'})}
+        ${linha('Impostos', impostos, {sign:'neg', drill:'Impostos'})}
+        <tr class="line-total"><td>Margem Bruta (Margem de Contribuição)</td><td class="val">${formatMoney(margemBruta)}<div class="dre-av">${av(margemBruta)} da receita</div></td></tr>
+        ${linha('Despesas Operacionais', despesasOperacionais, {sign:'neg', drill:'Despesas Operacionais'})}
+        <tr class="line-final"><td>Resultado Operacional (Lucro Líquido)</td><td class="val">${formatMoney(resultadoOperacional)}<div class="dre-av">${av(resultadoOperacional)} da receita</div></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-family:var(--font-display);color:var(--primary-dark);">Composição visual</h3>
+      ${barraDRE('Faturamento Bruto', faturamentoBruto, faturamentoBruto)}
+      ${barraDRE('CMV', cmv, faturamentoBruto)}
+      ${barraDRE('Taxas de Cartão', taxasCartao, faturamentoBruto)}
+      ${barraDRE('Comissões', comissoes, faturamentoBruto)}
+      ${barraDRE('Taxas de Convênio', taxasConvenio, faturamentoBruto)}
+      ${barraDRE('Impostos', impostos, faturamentoBruto)}
+      ${barraDRE('Despesas Operacionais', despesasOperacionais, faturamentoBruto)}
+      ${barraDRE('Resultado Operacional', Math.max(resultadoOperacional,0), faturamentoBruto)}
+    </div>
+
+    <div class="helper-note">📌 O Faturamento Bruto considera os agendamentos com status <b>"Realizado"</b> no mês selecionado, detalhado logo abaixo por <b>Forma de Pagamento</b> (conforme selecionado em cada agendamento). As demais linhas somam os lançamentos de <b>Contas a Pagar</b> cuja data de vencimento cai no mês, agrupados pela categoria escolhida em cada lançamento. Nenhum valor é estimado ou criado automaticamente — tudo vem de registros lançados manualmente.</div>
+  `;
+}
+function barraDRE(label, valor, base){
+  const pct = base>0 ? Math.min(100, (valor/base*100)) : 0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex; justify-content:space-between; font-size:12.5px;"><span>${label}</span><span>${formatMoney(valor)}</span></div>
+    <div class="dre-bar-wrap"><div class="dre-bar" style="width:${pct}%;"></div></div>
+  </div>`;
+}
+
+/* =========================================================
+   BACKUP (export / import JSON) — protege dados que vivem
+   somente no navegador deste computador
+========================================================= */
+function openBackupModal(){
+  const html = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal">
+        <h2>Backup dos dados</h2>
+        <p style="color:var(--muted); font-size:13px; margin-top:-8px;">Os dados deste sistema agora ficam salvos na nuvem (Firebase) e sincronizados entre todos os dispositivos automaticamente. Ainda assim, recomendamos exportar um backup de vez em quando como segurança extra.</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+          <button class="btn btn-primary" onclick="exportBackup()">⬇️ Exportar backup (arquivo .json)</button>
+          <label class="btn" style="text-align:center; cursor:pointer;">
+            ⬆️ Importar backup (.json)
+            <input type="file" accept="application/json" style="display:none" onchange="importBackup(event)">
+          </label>
+        </div>
+        <div class="modal-actions">
+          <div></div>
+          <div class="modal-actions-right"><button class="btn" onclick="closeModal()">Fechar</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function exportBackup(){
+  const backup = {
+    clientes: state.clientes,
+    agenda: state.agenda,
+    contas: state.contas,
+    clinicName: state.clinicName,
+    exportadoEm: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_clinica_${toISODate(new Date())}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importBackup(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!confirm('Importar este backup vai SUBSTITUIR todos os dados atuais do sistema (na nuvem, para todos os dispositivos). Deseja continuar?')) return;
+
+      const colecoes = { clientes: data.clientes||[], agenda: data.agenda||[], contas: data.contas||[] };
+
+      for(const nome of Object.keys(colecoes)){
+        const existentes = await db.collection(nome).get();
+        let batch = db.batch();
+        let ops = 0;
+        for(const doc of existentes.docs){
+          batch.delete(doc.ref);
+          ops++;
+          if(ops>=450){ await batch.commit(); batch = db.batch(); ops=0; }
+        }
+        for(const registro of colecoes[nome]){
+          const { id, ...campos } = registro;
+          batch.set(db.collection(nome).doc(), campos);
+          ops++;
+          if(ops>=450){ await batch.commit(); batch = db.batch(); ops=0; }
+        }
+        if(ops>0) await batch.commit();
+      }
+
+      if(data.clinicName){
+        await db.collection('config').doc('clinica').set({ nome: data.clinicName }, { merge:true });
+      }
+
+      closeModal();
+      alert('Backup importado com sucesso.');
+    }catch(err){
+      alert('Erro ao importar backup: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* =========================================================
+   MODAL GENÉRICO
+========================================================= */
+function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+/* =========================================================
+   LOGIN / LOGOUT
+========================================================= */
+function fazerLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const senha = document.getElementById('loginSenha').value;
+  const erroEl = document.getElementById('loginError');
+  const loadingEl = document.getElementById('loginLoading');
+  erroEl.style.display = 'none';
+
+  if(!email || !senha){
+    erroEl.textContent = 'Preencha email e senha.';
+    erroEl.style.display = 'block';
+    return;
+  }
+  loadingEl.style.display = 'block';
+
+  const timeoutMs = 15000;
+  const timeoutPromise = new Promise((_, reject)=> setTimeout(()=> reject({code:'timeout'}), timeoutMs));
+
+  Promise.race([auth.signInWithEmailAndPassword(email, senha), timeoutPromise])
+    .catch(err=>{
+      loadingEl.style.display = 'none';
+      const mensagens = {
+        'auth/invalid-email': 'Email inválido.',
+        'auth/user-not-found': 'Usuário não encontrado.',
+        'auth/wrong-password': 'Senha incorreta.',
+        'auth/invalid-credential': 'Email ou senha incorretos.',
+        'auth/too-many-requests': 'Muitas tentativas. Aguarde um pouco e tente novamente.',
+        'auth/network-request-failed': 'Falha de conexão. Verifique o Wi-Fi/dados móveis e tente de novo.',
+        'timeout': 'Demorou demais para responder. Verifique sua internet e tente novamente.'
+      };
+      erroEl.textContent = mensagens[err.code] || ('Erro ao entrar: ' + (err.message || 'tente novamente.'));
+      erroEl.style.display = 'block';
+    });
+}
+function fazerLogout(){
+  if(!confirm('Sair do sistema?')) return;
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'flex';
+    document.getElementById('loginLoading').style.display = 'none';
+    document.getElementById('userBadge').textContent = user.email;
+    document.getElementById('clinicNameLabel').textContent = state.clinicName;
+    attachFirestoreListeners();
+    renderNav();
+    renderMain();
+  } else {
+    detachFirestoreListeners();
+    state.clientes = []; state.agenda = []; state.contas = []; state.servicos = []; state.formasPagamento = [];
+    document.getElementById('appRoot').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginSenha').value = '';
+  }
+});
+</script>
+</body>
+</html>
